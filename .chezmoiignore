@@ -1,3 +1,7 @@
+# Optional features — excluded unless opted in via chezmoi init prompts
+{{ if not .bitwarden }}dot_local/bin/executable_bw-vault.tmpl{{ end }}
+{{ if not .touch_id_sudo }}run_once_enable-touchid-sudo.sh{{ end }}
+
 # theme.conf is a dynamic symlink managed by sync-theme, not chezmoi
 dot_config/kitty/theme.conf
 
