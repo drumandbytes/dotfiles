@@ -9,9 +9,12 @@ These are personal dotfiles, but improvements and ideas are welcome.
 - New `comp-add` / `uv-add` patterns that don't work yet
 - Documentation fixes
 
-## What probably won't be merged
+## What might be merged
 
-- Personal tool preferences (aliases, apps, plugins) — these reflect my own workflow
+- Tool suggestions (replacements or additions) — open to discussion if there's a good case for it
+
+## What won't be merged
+
 - Changes that break the macOS-only scope
 
 ## How to contribute
