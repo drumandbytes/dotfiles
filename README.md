@@ -1,6 +1,8 @@
 # dotfiles
 
-Personal macOS dotfiles managed with [chezmoi](https://chezmoi.io).
+Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
+
+> **macOS only.** Assumes Homebrew, Apple Silicon paths (`/opt/homebrew`), and macOS-specific tools (`pbcopy`, `mac-cleanup`, etc.). Not tested on Linux.
 
 ## What's included
 
