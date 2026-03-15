@@ -16,4 +16,6 @@ echo "Installing uv tools..."
 # Python LSP server with type-checking and formatting plugins
 uv tool install "python-lsp-server[pylsp-mypy,python-lsp-black]"
 
+# --- end uv tools --- (marker used by uv-add; do not remove or move)
+
 echo "✅ uv tools installed."

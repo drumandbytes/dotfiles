@@ -154,6 +154,27 @@ comp-add() {
     fi
 }
 
+# === uv Tool Management ===
+# Install a global uv tool and persist it to the chezmoi run_onchange_ script
+# so future installs get it automatically.
+# Usage: uv-add <package>             e.g. uv-add httpie
+#        uv-add "<package>[extra,...]" e.g. uv-add "python-lsp-server[pylsp-mypy]"
+uv-add() {
+    local pkg="${1:?Usage: uv-add <package>}"
+    local script
+    script="$(chezmoi source-path)/run_onchange_uv-tools.sh"
+
+    uv tool install "$pkg" || return 1
+    echo "✅ Installed uv tool: ${pkg}"
+
+    if [[ -f "$script" ]] && ! grep -qF "\"${pkg}\"" "$script"; then
+        awk -v line="uv tool install \"${pkg}\"" \
+            '/^# --- end uv tools ---/{print line} 1' \
+            "$script" > "${script}.tmp" && mv "${script}.tmp" "$script"
+        echo "📝 Persisted to $(basename "$script") — commit when ready"
+    fi
+}
+
 # === Lazy-loaded tools (fallback when generated inits don't exist yet) ===
 # Deferred inits override these on startup when the generated files are present.
 z()        { unfunction z zi; eval "$(zoxide init zsh)"; z "$@" }
