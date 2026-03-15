@@ -35,6 +35,9 @@ zsh-defer source /opt/homebrew/opt/fzf/shell/completion.zsh
 # rbenv: wrap to prevent immediate subshell expansion
 _load_rbenv() { eval "$(rbenv init - zsh)" }
 zsh-defer _load_rbenv
+# Generated init files (created by run_onchange_generate-tool-inits.sh or mnt())
+[[ -f ~/.zsh/zoxide_init.zsh  ]] && zsh-defer source ~/.zsh/zoxide_init.zsh
+[[ -f ~/.zsh/carapace_init.zsh ]] && zsh-defer source ~/.zsh/carapace_init.zsh
 add-zsh-hook chpwd () { [[ -f .env ]] && set -a && source .env && set +a }
 
 # 6. Key Bindings
