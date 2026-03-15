@@ -110,11 +110,38 @@ zsh-bak() {
     fi
 }
 
+# === Dotfiles PR helper ===
+# Create a branch, commit a changed file, push, and open a PR.
+# Usage: _dotfiles-pr <branch-suffix> <commit-msg> <file-to-commit>
+_dotfiles-pr() {
+    local branch="dotfiles/${1}" message="$2" file="$3"
+    local src
+    src="$(chezmoi source-path)"
+
+    if ! command -v gh &>/dev/null; then
+        echo "❌ gh not found — cannot create PR. Commit manually."
+        return 1
+    fi
+
+    (
+        cd "$src"
+        git checkout -b "$branch"
+        git add "$file"
+        git commit -m "$message"
+        git push -u origin "$branch"
+        gh pr create --title "$message" --body "" --fill-first
+        git checkout -
+    )
+}
+
 # === Completion Management ===
 # Detect a tool's completion syntax, generate the file, and persist it to the
 # chezmoi run_onchange_ script so future installs get it automatically.
+# Usage: comp-add [--commit] <toolname>
 comp-add() {
-    local tool="${1:?Usage: comp-add <toolname>}"
+    local commit=0
+    [[ "${1}" == "--commit" ]] && { commit=1; shift; }
+    local tool="${1:?Usage: comp-add [--commit] <toolname>}"
     local outfile="$HOME/.zsh/completions/_${tool}"
     local script
     script="$(chezmoi source-path)/run_onchange_generate-tool-inits.sh"
@@ -150,17 +177,24 @@ comp-add() {
         awk -v line="cmd ${tool} && ${cmd} > ~/.zsh/completions/_${tool}" \
             '/^# --- end completions ---/{print line} 1' \
             "$script" > "${script}.tmp" && mv "${script}.tmp" "$script" && chmod +x "$script"
-        echo "📝 Persisted to $(basename "$script") — commit when ready"
+
+        if (( commit )); then
+            _dotfiles-pr "comp-add-${tool}" "Add ${tool} shell completion" "$script"
+        else
+            echo "📝 Persisted to $(basename "$script") — commit when ready"
+        fi
     fi
 }
 
 # === uv Tool Management ===
 # Install a global uv tool and persist it to the chezmoi run_onchange_ script
 # so future installs get it automatically.
-# Usage: uv-add <package>             e.g. uv-add httpie
-#        uv-add "<package>[extra,...]" e.g. uv-add "python-lsp-server[pylsp-mypy]"
+# Usage: uv-add [--commit] <package>   e.g. uv-add httpie
+#        uv-add [--commit] "<package>[extra,...]"
 uv-add() {
-    local pkg="${1:?Usage: uv-add <package>}"
+    local commit=0
+    [[ "${1}" == "--commit" ]] && { commit=1; shift; }
+    local pkg="${1:?Usage: uv-add [--commit] <package>}"
     local script
     script="$(chezmoi source-path)/run_onchange_uv-tools.sh"
 
@@ -171,7 +205,15 @@ uv-add() {
         awk -v line="uv tool install \"${pkg}\"" \
             '/^# --- end uv tools ---/{print line} 1' \
             "$script" > "${script}.tmp" && mv "${script}.tmp" "$script"
-        echo "📝 Persisted to $(basename "$script") — commit when ready"
+
+        # Sanitise pkg name for branch (strip extras, slashes)
+        local branch_name="${pkg%%\[*}"
+        branch_name="${branch_name//\//-}"
+        if (( commit )); then
+            _dotfiles-pr "uv-add-${branch_name}" "Add ${pkg} uv tool" "$script"
+        else
+            echo "📝 Persisted to $(basename "$script") — commit when ready"
+        fi
     fi
 }
 
