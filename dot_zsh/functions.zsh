@@ -151,7 +151,7 @@ comp-add() {
             '/^# --- end completions ---/{print line} 1' \
             "$script" > "${script}.tmp" && mv "${script}.tmp" "$script" && chmod +x "$script"
 
-        echo "📝 Persisted to $(basename "$script") — commit when ready"
+        echo "📝 Persisted to $(basename "$script")"
     fi
 }
 
@@ -173,7 +173,7 @@ uv-add() {
             '/^# --- end uv tools ---/{print line} 1' \
             "$script" > "${script}.tmp" && mv "${script}.tmp" "$script"
 
-        echo "📝 Persisted to $(basename "$script") — commit when ready"
+        echo "📝 Persisted to $(basename "$script")"
     fi
 }
 
