@@ -110,6 +110,7 @@ zsh-bak() {
     fi
 }
 
+{{ if eq .name "drumandbytes" }}
 # === Dotfiles PR helper ===
 # Create a branch, commit a changed file, push, and open a PR.
 # Usage: _dotfiles-pr <branch-suffix> <commit-msg> <file-to-commit> <pr-body>
@@ -133,6 +134,7 @@ _dotfiles-pr() {
         git checkout -
     )
 }
+{{ end }}
 
 # === Completion Management ===
 # Detect a tool's completion syntax, generate the file, and persist it to the
@@ -178,12 +180,16 @@ comp-add() {
             '/^# --- end completions ---/{print line} 1' \
             "$script" > "${script}.tmp" && mv "${script}.tmp" "$script" && chmod +x "$script"
 
+{{ if eq .name "drumandbytes" -}}
         if (( commit )); then
             local body="Added to \`$(basename "$script")\`:\n\`\`\`\ncmd ${tool} && ${cmd} > ~/.zsh/completions/_${tool}\n\`\`\`"
             _dotfiles-pr "comp-add-${tool}" "Add ${tool} shell completion" "$script" "$body"
         else
             echo "📝 Persisted to $(basename "$script") — commit when ready"
         fi
+{{- else }}
+        echo "📝 Persisted to $(basename "$script") — commit when ready"
+{{- end }}
     fi
 }
 
@@ -210,12 +216,16 @@ uv-add() {
         # Sanitise pkg name for branch (strip extras, slashes)
         local branch_name="${pkg%%\[*}"
         branch_name="${branch_name//\//-}"
+{{ if eq .name "drumandbytes" -}}
         if (( commit )); then
             local body="Added to \`$(basename "$script")\`:\n\`\`\`\nuv tool install \"${pkg}\"\n\`\`\`"
             _dotfiles-pr "uv-add-${branch_name}" "Add ${pkg} uv tool" "$script" "$body"
         else
             echo "📝 Persisted to $(basename "$script") — commit when ready"
         fi
+{{- else }}
+        echo "📝 Persisted to $(basename "$script") — commit when ready"
+{{- end }}
     fi
 }
 

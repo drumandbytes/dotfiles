@@ -1,5 +1,5 @@
 [data]
-  name = "drumandbytes"
+  name = {{ promptStringOnce . "name" "Your GitHub username" | quote }}
 {{- $bitwarden := promptBoolOnce . "bitwarden" "Enable Bitwarden integration" }}
   bitwarden = {{ $bitwarden }}
 {{- if $bitwarden }}
