@@ -105,6 +105,50 @@ zsh-bak() {
     fi
 }
 
+# === Completion Management ===
+# Detect a tool's completion syntax, generate the file, and persist it to the
+# chezmoi run_onchange_ script so future installs get it automatically.
+comp-add() {
+    local tool="${1:?Usage: comp-add <toolname>}"
+    local outfile="$HOME/.zsh/completions/_${tool}"
+    local script
+    script="$(chezmoi source-path)/run_onchange_generate-tool-inits.sh"
+
+    # Try common completion syntax patterns in order of prevalence
+    local cmd="" try
+    local -a tries=(
+        "$tool completion zsh"
+        "$tool completion -s zsh"
+        "$tool completion --shell zsh"
+        "$tool completions zsh"
+        "$tool generate-shell-completion zsh"
+    )
+    for try in "${tries[@]}"; do
+        if eval "$try" > "$outfile" 2>/dev/null && [[ -s "$outfile" ]]; then
+            cmd="$try"
+            break
+        fi
+    done
+
+    if [[ -z "$cmd" ]]; then
+        rm -f "$outfile"
+        echo "❌ Could not auto-detect completion syntax for '${tool}'."
+        echo "   Try manually: <tool> completion zsh > ~/.zsh/completions/_${tool}"
+        return 1
+    fi
+
+    builtin zcompile "$outfile" 2>/dev/null
+    echo "✅ Generated ~/.zsh/completions/_${tool}  (via: ${cmd})"
+
+    # Persist to chezmoi source script (insert before marker)
+    if [[ -f "$script" ]] && ! grep -qF "_${tool}" "$script"; then
+        awk -v line="cmd ${tool} && ${cmd} > ~/.zsh/completions/_${tool}" \
+            '/^# --- end completions ---/{print line} 1' \
+            "$script" > "${script}.tmp" && mv "${script}.tmp" "$script" && chmod +x "$script"
+        echo "📝 Persisted to $(basename "$script") — commit when ready"
+    fi
+}
+
 # === Lazy-loaded tools (fallback when generated inits don't exist yet) ===
 # If ~/.zsh/zoxide_init.zsh exists it is sourced deferred at startup and overrides these.
 z()       { unfunction z zi; eval "$(zoxide init zsh)"; z "$@" }

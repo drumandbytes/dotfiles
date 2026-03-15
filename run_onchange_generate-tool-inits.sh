@@ -19,5 +19,6 @@ cmd kubectl  && kubectl completion zsh                 > ~/.zsh/completions/_kub
 cmd helm     && helm completion zsh                    > ~/.zsh/completions/_helm
 cmd gh       && gh completion -s zsh                   > ~/.zsh/completions/_gh
 cmd flux     && flux completion zsh                    > ~/.zsh/completions/_flux
+# --- end completions --- (marker used by comp-add; do not remove or move)
 
 echo "✅ Tool inits and completions generated."
