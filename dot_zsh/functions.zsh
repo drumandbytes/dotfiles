@@ -112,9 +112,9 @@ zsh-bak() {
 
 # === Dotfiles PR helper ===
 # Create a branch, commit a changed file, push, and open a PR.
-# Usage: _dotfiles-pr <branch-suffix> <commit-msg> <file-to-commit>
+# Usage: _dotfiles-pr <branch-suffix> <commit-msg> <file-to-commit> <pr-body>
 _dotfiles-pr() {
-    local branch="dotfiles/${1}" message="$2" file="$3"
+    local branch="dotfiles/${1}" message="$2" file="$3" body="$4"
     local src
     src="$(chezmoi source-path)"
 
@@ -129,7 +129,7 @@ _dotfiles-pr() {
         git add "$file"
         git commit -m "$message"
         git push -u origin "$branch"
-        gh pr create --title "$message" --body "" --fill-first
+        gh pr create --title "$message" --body "$body"
         git checkout -
     )
 }
@@ -179,7 +179,8 @@ comp-add() {
             "$script" > "${script}.tmp" && mv "${script}.tmp" "$script" && chmod +x "$script"
 
         if (( commit )); then
-            _dotfiles-pr "comp-add-${tool}" "Add ${tool} shell completion" "$script"
+            local body="Added to \`$(basename "$script")\`:\n\`\`\`\ncmd ${tool} && ${cmd} > ~/.zsh/completions/_${tool}\n\`\`\`"
+            _dotfiles-pr "comp-add-${tool}" "Add ${tool} shell completion" "$script" "$body"
         else
             echo "📝 Persisted to $(basename "$script") — commit when ready"
         fi
@@ -210,7 +211,8 @@ uv-add() {
         local branch_name="${pkg%%\[*}"
         branch_name="${branch_name//\//-}"
         if (( commit )); then
-            _dotfiles-pr "uv-add-${branch_name}" "Add ${pkg} uv tool" "$script"
+            local body="Added to \`$(basename "$script")\`:\n\`\`\`\nuv tool install \"${pkg}\"\n\`\`\`"
+            _dotfiles-pr "uv-add-${branch_name}" "Add ${pkg} uv tool" "$script" "$body"
         else
             echo "📝 Persisted to $(basename "$script") — commit when ready"
         fi
