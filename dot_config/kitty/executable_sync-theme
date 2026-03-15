@@ -1,0 +1,10 @@
+#!/bin/zsh
+theme="$HOME/.config/kitty/theme.conf"
+[[ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]] \
+    && target="$HOME/.config/kitty/themes/macchiato.conf" \
+    || target="$HOME/.config/kitty/themes/latte.conf"
+rm -f "$theme"
+ln -s "$target" "$theme"
+for pid in $(ps -x | grep '/Applications/kitty.app/Contents/MacOS/kitty' | grep -v grep | awk '{ print $1 }'); do
+    kill -SIGUSR1 "$pid"
+done

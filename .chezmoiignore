@@ -1,0 +1,5 @@
+# theme.conf is a dynamic symlink managed by sync-theme, not chezmoi
+dot_config/kitty/theme.conf
+
+# sheldon lock file is generated at runtime
+dot_config/sheldon/plugins.lock
