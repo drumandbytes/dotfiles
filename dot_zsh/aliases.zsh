@@ -11,6 +11,7 @@ alias dig='doggo'
 alias man='tldr'
 
 # --- Kubernetes ---
+alias kubectl='kubecolor'        # colorised kubectl; compdef set in .zshrc
 alias k='kubectl'
 alias kx='kubectx'
 alias kn='kubens'
@@ -18,7 +19,8 @@ alias kgp='k get pods'
 alias kgd='k get deployments'
 alias kgs='k get service'
 alias kga='k get all'
-alias kl='k logs -f'
+alias kl='k logs -f'             # single pod
+alias ksl='stern'                # multi-pod / pattern-based log tailing
 alias kex='k exec -it'
 
 # --- Git & Workflow ---

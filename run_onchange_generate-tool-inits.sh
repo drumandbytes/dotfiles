@@ -9,13 +9,18 @@ mkdir -p ~/.zsh/completions
 cmd() { command -v "$1" &>/dev/null; }
 
 # --- Static init files (sourced deferred at startup) ---
-cmd zoxide  && zoxide init zsh > ~/.zsh/zoxide_init.zsh
+cmd zoxide   && zoxide init zsh        > ~/.zsh/zoxide_init.zsh
 cmd carapace && carapace _carapace zsh > ~/.zsh/carapace_init.zsh
+cmd mise     && mise activate zsh      > ~/.zsh/mise_init.zsh
+cmd atuin    && atuin init zsh         > ~/.zsh/atuin_init.zsh
+cmd direnv   && direnv hook zsh        > ~/.zsh/direnv_init.zsh
+cmd navi     && navi widget zsh        > ~/.zsh/navi_widget.zsh
 
 # --- Tool completions -> ~/.zsh/completions/ ---
 cmd uv       && uv generate-shell-completion zsh       > ~/.zsh/completions/_uv
 cmd colima   && colima completion zsh                  > ~/.zsh/completions/_colima
 cmd kubectl  && kubectl completion zsh                 > ~/.zsh/completions/_kubectl
+cmd stern    && stern completion zsh                   > ~/.zsh/completions/_stern
 cmd helm     && helm completion zsh                    > ~/.zsh/completions/_helm
 cmd gh       && gh completion -s zsh                   > ~/.zsh/completions/_gh
 cmd flux     && flux completion zsh                    > ~/.zsh/completions/_flux

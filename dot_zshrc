@@ -32,13 +32,15 @@ zstyle ':fzf-tab:complete:dbt:run:*'      fzf-preview '[[ -f models/$word.sql ]]
 # fzf: source static Homebrew-installed files instead of spawning `fzf --zsh`
 zsh-defer source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
 zsh-defer source /opt/homebrew/opt/fzf/shell/completion.zsh
-# rbenv: wrap to prevent immediate subshell expansion
-_load_rbenv() { eval "$(rbenv init - zsh)" }
-zsh-defer _load_rbenv
 # Generated init files (created by run_onchange_generate-tool-inits.sh or mnt())
-[[ -f ~/.zsh/zoxide_init.zsh  ]] && zsh-defer source ~/.zsh/zoxide_init.zsh
+[[ -f ~/.zsh/zoxide_init.zsh   ]] && zsh-defer source ~/.zsh/zoxide_init.zsh
 [[ -f ~/.zsh/carapace_init.zsh ]] && zsh-defer source ~/.zsh/carapace_init.zsh
-add-zsh-hook chpwd () { [[ -f .env ]] && set -a && source .env && set +a }
+[[ -f ~/.zsh/mise_init.zsh     ]] && zsh-defer source ~/.zsh/mise_init.zsh
+[[ -f ~/.zsh/atuin_init.zsh    ]] && zsh-defer source ~/.zsh/atuin_init.zsh
+[[ -f ~/.zsh/direnv_init.zsh   ]] && zsh-defer source ~/.zsh/direnv_init.zsh
+[[ -f ~/.zsh/navi_widget.zsh   ]] && zsh-defer source ~/.zsh/navi_widget.zsh
+# kubecolor: use kubectl completions for kubecolor
+command -v kubecolor &>/dev/null && compdef kubecolor=kubectl
 
 # 6. Key Bindings
 bindkey '^[[A' history-substring-search-up

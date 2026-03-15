@@ -15,14 +15,19 @@ mnt() {
 
     # 3. Static Initialization Caching (keep in sync with run_onchange_generate-tool-inits.sh)
     echo "🏎️ Caching Tool Initializations..."
-    command -v zoxide  &>/dev/null && zoxide init zsh > ~/.zsh/zoxide_init.zsh
-    command -v carapace &>/dev/null && carapace _carapace zsh > ~/.zsh/carapace_init.zsh
-    command -v uv      &>/dev/null && uv generate-shell-completion zsh > ~/.zsh/completions/_uv
-    command -v colima  &>/dev/null && colima completion zsh          > ~/.zsh/completions/_colima
-    command -v kubectl &>/dev/null && kubectl completion zsh          > ~/.zsh/completions/_kubectl
-    command -v helm    &>/dev/null && helm completion zsh             > ~/.zsh/completions/_helm
-    command -v gh      &>/dev/null && gh completion -s zsh            > ~/.zsh/completions/_gh
-    command -v flux    &>/dev/null && flux completion zsh             > ~/.zsh/completions/_flux
+    command -v zoxide   &>/dev/null && zoxide init zsh              > ~/.zsh/zoxide_init.zsh
+    command -v carapace &>/dev/null && carapace _carapace zsh       > ~/.zsh/carapace_init.zsh
+    command -v mise     &>/dev/null && mise activate zsh            > ~/.zsh/mise_init.zsh
+    command -v atuin    &>/dev/null && atuin init zsh               > ~/.zsh/atuin_init.zsh
+    command -v direnv   &>/dev/null && direnv hook zsh              > ~/.zsh/direnv_init.zsh
+    command -v navi     &>/dev/null && navi widget zsh              > ~/.zsh/navi_widget.zsh
+    command -v uv       &>/dev/null && uv generate-shell-completion zsh  > ~/.zsh/completions/_uv
+    command -v colima   &>/dev/null && colima completion zsh             > ~/.zsh/completions/_colima
+    command -v kubectl  &>/dev/null && kubectl completion zsh            > ~/.zsh/completions/_kubectl
+    command -v stern    &>/dev/null && stern completion zsh              > ~/.zsh/completions/_stern
+    command -v helm     &>/dev/null && helm completion zsh               > ~/.zsh/completions/_helm
+    command -v gh       &>/dev/null && gh completion -s zsh              > ~/.zsh/completions/_gh
+    command -v flux     &>/dev/null && flux completion zsh               > ~/.zsh/completions/_flux
 
     # 4. Binary Compilation (Dynamic & Automatic)
     echo "🏗️  Rebuilding binaries from a clean slate..."
@@ -96,10 +101,10 @@ zsh-bak() {
     local bak_dir="$HOME/Backups/zsh"
     local marker="$bak_dir/.last_backup_check"
     mkdir -p "$bak_dir"
-    local changes=$(find ~/.zshrc ~/.zsh ~/.config/kitty ~/.config/sheldon/plugins.toml -newer "$marker" 2>/dev/null)
+    local changes=$(find ~/.zshrc ~/.zsh ~/.config/kitty ~/.config/sheldon/plugins.toml ~/.config/git -newer "$marker" 2>/dev/null)
     if [[ -n "$changes" || ! -f "$marker" ]]; then
         local bak_name="zsh_bak_$(date +%Y%m%d_%H%M%S).zip"
-        zip -rq "$bak_dir/$bak_name" ~/.zshrc ~/.zsh ~/.config/kitty ~/.config/sheldon/plugins.toml -x "*.zwc"
+        zip -rq "$bak_dir/$bak_name" ~/.zshrc ~/.zsh ~/.config/kitty ~/.config/sheldon/plugins.toml ~/.config/git -x "*.zwc"
         touch "$marker"
         echo "📦 Backup created: $bak_name"
     fi
@@ -150,11 +155,11 @@ comp-add() {
 }
 
 # === Lazy-loaded tools (fallback when generated inits don't exist yet) ===
-# If ~/.zsh/zoxide_init.zsh exists it is sourced deferred at startup and overrides these.
-z()       { unfunction z zi; eval "$(zoxide init zsh)"; z "$@" }
-zi()      { z; zi "$@" }
-# If ~/.zsh/carapace_init.zsh exists it is sourced deferred at startup and overrides this.
+# Deferred inits override these on startup when the generated files are present.
+z()        { unfunction z zi; eval "$(zoxide init zsh)"; z "$@" }
+zi()       { z; zi "$@" }
 carapace() { unfunction carapace; eval "$(carapace _carapace zsh)"; carapace "$@" }
+mise()     { unfunction mise; eval "$(mise activate zsh)"; mise "$@" }
 
 # === gcloud (lazy-loaded — SDK is large) ===
 gcloud() {

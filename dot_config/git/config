@@ -1,0 +1,20 @@
+# Supplementary git config — lives at ~/.config/git/config (XDG).
+# Keeps personal identity (name, email, signing) in ~/.gitconfig untouched.
+
+[core]
+    pager = delta
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true          # n/N to jump between diff sections
+    line-numbers = true
+    side-by-side = true
+    syntax-theme = Catppuccin-macchiato   # matches terminal theme; needs catppuccin bat themes
+
+[merge]
+    conflictstyle = diff3
+
+[diff]
+    colorMoved = default

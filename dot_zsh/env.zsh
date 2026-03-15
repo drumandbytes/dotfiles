@@ -8,12 +8,7 @@ export CARAPACE_LENIENT=1
 export FZF_DEFAULT_COMMAND='fd --type f --strip-cwd-prefix --hidden --follow --exclude .git --exclude node_modules --exclude .DS_Store'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border --preview 'bat --color=always --style=numbers --line-range :500 {}'"
-# Enhanced History Search (Ctrl+R)
-export FZF_CTRL_R_OPTS="
-  --preview 'echo {}' --preview-window up:3:hidden:wrap
-  --bind 'ctrl-/:toggle-preview'
-  --header 'Press CTRL-/ to toggle full command preview'
-  --color=header:italic"
+# Note: CTRL+R is handled by atuin (not fzf)
 
 # Paths
 export PATH="/opt/homebrew/opt/openjdk@21/bin:$HOME/.local/bin:/opt/homebrew/opt/libpq/bin:/opt/homebrew/opt/ruby/bin:${KREW_ROOT:-$HOME/.krew}/bin:$HOME/.lmstudio/bin:$PATH"
