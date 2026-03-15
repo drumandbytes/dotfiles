@@ -22,12 +22,20 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 - macOS with [Homebrew](https://brew.sh)
 - [chezmoi](https://chezmoi.io): `brew install chezmoi`
 
-Core tools (installed via Homebrew):
+Everything else is installed automatically on first `chezmoi apply`.
 
-```
-sheldon atuin zoxide carapace mise direnv navi fzf
-eza bat fd ripgrep delta starship kitty lazygit
-```
+## Runtime version management
+
+Language runtimes are managed by [mise](https://mise.jdx.dev) rather than Homebrew, so versions can be pinned per project via `.mise.toml`:
+
+| Runtime | Global version |
+|---------|---------------|
+| `node` | LTS |
+| `ruby` | latest |
+| `uv` | latest |
+| `java` | temurin-21 *(optional)* |
+
+Add per-project overrides with `mise use node@22` inside a project directory.
 
 ## Install
 
@@ -42,10 +50,14 @@ During `chezmoi init` you'll be prompted for optional features (answers are save
 | `Enable Bitwarden integration` | Writes `BW_USER` to env and installs `bw-vault` script |
 | `Bitwarden account email` | Your Bitwarden login email (only asked if above is yes) |
 | `Enable Touch ID for sudo` | Runs a one-time script to add `pam_tid.so` to sudo PAM config |
+| `Install Docker + Colima` | Installs Docker daemon via Colima (lightweight alternative to Docker Desktop) |
+| `Install Kubernetes tools` | Installs kubectl, kubectx, k9s, vault, gcloud CLI |
+| `Install Java via mise` | Adds `temurin-21` to mise global config and installs libpq |
 
-On first apply, `run_onchange_generate-tool-inits.sh` runs automatically and generates:
-- Static init files for each tool (`~/.zsh/*_init.zsh`)
-- Shell completions (`~/.zsh/completions/`)
+On first apply, chezmoi automatically:
+1. Runs `brew bundle --global` to install all Homebrew packages
+2. Runs `mise install` to set up language runtimes
+3. Generates static init files and completions (`~/.zsh/*_init.zsh`, `~/.zsh/completions/`)
 
 ## Shell architecture
 

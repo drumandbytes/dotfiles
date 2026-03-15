@@ -1,0 +1,9 @@
+[tools]
+# Runtime versions managed globally by mise.
+# Pin versions per-project by adding a .mise.toml to the project root.
+uv   = "latest"
+node = "lts"
+ruby = "latest"
+{{ if .java -}}
+java = "temurin-21"
+{{ end -}}
