@@ -1,0 +1,50 @@
+local home = os.getenv("HOME")
+local kittyCli = "/opt/homebrew/bin/kitty"
+local freshConfigPath = home .. "/.config/fresh/config.json"
+local kittyThemeScript = home .. "/.config/kitty/sync-theme"
+
+-- Auto-reload config when any .lua file in ~/.hammerspoon changes
+G = G or {}
+G.reloadConfig = function(files)
+    for _, file in ipairs(files) do
+        if file:sub(-4) == ".lua" then hs.reload() return end
+    end
+end
+G.configWatcher = hs.pathwatcher.new(home .. "/.hammerspoon/", G.reloadConfig):start()
+
+-- Theme sync: switches kitty, k9s, and fresh editor theme to match macOS appearance
+themeSync = {}
+function themeSync.execute()
+    local mode = hs.host.interfaceStyle() or "Light"
+    local theme = (mode == "Dark") and "catppuccin-macchiato" or "catppuccin-latte"
+    local colorfgbg = (mode == "Dark") and "15;0" or "0;15"
+
+    -- Propagate COLORFGBG so terminal tools can detect light/dark
+    hs.execute("launchctl setenv COLORFGBG '" .. colorfgbg .. "'")
+
+    -- Switch kitty (and k9s) via sync-theme script
+    hs.task.new(kittyThemeScript, nil, { mode }):start()
+
+    -- Switch fresh editor theme
+    local ff = io.open(freshConfigPath, "r")
+    if ff then
+        local cfg = hs.json.decode(ff:read("*all"))
+        ff:close()
+        if cfg and cfg.theme ~= theme then
+            cfg.theme = theme
+            local wf = io.open(freshConfigPath, "w")
+            wf:write(hs.json.encode(cfg, true))
+            wf:close()
+        end
+    end
+end
+
+themeSync.watcher = hs.distributednotifications.new(
+    themeSync.execute,
+    "AppleInterfaceThemeChangedNotification"
+):start()
+
+-- Apply correct theme on Hammerspoon start/reload
+themeSync.execute()
+
+hs.alert.show("Hammerspoon Active")

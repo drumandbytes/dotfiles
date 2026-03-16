@@ -16,6 +16,7 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | `~/.config/starship.toml` | Prompt |
 | `~/.config/kitty/` | Terminal (kitty.conf + Catppuccin themes) |
 | `~/.config/git/config` | Git: delta pager, diff3 merge style |
+| `~/.hammerspoon/init.lua` | Auto-reload config; theme sync on macOS appearance change |
 
 ## Runtime version management
 
@@ -194,4 +195,4 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 | btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
 | k9s | `~/Library/Application Support/k9s/skins/` (all flavours; follows macOS appearance via `sync-theme`) *(kubernetes only)* |
 
-`sync-theme` (a script in `~/.config/kitty/`) switches kitty between Latte and Macchiato based on the macOS appearance setting at runtime.
+`sync-theme` (a script in `~/.config/kitty/`) switches kitty and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance. Hammerspoon also updates the fresh editor theme via `~/.config/fresh/config.json`.
