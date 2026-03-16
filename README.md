@@ -39,8 +39,16 @@ Add per-project overrides with `mise use node@22` inside a project directory.
 
 ## Install
 
+On a fresh machine (installs chezmoi and applies dotfiles in one shot):
+
 ```zsh
-chezmoi init --apply drumandbytes
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply https://github.com/drumandbytes/dotfiles
+```
+
+If chezmoi is already installed:
+
+```zsh
+chezmoi init --apply https://github.com/drumandbytes/dotfiles
 ```
 
 During `chezmoi init` you'll be prompted for optional features (answers are saved locally and never committed):
