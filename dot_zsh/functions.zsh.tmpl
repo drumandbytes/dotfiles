@@ -86,6 +86,7 @@ sh-add() {
 }
 
 # === Interactive Tools (FZF) ===
+{{ if .alt_tools -}}
 help-cmd() {
     local FZF_DEFAULT_OPTS=""
     local cmd
@@ -98,6 +99,7 @@ help-cmd() {
         eval "$final_cmd"
     fi
 }
+{{- end }}
 
 fkill() {
     local pid
