@@ -101,15 +101,12 @@ The `bw-search` shell function (in `functions.zsh`) uses this for interactive fz
 
 ## Optional: Touch ID for sudo
 
-When Touch ID for sudo is enabled, a one-time script adds `pam_tid.so` to the PAM sudo configuration:
+When Touch ID for sudo is enabled, a one-time script writes `/etc/pam.d/sudo_local` — a macOS 14+ (Sonoma) file that survives OS updates. To re-run it:
 
-- **macOS 14+ (Sonoma):** writes `/etc/pam.d/sudo_local` — survives OS updates
-- **macOS < 14:** edits `/etc/pam.d/sudo` directly — gets reset on major OS upgrades; re-enable by deleting the chezmoi state entry and re-applying:
-
-  ```zsh
-  chezmoi state delete-bucket --bucket=scriptState
-  chezmoi apply
-  ```
+```zsh
+chezmoi state delete-bucket --bucket=scriptState
+chezmoi apply
+```
 
 ## History
 
