@@ -27,7 +27,9 @@ mnt() {
     echo "🍺 Updating Homebrew..."
     brew update && brew upgrade --greedy && brew cleanup --prune=all
     mac-cleanup
+{{ if .alt_tools -}}
     tldr --update
+{{- end }}
 
     # 2. Sheldon Static Source
     echo "🛡️ Refreshing Sheldon plugins..."

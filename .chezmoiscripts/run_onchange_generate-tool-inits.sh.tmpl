@@ -15,7 +15,9 @@ cmd carapace && carapace _carapace zsh >~/.zsh/carapace_init.zsh
 cmd mise && mise activate zsh >~/.zsh/mise_init.zsh
 cmd atuin && atuin init zsh >~/.zsh/atuin_init.zsh
 cmd direnv && direnv hook zsh >~/.zsh/direnv_init.zsh
+{{ if .alt_tools -}}
 cmd navi && navi widget zsh >~/.zsh/navi_widget.zsh
+{{ end -}}
 
 # --- Tool completions -> ~/.zsh/completions/ ---
 cmd uv && uv generate-shell-completion zsh >~/.zsh/completions/_uv
