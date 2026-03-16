@@ -192,6 +192,6 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 | bat | `~/.config/bat/themes/` (Macchiato + Latte, loaded automatically) |
 | delta | inherits bat theme via `~/.config/git/config` |
 | btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
-| k9s | `~/Library/Application Support/k9s/skins/` (all flavours; active: Macchiato) *(kubernetes only)* |
+| k9s | `~/Library/Application Support/k9s/skins/` (all flavours; follows macOS appearance via `sync-theme`) *(kubernetes only)* |
 
 `sync-theme` (a script in `~/.config/kitty/`) switches kitty between Latte and Macchiato based on the macOS appearance setting at runtime.
