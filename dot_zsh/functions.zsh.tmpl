@@ -52,6 +52,7 @@ mnt() {
     exec zsh
 }
 
+{{ if .bitwarden -}}
 # === Bitwarden Search (ID-Based Parsing) ===
 bw-search() {
     if [[ -z "$BW_SESSION" ]]; then
@@ -69,6 +70,7 @@ bw-search() {
         esac
     fi
 }
+{{- end }}
 
 # === Sheldon Plugin Automation ===
 # === Sheldon Plugin Management ===
