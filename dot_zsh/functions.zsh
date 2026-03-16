@@ -1,6 +1,27 @@
+# === chezmoi Helpers ===
+# Sync the chezmoi source dir to origin/main, then apply.
+# Handles: detached HEAD, wrong branch, missing tracking, diverged local commits.
+_chezmoi_sync() {
+    local src
+    src=$(chezmoi source-path 2>/dev/null) || { echo "❌ chezmoi source-path failed"; return 1; }
+
+    echo "🔄 Fetching origin/main..."
+    git -C "$src" fetch origin main || { echo "❌ fetch failed"; return 1; }
+
+    # checkout -B resets the main branch to origin/main regardless of current state:
+    # works from any branch, detached HEAD, or after a failed rebase.
+    git -C "$src" checkout -B main origin/main
+
+    chezmoi apply
+}
+
 # === Elite Maintenance Workflow ===
 mnt() {
     echo "🚀 Starting Elite Maintenance..."
+
+    # 0. Sync dotfiles first so everything below reflects latest config
+    echo "📦 Syncing dotfiles..."
+    _chezmoi_sync || echo "⚠️  chezmoi sync failed — continuing anyway"
 
     # 1. System Updates & Cleanup
     echo "🍺 Updating Homebrew..."

@@ -39,8 +39,16 @@ Add per-project overrides with `mise use node@22` inside a project directory.
 
 ## Install
 
+On a fresh machine (installs chezmoi and applies dotfiles in one shot):
+
 ```zsh
-chezmoi init --apply drumandbytes
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply https://github.com/drumandbytes/dotfiles
+```
+
+If chezmoi is already installed:
+
+```zsh
+chezmoi init --apply https://github.com/drumandbytes/dotfiles
 ```
 
 During `chezmoi init` you'll be prompted for optional features (answers are saved locally and never committed):
@@ -133,6 +141,30 @@ chezmoi apply
 chezmoi apply
 ```
 
+## Troubleshooting chezmoi update
+
+**`chezmoi update` fails with "no tracking information", merge conflicts, or "git: exit status 1"**
+
+This happens when the chezmoi source directory is on the wrong branch or has local
+commits that diverge from `origin/main` (causing rebase conflicts). Fix it with a
+hard reset to the remote:
+
+```zsh
+src=$(chezmoi source-path)
+git -C "$src" fetch origin main
+git -C "$src" checkout -B main origin/main
+chezmoi apply
+```
+
+Or just run `mnt` — it calls `_chezmoi_sync` automatically as its first step, which
+handles wrong branch, missing tracking, and diverged commits without conflicts.
+
+**chezmoi apply is prompting about an unexpected diff**
+
+If chezmoi shows a diff you didn't expect, use `chezmoi diff` first to review it,
+then choose `overwrite` to apply the source, or `skip` to keep the current file and
+run `chezmoi re-add ~/.config/...` to pull the current state back into source.
+
 ## Adding a new tool completion
 
 ```zsh
@@ -141,5 +173,5 @@ comp-add <toolname>   # auto-detects syntax, writes file, persists to chezmoi so
 
 ## Theme
 
-[Catppuccin Macchiato](https://github.com/catppuccin/catppuccin) across kitty, bat, and delta.
-The active kitty theme is set by `sync-theme` (a script in `~/.config/kitty/`) and is not tracked by chezmoi — it switches between Latte (light) and Macchiato (dark).
+[Catppuccin](https://github.com/catppuccin/catppuccin) across kitty, bat, and delta — Macchiato (dark) / Latte (light).
+chezmoi tracks `theme.conf` as a symlink defaulting to Macchiato. `sync-theme` (a script in `~/.config/kitty/`) can override it at runtime to switch between Latte (light) and Macchiato (dark) based on the macOS appearance setting.
