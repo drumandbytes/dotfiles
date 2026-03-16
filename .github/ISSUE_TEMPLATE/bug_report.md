@@ -11,6 +11,7 @@ labels: bug
 **Steps to reproduce**
 
 **Environment**
+
 - macOS version:
 - Shell: zsh
 - chezmoi version (`chezmoi --version`):
