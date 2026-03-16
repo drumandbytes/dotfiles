@@ -13,9 +13,6 @@ if ! command -v bat &>/dev/null; then
     exit 0
 fi
 
-bat=$(command -v bat)
-echo "Using bat: $bat ($(bat --version 2>&1 | head -1))"
-
 themes_dir="$(bat --config-dir)/themes"
 mkdir -p "$themes_dir"
 
@@ -24,3 +21,5 @@ curl -fsSL "${base_url}/Catppuccin%20Macchiato.tmTheme" -o "$themes_dir/Catppucc
     || { echo "Failed to download Catppuccin Macchiato theme" >&2; exit 1; }
 curl -fsSL "${base_url}/Catppuccin%20Latte.tmTheme" -o "$themes_dir/Catppuccin Latte.tmTheme" \
     || { echo "Failed to download Catppuccin Latte theme" >&2; exit 1; }
+
+bat cache --build || { echo "Failed to rebuild bat cache" >&2; exit 1; }
