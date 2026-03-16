@@ -36,7 +36,7 @@ mnt() {
 
     # 3. Static Initialization Caching
     echo "🏎️ Caching Tool Initializations..."
-    bash "$(chezmoi source-path)/run_onchange_generate-tool-inits.sh"
+    bash <(chezmoi execute-template < "$(chezmoi source-path)/run_onchange_generate-tool-inits.sh.tmpl")
 
     # 4. Binary Compilation (Dynamic & Automatic)
     echo "🏗️  Rebuilding binaries from a clean slate..."
@@ -131,7 +131,7 @@ comp-add() {
     local tool="${1:?Usage: comp-add <toolname>}"
     local outfile="$HOME/.zsh/completions/_${tool}"
     local script
-    script="$(chezmoi source-path)/run_onchange_generate-tool-inits.sh"
+    script="$(chezmoi source-path)/run_onchange_generate-tool-inits.sh.tmpl"
 
     # Try common completion syntax patterns in order of prevalence
     local cmd="" try
