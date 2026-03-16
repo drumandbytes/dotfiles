@@ -33,8 +33,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Install chezmoi
-        run: brew install chezmoi
+      - name: Install chezmoi + shell linters
+        run: brew install chezmoi shellcheck shfmt
       - name: Validate templates
         run: |
           mkdir -p ~/.config/chezmoi
@@ -62,6 +62,37 @@ jobs:
             echo "→ $f"
             chezmoi execute-template < "$f" > /dev/null || { echo "FAILED: $f"; failed=1; }
           done < <(find . -name '*.tmpl' ! -name '.chezmoi.toml.tmpl' ! -path './.git/*')
+          exit "$failed"
+
+      - name: Lint rendered .sh.tmpl scripts
+        # Render with all infra flags on so scripts are fully expanded (no early-exit stubs).
+        run: |
+          cat > ~/.config/chezmoi/chezmoi.toml << EOF
+          sourceDir = "$(pwd)"
+          [data]
+            editor         = "fresh"
+            alt_tools      = true
+            macos_utils    = true
+            macos_cosmetic = true
+            macos_media    = true
+            dev_apps       = true
+            touchbar       = false
+            bitwarden      = false
+            bw_email       = "test@example.com"
+            touch_id_sudo  = false
+            docker         = true
+            kubernetes     = true
+            java           = true
+          EOF
+
+          failed=0
+          while IFS= read -r f; do
+            rendered=$(chezmoi execute-template < "$f")
+            echo "→ shellcheck: $f"
+            echo "$rendered" | shellcheck - || { echo "FAILED (shellcheck): $f"; failed=1; }
+            echo "→ shfmt: $f"
+            echo "$rendered" | shfmt -d -i 4 - || { echo "FAILED (shfmt): $f"; failed=1; }
+          done < <(find .chezmoiscripts -name '*.sh.tmpl')
           exit "$failed"
 
   gitleaks:

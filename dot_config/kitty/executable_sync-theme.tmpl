@@ -1,5 +1,6 @@
 #!/bin/zsh
-if [[ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]]; then
+mode=$(defaults read -g AppleInterfaceStyle 2>/dev/null)
+if [[ "$mode" = "Dark" ]]; then
     kitty_theme="themes/macchiato.conf"
 {{ if .kubernetes -}}
     k9s_skin="catppuccin-macchiato"
@@ -18,6 +19,12 @@ ln -s "$kitty_theme" "$theme"
 for pid in $(ps -x | grep '/Applications/kitty.app/Contents/MacOS/kitty' | grep -v grep | awk '{ print $1 }'); do
     kill -SIGUSR1 "$pid"
 done
+# git delta: update syntax theme
+if [[ "$mode" = "Dark" ]]; then
+    git config --global delta.features "catppuccin-dark"
+else
+    git config --global delta.features "catppuccin-light"
+fi
 {{ if .kubernetes }}
 # k9s: update skin in config.yaml (takes effect on next launch)
 k9s_config="${XDG_CONFIG_HOME:-$HOME/Library/Application Support}/k9s/config.yaml"

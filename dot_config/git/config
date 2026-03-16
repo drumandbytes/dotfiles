@@ -11,7 +11,14 @@
     navigate = true          # n/N to jump between diff sections
     line-numbers = true
     side-by-side = true
-    syntax-theme = Catppuccin Macchiato   # matches terminal theme; theme file installed by run_onchange_install-bat-themes.sh
+    features = catppuccin-dark   # updated by ~/.config/kitty/sync-theme on appearance change
+
+[delta "catppuccin-dark"]
+    syntax-theme = Catppuccin Macchiato
+
+[delta "catppuccin-light"]
+    syntax-theme = Catppuccin Latte
+    light = true
 
 [merge]
     conflictstyle = diff3
