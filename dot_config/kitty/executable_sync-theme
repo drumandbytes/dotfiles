@@ -1,0 +1,23 @@
+#!/bin/zsh
+if [[ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]]; then
+    kitty_theme="themes/macchiato.conf"
+    k9s_skin="catppuccin-macchiato"
+else
+    kitty_theme="themes/latte.conf"
+    k9s_skin="catppuccin-latte"
+fi
+
+# kitty: swap symlink and reload live instances
+theme="$HOME/.config/kitty/theme.conf"
+rm -f "$theme"
+ln -s "$kitty_theme" "$theme"
+for pid in $(ps -x | grep '/Applications/kitty.app/Contents/MacOS/kitty' | grep -v grep | awk '{ print $1 }'); do
+    kill -SIGUSR1 "$pid"
+done
+
+# k9s: update skin in config.yaml (takes effect on next launch)
+k9s_config="${XDG_CONFIG_HOME:-$HOME/Library/Application Support}/k9s/config.yaml"
+if [[ -f "$k9s_config" ]]; then
+    sed -i '' "s/skin: catppuccin-.*/skin: ${k9s_skin}/" "$k9s_config"
+fi
+

@@ -1,0 +1,1 @@
+{{ if eq (output "sh" "-c" "defaults read -g AppleInterfaceStyle 2>/dev/null || true") "Dark\n" }}themes/macchiato.conf{{ else }}themes/latte.conf{{ end }}

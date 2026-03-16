@@ -1,0 +1,78 @@
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+
+jobs:
+  shellcheck:
+    name: shellcheck
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install shellcheck
+        run: brew install shellcheck
+      - name: Run shellcheck
+        run: shellcheck run_once_*.sh run_onchange_*.sh
+
+  shfmt:
+    name: shfmt
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install shfmt
+        run: brew install shfmt
+      - name: Check formatting
+        # -d prints a diff and exits non-zero if any file differs; -i 4 = 4-space indent
+        run: shfmt -d -i 4 run_once_*.sh run_onchange_*.sh
+
+  chezmoi-templates:
+    name: chezmoi templates
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install chezmoi
+        run: brew install chezmoi
+      - name: Validate templates
+        run: |
+          mkdir -p ~/.config/chezmoi
+          cat > ~/.config/chezmoi/chezmoi.toml <<'EOF'
+          [data]
+            bitwarden     = false
+            bw_email      = "test@example.com"
+            touch_id_sudo = false
+            docker        = false
+            kubernetes    = false
+            java          = false
+          EOF
+
+          failed=0
+          # Skip .chezmoi.toml.tmpl — it uses promptBoolOnce which requires interaction
+          while IFS= read -r f; do
+            echo "→ $f"
+            chezmoi execute-template < "$f" > /dev/null || { echo "FAILED: $f"; failed=1; }
+          done < <(find . -name '*.tmpl' ! -name '.chezmoi.toml.tmpl' ! -path './.git/*')
+          exit "$failed"
+
+  gitleaks:
+    name: gitleaks
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  markdownlint:
+    name: markdownlint
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: DavidAnson/markdownlint-cli2-action@v22
+        with:
+          globs: "**/*.md"

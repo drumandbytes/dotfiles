@@ -1,0 +1,75 @@
+# ~/.config/sheldon/plugins.toml
+shell = "zsh"
+
+# --- Custom templates ---
+[templates]
+defer = "{{ hooks?.pre | nl }}{% for file in files %}zsh-defer source \"{{ file }}\"\n{% endfor %}{{ hooks?.post | nl }}"
+
+# --- Core (load immediately) ---
+[plugins.zsh-defer]
+github = "romkatv/zsh-defer"
+
+[plugins.starship]
+inline = 'eval "$(starship init zsh)"'
+
+# --- Completions (fpath only) ---
+[plugins.zsh-completions]
+github = "zsh-users/zsh-completions"
+dir = "src"
+apply = ["fpath"]
+
+# --- Deferred plugins ---
+[plugins.fzf-tab]
+github = "Aloxaf/fzf-tab"
+apply = ["defer"]
+
+# Fish-like inline suggestions
+[plugins.zsh-autosuggestions]
+github = "zsh-users/zsh-autosuggestions"
+use = ["{{ name }}.zsh"]
+apply = ["defer"]
+
+# Type partial command + Up arrow to search matching history
+[plugins.zsh-history-substring-search]
+github = "zsh-users/zsh-history-substring-search"
+apply = ["defer"]
+
+# Reminds you to use your aliases
+[plugins.you-should-use]
+github = "MichaelAquilina/zsh-you-should-use"
+apply = ["defer"]
+
+# Replace cat with bat + man page highlighting
+[plugins.zsh-bat]
+github = "fdellwing/zsh-bat"
+apply = ["defer"]
+
+# Auto-close brackets, quotes, etc.
+[plugins.zsh-autopair]
+github = "hlissner/zsh-autopair"
+apply = ["defer"]
+
+# Auto ls after cd
+[plugins.cd-ls]
+github = "zshzoo/cd-ls"
+apply = ["defer"]
+
+# Jump back N directories: bd 2 = cd ../..
+[plugins.zsh-bd]
+github = "Tarrasch/zsh-bd"
+apply = ["defer"]
+
+# Auto-activate uv virtual environments
+[plugins.zsh-uv-env]
+github = "matthiasha/zsh-uv-env"
+apply = ["defer"]
+
+# Interactive git commands via fzf
+[plugins.igit]
+github = "ytakahashi/igit"
+apply = ["defer"]
+
+# Syntax highlighting (must be last)
+[plugins.zsh-syntax-highlighting]
+github = "zsh-users/zsh-syntax-highlighting"
+apply = ["defer"]

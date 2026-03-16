@@ -1,0 +1,50 @@
+#!/bin/bash
+# Install Catppuccin Macchiato skin for k9s (kubernetes installs only).
+# Named install-* to ensure it runs after brew-bundle.
+{{ if not .kubernetes -}}
+exit 0
+{{ end -}}
+
+set -euo pipefail
+
+export PATH="/opt/homebrew/bin:$PATH"
+
+if ! command -v k9s &>/dev/null; then
+    echo "k9s not found — skipping theme install"
+    exit 0
+fi
+
+K9S_CONFIG="${XDG_CONFIG_HOME:-$HOME/Library/Application Support}/k9s"
+SKINS_DIR="$K9S_CONFIG/skins"
+mkdir -p "$SKINS_DIR"
+
+echo "Downloading Catppuccin skins for k9s..."
+curl -fsSL https://github.com/catppuccin/k9s/archive/main.tar.gz \
+    | tar xz -C "$SKINS_DIR" --strip-components=2 k9s-main/dist
+
+echo "✅ Catppuccin k9s skins installed."
+
+# Set skin in config.yaml to match current macOS appearance
+if [[ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]]; then
+    skin="catppuccin-macchiato"
+else
+    skin="catppuccin-latte"
+fi
+
+CONFIG_FILE="$K9S_CONFIG/config.yaml"
+mkdir -p "$(dirname "$CONFIG_FILE")"
+
+if ! command -v yq &>/dev/null; then
+    echo "yq not found — install it with: brew install yq"
+    exit 1
+fi
+
+# Remove duplicate k9s: top-level keys left by previous buggy append
+if [[ -f "$CONFIG_FILE" ]] && [[ $(grep -c "^k9s:" "$CONFIG_FILE") -gt 1 ]]; then
+    awk '/^k9s:/{count++; if (count > 1) exit} {print}' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
+    mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
+    echo "Fixed duplicate k9s: block in config.yaml"
+fi
+
+yq -i ".k9s.ui.skin = \"${skin}\"" "$CONFIG_FILE"
+echo "✅ Set k9s skin to ${skin} in config.yaml"
