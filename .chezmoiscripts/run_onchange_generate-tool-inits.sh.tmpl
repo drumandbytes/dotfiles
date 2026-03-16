@@ -19,7 +19,9 @@ cmd navi && navi widget zsh >~/.zsh/navi_widget.zsh
 
 # --- Tool completions -> ~/.zsh/completions/ ---
 cmd uv && uv generate-shell-completion zsh >~/.zsh/completions/_uv
+{{ if .dev_apps -}}
 cmd gh && gh completion -s zsh >~/.zsh/completions/_gh
+{{ end -}}
 {{ if .docker -}}
 cmd colima && colima completion zsh >~/.zsh/completions/_colima
 {{ end -}}
