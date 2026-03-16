@@ -14,7 +14,7 @@ bw_session_file='/var/root/.bitwarden.session'
 _bw_regen() {
     $bw_exec logout 2>/dev/null
     local raw_key
-    raw_key=$($bw_exec login "{{ .bw_email }}" --raw)
+    raw_key=$($bw_exec login "{{ .bw_email | default "" }}" --raw)
     if [[ -n "$raw_key" ]]; then
         echo "$raw_key" | sudo tee "$bw_session_file" > /dev/null
         echo "$raw_key"
