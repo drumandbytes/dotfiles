@@ -11,7 +11,7 @@
     navigate = true          # n/N to jump between diff sections
     line-numbers = true
     side-by-side = true
-    syntax-theme = Catppuccin Macchiato   # matches terminal theme; installed by run_onchange_bat-catppuccin.sh
+    syntax-theme = Catppuccin Macchiato   # matches terminal theme; installed by run_onchange_install-bat-themes.sh
 
 [merge]
     conflictstyle = diff3
