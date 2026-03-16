@@ -21,9 +21,23 @@ for pid in $(ps -x | grep '/Applications/kitty.app/Contents/MacOS/kitty' | grep 
 done
 # git delta: update syntax theme
 if [[ "$mode" = "Dark" ]]; then
-    git config --global delta.features "catppuccin-dark"
+    git config --global delta.features "catppuccin-macchiato"
 else
-    git config --global delta.features "catppuccin-light"
+    git config --global delta.features "catppuccin-latte"
+fi
+
+# starship: update active palette (re-read on every prompt)
+if [[ "$mode" = "Dark" ]]; then
+    sed -i '' 's/^palette = "catppuccin_.*/palette = "catppuccin_macchiato"/' "$HOME/.config/starship.toml"
+else
+    sed -i '' 's/^palette = "catppuccin_.*/palette = "catppuccin_latte"/' "$HOME/.config/starship.toml"
+fi
+
+# atuin: update theme name (takes effect on next atuin invocation)
+if [[ "$mode" = "Dark" ]]; then
+    sed -i '' 's/^name = "catppuccin-.*/name = "catppuccin-macchiato-mauve"/' "$HOME/.config/atuin/config.toml"
+else
+    sed -i '' 's/^name = "catppuccin-.*/name = "catppuccin-latte-mauve"/' "$HOME/.config/atuin/config.toml"
 fi
 {{ if .kubernetes }}
 # k9s: update skin in config.yaml (takes effect on next launch)

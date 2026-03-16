@@ -1,0 +1,3 @@
+{{- $dark := eq (output "sh" "-c" "defaults read -g AppleInterfaceStyle 2>/dev/null || true") "Dark\n" -}}
+[theme]
+name = "{{ if $dark }}catppuccin-macchiato-mauve{{ else }}catppuccin-latte-mauve{{ end }}"

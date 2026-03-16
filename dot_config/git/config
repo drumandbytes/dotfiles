@@ -7,18 +7,14 @@
 [interactive]
     diffFilter = delta --color-only
 
+[include]
+    path = catppuccin.gitconfig
+
 [delta]
     navigate = true          # n/N to jump between diff sections
     line-numbers = true
     side-by-side = true
-    features = catppuccin-dark   # updated by ~/.config/kitty/sync-theme on appearance change
-
-[delta "catppuccin-dark"]
-    syntax-theme = Catppuccin Macchiato
-
-[delta "catppuccin-light"]
-    syntax-theme = Catppuccin Latte
-    light = true
+    features = catppuccin-macchiato   # updated by ~/.config/kitty/sync-theme on appearance change
 
 [merge]
     conflictstyle = diff3
