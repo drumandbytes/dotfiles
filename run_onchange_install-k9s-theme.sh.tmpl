@@ -1,0 +1,37 @@
+#!/bin/bash
+# Install Catppuccin Macchiato skin for k9s (kubernetes installs only).
+# Named install-* to ensure it runs after brew-bundle.
+{{ if not .kubernetes -}}
+exit 0
+{{ end -}}
+
+set -euo pipefail
+
+export PATH="/opt/homebrew/bin:$PATH"
+
+if ! command -v k9s &>/dev/null; then
+    echo "k9s not found — skipping theme install"
+    exit 0
+fi
+
+K9S_CONFIG="${XDG_CONFIG_HOME:-$HOME/Library/Application Support}/k9s"
+SKINS_DIR="$K9S_CONFIG/skins"
+mkdir -p "$SKINS_DIR"
+
+echo "Downloading Catppuccin skins for k9s..."
+curl -fsSL https://github.com/catppuccin/k9s/archive/main.tar.gz \
+    | tar xz -C "$SKINS_DIR" --strip-components=2 k9s-main/dist
+
+echo "✅ Catppuccin k9s skins installed."
+
+# Set skin in config.yaml if not already configured
+CONFIG_FILE="$K9S_CONFIG/config.yaml"
+if [[ ! -f "$CONFIG_FILE" ]] || ! grep -q "skin:" "$CONFIG_FILE"; then
+    mkdir -p "$(dirname "$CONFIG_FILE")"
+    cat >> "$CONFIG_FILE" <<'EOF'
+k9s:
+  ui:
+    skin: catppuccin-macchiato
+EOF
+    echo "✅ Set k9s skin to catppuccin-macchiato in config.yaml"
+fi

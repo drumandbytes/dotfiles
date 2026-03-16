@@ -1,0 +1,87 @@
+#!/bin/bash
+# Regenerates ~/.local/share/navi/cheats/personal.cheat from aliases and functions,
+# and ensures community cheatsheet repos are cloned.
+# dot_zsh/aliases.zsh hash:          {{ include "dot_zsh/aliases.zsh" | sha256sum }}
+# dot_zsh/functions.zsh.tmpl hash:   {{ include "dot_zsh/functions.zsh.tmpl" | sha256sum }}
+
+set -euo pipefail
+
+export PATH="/opt/homebrew/bin:$PATH"
+
+cmd() { command -v "$1" &>/dev/null; }
+cmd navi || { echo "navi not found — skipping navi setup."; exit 0; }
+
+CHEAT_DIR="$HOME/.local/share/navi/cheats"
+mkdir -p "$CHEAT_DIR"
+
+# --- 1. Generate personal.cheat from aliases.zsh and functions.zsh ---
+python3 - "$HOME/.zsh/aliases.zsh" "$HOME/.zsh/functions.zsh" <<'PYEOF' > "$CHEAT_DIR/personal.cheat"
+import re, sys
+
+aliases_file, functions_file = sys.argv[1], sys.argv[2]
+out = []
+
+# ── Aliases ───────────────────────────────────────────────────────────────────
+for line in open(aliases_file):
+    line = line.rstrip()
+    # Section header: # --- Title ---
+    m = re.match(r'^#\s*---\s+(.+?)\s+---', line)
+    if m:
+        out.append(f"\n% personal, aliases, {m.group(1)}\n")
+        continue
+    # Skip pure comments and blanks
+    if re.match(r'^\s*#', line) or not line.strip():
+        continue
+    # alias [-g] NAME='...' [# comment]
+    m = re.match(r"^alias\s+(?:-g\s+)?([A-Za-z0-9_:=%-]+)='([^']*)'(.*)", line)
+    if not m:
+        m = re.match(r'^alias\s+(?:-g\s+)?([A-Za-z0-9_:=%-]+)="([^"]*)"(.*)', line)
+    if m:
+        name, expansion, rest = m.group(1), m.group(2), m.group(3)
+        cm = re.search(r'#\s*(.+)', rest)
+        desc = cm.group(1).strip() if cm else f"{name} → {expansion}"
+        out.append(f"# {desc}\n{name}\n")
+
+# ── Functions ─────────────────────────────────────────────────────────────────
+out.append("\n% personal, functions\n")
+
+pending = []
+for line in open(functions_file):
+    line = line.rstrip()
+    # Skip template directives and blanks
+    if line.startswith("{{") or not line.strip():
+        pending = []
+        continue
+    # Comment line
+    m = re.match(r'^#\s*(.*)', line)
+    if m:
+        text = m.group(1).strip().strip("=").strip()
+        if text:
+            pending.append(text)
+        continue
+    # Public function definition
+    m = re.match(r'^([a-zA-Z][a-zA-Z0-9_-]*)\s*\(\)\s*\{', line)
+    if m:
+        fname = m.group(1)
+        desc = pending[0] if pending else fname
+        out.append(f"# {desc}\n{fname}\n")
+    pending = []
+
+print("".join(out))
+PYEOF
+
+echo "✅ Generated $CHEAT_DIR/personal.cheat"
+
+# --- 2. Community repos (idempotent — skip if already cloned) ---
+add_repo() {
+    local repo="$1"
+    local dest="$CHEAT_DIR/${repo//\//__}"
+    if [[ ! -d "$dest" ]]; then
+        echo "Adding navi repo: $repo ..."
+        navi repo add "$repo" || echo "⚠️  Could not add $repo (check network)"
+    fi
+}
+
+add_repo "denisidoro/cheats"
+
+echo "✅ Navi setup complete."
