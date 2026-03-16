@@ -34,6 +34,13 @@ fi
 CONFIG_FILE="$K9S_CONFIG/config.yaml"
 mkdir -p "$(dirname "$CONFIG_FILE")"
 
+# Remove duplicate k9s: blocks left by previous buggy append
+if [[ -f "$CONFIG_FILE" ]] && [[ $(grep -c "^k9s:" "$CONFIG_FILE") -gt 1 ]]; then
+    awk '/^k9s:/{count++; if (count > 1) exit} {print}' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
+    mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
+    echo "🔧 Removed duplicate k9s: block from config.yaml"
+fi
+
 if command -v yq &>/dev/null; then
     yq -i ".k9s.ui.skin = \"${skin}\"" "$CONFIG_FILE"
     echo "✅ Set k9s skin to ${skin} in config.yaml"
