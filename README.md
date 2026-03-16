@@ -55,6 +55,7 @@ During `chezmoi init` you'll be prompted for optional features (answers are save
 | `Install Java via mise` | Adds `temurin-21` to mise global config and installs libpq |
 
 On first apply, chezmoi automatically:
+
 1. Runs `brew bundle --global` to install all Homebrew packages
 2. Runs `mise install` to set up language runtimes
 3. Generates static init files and completions (`~/.zsh/*_init.zsh`, `~/.zsh/completions/`)
@@ -63,7 +64,7 @@ On first apply, chezmoi automatically:
 
 Startup is optimised for speed using `zsh-defer` and pre-generated static files:
 
-```
+```text
 .zshrc
 ├── env.zsh            # immediate — sets PATH, exports
 ├── functions.zsh      # immediate — defines functions
@@ -104,6 +105,7 @@ When Touch ID for sudo is enabled, a one-time script adds `pam_tid.so` to the PA
 
 - **macOS 14+ (Sonoma):** writes `/etc/pam.d/sudo_local` — survives OS updates
 - **macOS < 14:** edits `/etc/pam.d/sudo` directly — gets reset on major OS upgrades; re-enable by deleting the chezmoi state entry and re-applying:
+
   ```zsh
   chezmoi state delete-bucket --bucket=scriptState
   chezmoi apply
