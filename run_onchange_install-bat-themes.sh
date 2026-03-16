@@ -13,9 +13,6 @@ if ! command -v bat &>/dev/null; then
     exit 0
 fi
 
-bat=$(command -v bat)
-echo "Using bat: $bat ($(bat --version 2>&1 | head -1))"
-
 themes_dir="$(bat --config-dir)/themes"
 mkdir -p "$themes_dir"
 
