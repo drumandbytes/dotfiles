@@ -89,7 +89,7 @@ Tool inits (atuin, zoxide, etc.) are pre-generated once rather than evaluated on
 | `mnt` | Full maintenance: brew upgrade, sheldon update, regenerate inits & completions, recompile, backup, reload |
 | `comp-add <tool>` | Auto-detect and add zsh completions for a new tool; persists to chezmoi source |
 | `uv-add <package>` | Install a global uv tool and persist it to `run_onchange_uv-tools.sh` |
-| `shadd <user/repo>` | Add a deferred sheldon plugin; persists to sheldon config |
+| `sh-add <user/repo>` | Add a deferred sheldon plugin; persists to sheldon config |
 | `bw-search` | fzf Bitwarden item search |
 | `help-cmd` | fzf search over all aliases and functions |
 | `fkill` | fzf process killer |
@@ -167,7 +167,7 @@ run `chezmoi re-add ~/.config/...` to pull the current state back into source.
 ```zsh
 comp-add <toolname>        # add a zsh completion; auto-detects syntax, persists to chezmoi source
 uv-add <package>           # install a global uv tool and persist it to run_onchange_uv-tools.sh
-shadd <user/repo>          # add a deferred sheldon plugin and persist it to plugins.toml
+sh-add <user/repo>          # add a deferred sheldon plugin and persist it to plugins.toml
 ```
 
 ## Theme

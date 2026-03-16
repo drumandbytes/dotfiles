@@ -73,8 +73,8 @@ bw-search() {
 # === Sheldon Plugin Automation ===
 # === Sheldon Plugin Management ===
 # Add a deferred sheldon plugin and persist it to chezmoi source.
-shadd() {
-    local repo="${1:?Usage: shadd <user/repo>}"
+sh-add() {
+    local repo="${1:?Usage: sh-add <user/repo>}"
     sheldon add "$repo" --github "$repo" --apply defer || return 1
     echo "✅ Added sheldon plugin: $repo"
     sheldon source > ~/.zsh/sheldon.zsh
