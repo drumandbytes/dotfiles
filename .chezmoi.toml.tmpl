@@ -2,6 +2,20 @@
   autoUpdate = true
 
 [data]
+  # --- Editor ---
+  editor = {{ promptStringOnce . "editor" "Preferred editor (fresh/nvim/vim/code)" | quote }}
+
+  # --- Tool groups ---
+  alt_tools   = {{ promptBoolOnce . "alt_tools"   "Install modern CLI replacements (eza, bat, fd, ripgrep, etc.)" }}
+
+  # --- macOS app groups ---
+  macos_utils    = {{ promptBoolOnce . "macos_utils"    "Install macOS utilities (Raycast, Alt-Tab, Hammerspoon, etc.)" }}
+  macos_cosmetic = {{ promptBoolOnce . "macos_cosmetic" "Install cosmetic macOS apps (Boring Notch, AirBattery, Cork)" }}
+  macos_media    = {{ promptBoolOnce . "macos_media"    "Install media & communication apps (Brave, Spotify, Telegram, Slack)" }}
+  dev_apps       = {{ promptBoolOnce . "dev_apps"       "Install dev apps (VSCodium, DBeaver, GIMP, GitLab CLI)" }}
+  touchbar       = {{ promptBoolOnce . "touchbar"       "Install BetterTouchTool (TouchBar Macs only)" }}
+
+  # --- Infrastructure ---
 {{- $bitwarden := promptBoolOnce . "bitwarden" "Enable Bitwarden integration" }}
   bitwarden = {{ $bitwarden }}
 {{- if $bitwarden }}

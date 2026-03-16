@@ -1,4 +1,5 @@
-# --- File Management (Eza + Rust tools) ---
+{{ if .alt_tools -}}
+# --- Alt-tools (modern CLI replacements) ---
 alias ls='eza --icons --group-directories-first'
 alias l='eza -lh --git --icons --group-directories-first'
 alias la='eza -la --git --icons --group-directories-first'
@@ -9,6 +10,7 @@ alias find='fd'
 alias grep='rg'
 alias dig='doggo'
 alias man='tldr'
+{{- end }}
 
 {{ if .kubernetes -}}
 # --- Kubernetes ---
@@ -30,11 +32,11 @@ alias lg='lazygit'
 alias copylast="fc -ln -1 | sed 's/^[ \t]*//' | pbcopy"
 
 # --- Config Management ---
-alias zshconfig="fresh ~/.zshrc"
-alias envconfig="fresh ~/.zsh/env.zsh"
-alias aliasconfig="fresh ~/.zsh/aliases.zsh"
-alias funcconfig="fresh ~/.zsh/functions.zsh"
-alias sheldonconfig="fresh ~/.config/sheldon/plugins.toml"
+alias zshconfig="{{ .editor }} ~/.zshrc"
+alias envconfig="{{ .editor }} ~/.zsh/env.zsh"
+alias aliasconfig="{{ .editor }} ~/.zsh/aliases.zsh"
+alias funcconfig="{{ .editor }} ~/.zsh/functions.zsh"
+alias sheldonconfig="{{ .editor }} ~/.config/sheldon/plugins.toml"
 alias reload="exec zsh"
 
 # --- Maintenance & Updates ---
@@ -45,4 +47,6 @@ alias -g L='| less'
 alias -g G='| grep'
 alias -g H='| head'
 alias -g T='| tail'
+{{ if .alt_tools -}}
 alias -g CJ='| jid'
+{{- end }}

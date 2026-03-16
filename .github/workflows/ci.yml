@@ -15,7 +15,7 @@ jobs:
       - name: Install shellcheck
         run: brew install shellcheck
       - name: Run shellcheck
-        run: shellcheck run_once_*.sh run_onchange_*.sh
+        run: shellcheck .chezmoiscripts/run_once_*.sh .chezmoiscripts/run_onchange_*.sh
 
   shfmt:
     name: shfmt
@@ -26,7 +26,7 @@ jobs:
         run: brew install shfmt
       - name: Check formatting
         # -d prints a diff and exits non-zero if any file differs; -i 4 = 4-space indent
-        run: shfmt -d -i 4 run_once_*.sh run_onchange_*.sh
+        run: shfmt -d -i 4 .chezmoiscripts/run_once_*.sh .chezmoiscripts/run_onchange_*.sh
 
   chezmoi-templates:
     name: chezmoi templates
@@ -41,12 +41,19 @@ jobs:
           cat > ~/.config/chezmoi/chezmoi.toml << EOF
           sourceDir = "$(pwd)"
           [data]
-            bitwarden     = false
-            bw_email      = "test@example.com"
-            touch_id_sudo = false
-            docker        = false
-            kubernetes    = false
-            java          = false
+            editor         = "fresh"
+            alt_tools      = true
+            macos_utils    = false
+            macos_cosmetic = false
+            macos_media    = false
+            dev_apps       = false
+            touchbar       = false
+            bitwarden      = false
+            bw_email       = "test@example.com"
+            touch_id_sudo  = false
+            docker         = false
+            kubernetes     = false
+            java           = false
           EOF
 
           failed=0

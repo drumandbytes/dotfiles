@@ -21,14 +21,21 @@ zsh-defer autoload -U +X bashcompinit
 zsh-defer bashcompinit
 
 # 4. fzf-tab Configuration
+{{ if .alt_tools -}}
 zstyle ':fzf-tab:complete:cd:*'           fzf-preview 'eza -1 --color=always --icons $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*'   fzf-preview 'eza -1 --color=always --icons $realpath'
+{{ else -}}
+zstyle ':fzf-tab:complete:cd:*'           fzf-preview 'ls -1 --color=always $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*'   fzf-preview 'ls -1 --color=always $realpath'
+{{ end -}}
 {{ if .kubernetes -}}
 zstyle ':fzf-tab:complete:kubectl:log:*'  fzf-preview 'kubectl logs $word'
 zstyle ':fzf-tab:complete:kubectl:describe:*' fzf-preview 'kubectl describe $word'
 zstyle ':fzf-tab:complete:kubectl:*'      fzf-flags --preview-window=right:60%
 {{ end -}}
+{{ if .alt_tools -}}
 zstyle ':fzf-tab:complete:dbt:run:*'      fzf-preview '[[ -f models/$word.sql ]] && bat --color=always models/$word.sql || echo "Model SQL not found"'
+{{ end -}}
 
 # 5. Tool Integrations
 # fzf: source static Homebrew-installed files instead of spawning `fzf --zsh`
