@@ -2,17 +2,17 @@
   autoUpdate = true
 
 [data]
-  # --- Editor ---
-  editor = {{ promptStringOnce . "editor" "Preferred editor (fresh/nvim/vim/code)" | quote }}
+  # --- Editor (default: fresh) ---
+  editor = {{ promptStringOnce . "editor" "Preferred editor (fresh/nvim/vim/code)" | default "fresh" | quote }}
 
   # --- Tool groups ---
   alt_tools   = {{ promptBoolOnce . "alt_tools"   "Install modern CLI replacements (eza, bat, fd, ripgrep, etc.)" }}
 
-  # --- macOS app groups ---
+  # --- macOS app groups (default: yes) ---
   macos_utils    = {{ promptBoolOnce . "macos_utils"    "Install macOS utilities (Raycast, Alt-Tab, Hammerspoon, etc.)" }}
   macos_cosmetic = {{ promptBoolOnce . "macos_cosmetic" "Install cosmetic macOS apps (Boring Notch, AirBattery, Cork)" }}
   macos_media    = {{ promptBoolOnce . "macos_media"    "Install media & communication apps (Brave, Spotify, Telegram, Slack)" }}
-  dev_apps       = {{ promptBoolOnce . "dev_apps"       "Install dev apps (VSCodium, DBeaver, GIMP, GitLab CLI)" }}
+  dev_apps       = {{ promptBoolOnce . "dev_apps"       "Install dev apps (VSCodium, DBeaver, GIMP, GitLab CLI, GitHub CLI)" }}
   touchbar       = {{ promptBoolOnce . "touchbar"       "Install BetterTouchTool (TouchBar Macs only)" }}
 
   # --- Infrastructure ---

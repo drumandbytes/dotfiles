@@ -27,7 +27,6 @@ brew "starship"
 brew "zoxide"
 
 # Git
-brew "gh"
 brew "git-delta"
 brew "gnupg"
 brew "lazygit"
@@ -147,6 +146,7 @@ cask "telegram"
 # Dev apps
 # =============================================================================
 {{ if .dev_apps -}}
+brew "gh"
 brew "git-filter-repo"
 brew "glab"
 cask "claude"

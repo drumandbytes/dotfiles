@@ -43,10 +43,10 @@ jobs:
           [data]
             editor         = "fresh"
             alt_tools      = true
-            macos_utils    = false
-            macos_cosmetic = false
-            macos_media    = false
-            dev_apps       = false
+            macos_utils    = true
+            macos_cosmetic = true
+            macos_media    = true
+            dev_apps       = true
             touchbar       = false
             bitwarden      = false
             bw_email       = "test@example.com"
