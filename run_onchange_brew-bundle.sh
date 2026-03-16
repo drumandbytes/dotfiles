@@ -10,5 +10,5 @@ if ! command -v brew &>/dev/null; then
 fi
 
 echo "Running brew bundle..."
-brew bundle --global --no-lock
+brew bundle --global
 echo "✅ brew bundle complete."
