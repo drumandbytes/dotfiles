@@ -3,6 +3,7 @@ run_onchange_bat-catppuccin.sh
 
 # Optional features — excluded unless opted in via chezmoi init prompts
 {{ if not .alt_tools }}dot_config/bat/{{ end }}
+{{ if not .alt_tools }}dot_config/eza/{{ end }}
 {{ if not .bitwarden }}dot_local/bin/executable_bw-vault.tmpl{{ end }}
 {{ if not .docker }}dot_colima/{{ end }}
 {{ if not .macos_utils }}dot_hammerspoon/{{ end }}

@@ -39,6 +39,16 @@ if [[ "$mode" = "Dark" ]]; then
 else
     sed -i '' 's/^name = "catppuccin-.*/name = "catppuccin-latte-mauve"/' "$HOME/.config/atuin/config.toml"
 fi
+{{- if .alt_tools }}
+# eza: swap theme symlink (re-read on every eza invocation)
+eza_dir="$HOME/.config/eza"
+rm -f "$eza_dir/theme.yml"
+if [[ "$mode" = "Dark" ]]; then
+    ln -s "catppuccin-macchiato-mauve.yml" "$eza_dir/theme.yml"
+else
+    ln -s "catppuccin-latte-mauve.yml" "$eza_dir/theme.yml"
+fi
+{{- end }}
 {{ if .kubernetes }}
 # k9s: update skin in config.yaml (takes effect on next launch)
 k9s_config="${XDG_CONFIG_HOME:-$HOME/Library/Application Support}/k9s/config.yaml"
