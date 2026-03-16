@@ -5,31 +5,23 @@
 
 set -euo pipefail
 
-# Chezmoi scripts run in plain bash without the shell profile, so Homebrew
-# may not be in PATH. Prefer the explicit Homebrew path, fall back to PATH.
-if [[ -x /opt/homebrew/bin/bat ]]; then
-    bat=/opt/homebrew/bin/bat
-elif command -v bat &>/dev/null; then
-    bat=$(command -v bat)
-else
+# Chezmoi scripts run without the user's shell profile. Add Homebrew to PATH
+# so we find the same bat the user's shell sees (ARM: /opt/homebrew, Intel: /usr/local).
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+if ! command -v bat &>/dev/null; then
     echo "bat not found — skipping theme install"
     exit 0
 fi
 
-echo "Using bat: $bat ($("$bat" --version 2>&1 | head -1))"
+bat=$(command -v bat)
+echo "Using bat: $bat ($(bat --version 2>&1 | head -1))"
 
-themes_dir="$("$bat" --config-dir)/themes"
+themes_dir="$(bat --config-dir)/themes"
 mkdir -p "$themes_dir"
 
 base_url="https://github.com/catppuccin/bat/raw/main/themes"
 curl -fsSL "${base_url}/Catppuccin%20Macchiato.tmTheme" -o "$themes_dir/Catppuccin Macchiato.tmTheme"
 curl -fsSL "${base_url}/Catppuccin%20Latte.tmTheme"    -o "$themes_dir/Catppuccin Latte.tmTheme"
 
-# Rebuild theme cache. 'bat cache --build' requires sharkdp/bat; skip gracefully
-# if this is a different binary or an old version that lacks the cache subcommand.
-if "$bat" cache --build 2>/dev/null; then
-    echo "bat cache rebuilt."
-else
-    echo "Warning: 'bat cache --build' failed (bat version: $("$bat" --version 2>&1 | head -1))."
-    echo "Themes downloaded to $themes_dir — run 'bat cache --build' manually once the correct bat is active."
-fi
+bat cache --build
