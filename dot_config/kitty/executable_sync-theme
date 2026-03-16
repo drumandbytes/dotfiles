@@ -1,10 +1,20 @@
 #!/bin/zsh
+if [[ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]]; then
+    kitty_target="$HOME/.config/kitty/themes/macchiato.conf"
+    bat_theme="Catppuccin Macchiato"
+else
+    kitty_target="$HOME/.config/kitty/themes/latte.conf"
+    bat_theme="Catppuccin Latte"
+fi
+
+# kitty: swap symlink and reload live instances
 theme="$HOME/.config/kitty/theme.conf"
-[[ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]] \
-    && target="$HOME/.config/kitty/themes/macchiato.conf" \
-    || target="$HOME/.config/kitty/themes/latte.conf"
 rm -f "$theme"
-ln -s "$target" "$theme"
+ln -s "$kitty_target" "$theme"
 for pid in $(ps -x | grep '/Applications/kitty.app/Contents/MacOS/kitty' | grep -v grep | awk '{ print $1 }'); do
     kill -SIGUSR1 "$pid"
 done
+
+# bat / delta: write theme into bat config
+bat_config="$(bat --config-dir)/config"
+printf -- '--theme="%s"\n' "$bat_theme" > "$bat_config"

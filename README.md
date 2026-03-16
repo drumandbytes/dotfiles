@@ -173,5 +173,5 @@ comp-add <toolname>   # auto-detects syntax, writes file, persists to chezmoi so
 
 ## Theme
 
-[Catppuccin Macchiato](https://github.com/catppuccin/catppuccin) across kitty, bat, and delta.
+[Catppuccin](https://github.com/catppuccin/catppuccin) across kitty, bat, and delta — Macchiato (dark) / Latte (light).
 chezmoi tracks `theme.conf` as a symlink defaulting to Macchiato. `sync-theme` (a script in `~/.config/kitty/`) can override it at runtime to switch between Latte (light) and Macchiato (dark) based on the macOS appearance setting.
