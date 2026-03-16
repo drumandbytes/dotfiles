@@ -27,3 +27,6 @@ curl -fsSL "${base_url}/Catppuccin%20Latte.tmTheme" -o "$themes_dir/Catppuccin L
         echo "Failed to download Catppuccin Latte theme" >&2
         exit 1
     }
+
+bat cache --build
+echo "✅ bat Catppuccin themes installed and cache rebuilt."
