@@ -46,5 +46,5 @@ echo "Enabling Touch ID for sudo in $SUDO_PAM..."
 sudo awk -v line="$TID_LINE" '
     /^# sudo:/ { print; print line; next }
     1
-' "$SUDO_PAM" > /tmp/_pam_sudo_tmp && sudo mv /tmp/_pam_sudo_tmp "$SUDO_PAM"
+' "$SUDO_PAM" | sudo tee "$SUDO_PAM" > /dev/null
 echo "Done. Note: this will be reset on major macOS upgrades."
