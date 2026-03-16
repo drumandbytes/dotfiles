@@ -17,13 +17,6 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | `~/.config/kitty/` | Terminal (kitty.conf + Catppuccin themes) |
 | `~/.config/git/config` | Git: delta pager, diff3 merge style |
 
-## Prerequisites
-
-- macOS with [Homebrew](https://brew.sh)
-- [chezmoi](https://chezmoi.io): `brew install chezmoi`
-
-Everything else is installed automatically on first `chezmoi apply`.
-
 ## Runtime version management
 
 Language runtimes are managed by [mise](https://mise.jdx.dev) rather than Homebrew, so versions can be pinned per project via `.mise.toml`:
@@ -39,13 +32,13 @@ Add per-project overrides with `mise use node@22` inside a project directory.
 
 ## Install
 
-On a fresh machine (installs chezmoi and applies dotfiles in one shot):
+On a fresh machine (installs Homebrew and chezmoi if needed, then applies dotfiles):
 
 ```zsh
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply https://github.com/drumandbytes/dotfiles
+bash <(curl -fsSL https://raw.githubusercontent.com/drumandbytes/dotfiles/main/install.sh)
 ```
 
-If chezmoi is already installed:
+If Homebrew and chezmoi are already installed:
 
 ```zsh
 chezmoi init --apply https://github.com/drumandbytes/dotfiles
