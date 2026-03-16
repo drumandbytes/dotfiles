@@ -1,8 +1,11 @@
 #!/bin/bash
 # Install Catppuccin Latte and Macchiato themes for bat.
+# Named install-* to ensure it runs after brew-bundle installs bat.
 # run_onchange: re-runs if this file changes.
 
 set -euo pipefail
+
+command -v bat &>/dev/null || { echo "bat not found — skipping theme install"; exit 0; }
 
 themes_dir="$(bat --config-dir)/themes"
 mkdir -p "$themes_dir"
