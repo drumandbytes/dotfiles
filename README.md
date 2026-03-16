@@ -38,6 +38,12 @@ On a fresh machine (installs Homebrew and chezmoi if needed, then applies dotfil
 bash <(curl -fsSL https://raw.githubusercontent.com/drumandbytes/dotfiles/main/install.sh)
 ```
 
+If Homebrew is installed but chezmoi isn't:
+
+```zsh
+brew install chezmoi && chezmoi init --apply https://github.com/drumandbytes/dotfiles
+```
+
 If Homebrew and chezmoi are already installed:
 
 ```zsh
