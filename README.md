@@ -7,7 +7,7 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 ## What's included
 
 | Config | Description |
-|--------|-------------|
+| -------- | ----------- |
 | `~/.zshrc` | Zsh entrypoint — modular, deferred, fast |
 | `~/.zsh/env.zsh` | Exports, PATH, editor |
 | `~/.zsh/aliases.zsh` | Shell aliases (eza, k8s, git, etc.) |
@@ -22,7 +22,7 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 Language runtimes are managed by [mise](https://mise.jdx.dev) rather than Homebrew, so versions can be pinned per project via `.mise.toml`:
 
 | Runtime | Global version |
-|---------|---------------|
+| --------- | --------------- |
 | `node` | LTS |
 | `ruby` | latest |
 | `uv` | latest |
@@ -53,7 +53,7 @@ chezmoi init --apply https://github.com/drumandbytes/dotfiles
 During `chezmoi init` you'll be prompted for optional features (answers are saved locally and never committed):
 
 | Prompt | What it does |
-|--------|-------------|
+| -------- | ----------- |
 | `Enable Bitwarden integration` | Writes `BW_USER` to env and installs `bw-vault` script |
 | `Bitwarden account email` | Your Bitwarden login email (only asked if above is yes) |
 | `Enable Touch ID for sudo` | Runs a one-time script to add `pam_tid.so` to sudo PAM config |
@@ -85,7 +85,7 @@ Tool inits (atuin, zoxide, etc.) are pre-generated once rather than evaluated on
 ## Key functions
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ----------- |
 | `mnt` | Full maintenance: brew upgrade, sheldon update, regenerate inits & completions, recompile, backup, reload |
 | `comp-add <tool>` | Auto-detect and add zsh completions for a new tool; persists to chezmoi source |
 | `uv-add <package>` | Install a global uv tool and persist it to `run_onchange_uv-tools.sh` |
@@ -175,7 +175,7 @@ sh-add <user/repo>          # add a deferred sheldon plugin and persist it to pl
 [Catppuccin](https://github.com/catppuccin/catppuccin) across kitty, bat, delta, and btop — Macchiato (dark) / Latte (light).
 
 | Tool | Theme location |
-|------|---------------|
+| ------ | --------------- |
 | kitty | `~/.config/kitty/theme.conf` (symlink: Macchiato or Latte) |
 | bat | `~/.config/bat/themes/` (Macchiato + Latte, loaded automatically) |
 | delta | inherits bat theme via `~/.config/git/config` |
