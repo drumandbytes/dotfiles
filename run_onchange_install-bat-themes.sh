@@ -20,7 +20,13 @@ themes_dir="$(bat --config-dir)/themes"
 mkdir -p "$themes_dir"
 
 base_url="https://github.com/catppuccin/bat/raw/main/themes"
-curl -fsSL "${base_url}/Catppuccin%20Macchiato.tmTheme" -o "$themes_dir/Catppuccin Macchiato.tmTheme" \
-    || { echo "Failed to download Catppuccin Macchiato theme" >&2; exit 1; }
-curl -fsSL "${base_url}/Catppuccin%20Latte.tmTheme" -o "$themes_dir/Catppuccin Latte.tmTheme" \
-    || { echo "Failed to download Catppuccin Latte theme" >&2; exit 1; }
+curl -fsSL "${base_url}/Catppuccin%20Macchiato.tmTheme" -o "$themes_dir/Catppuccin Macchiato.tmTheme" ||
+    {
+        echo "Failed to download Catppuccin Macchiato theme" >&2
+        exit 1
+    }
+curl -fsSL "${base_url}/Catppuccin%20Latte.tmTheme" -o "$themes_dir/Catppuccin Latte.tmTheme" ||
+    {
+        echo "Failed to download Catppuccin Latte theme" >&2
+        exit 1
+    }
