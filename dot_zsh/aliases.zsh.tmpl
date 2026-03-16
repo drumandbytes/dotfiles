@@ -10,6 +10,7 @@ alias grep='rg'
 alias dig='doggo'
 alias man='tldr'
 
+{{ if .kubernetes -}}
 # --- Kubernetes ---
 alias kubectl='kubecolor'        # colorised kubectl; compdef set in .zshrc
 alias k='kubectl'
@@ -22,6 +23,7 @@ alias kga='k get all'
 alias kl='k logs -f'             # single pod
 alias ksl='stern'                # multi-pod / pattern-based log tailing
 alias kex='k exec -it'
+{{- end }}
 
 # --- Git & Workflow ---
 alias lg='lazygit'
@@ -34,7 +36,6 @@ alias aliasconfig="fresh ~/.zsh/aliases.zsh"
 alias funcconfig="fresh ~/.zsh/functions.zsh"
 alias sheldonconfig="fresh ~/.config/sheldon/plugins.toml"
 alias reload="exec zsh"
-alias dbt_creds="source ~/.dbt_creds.sh"
 
 # --- Maintenance & Updates ---
 alias sheldon-up="sheldon lock --update && sheldon source > ~/.zsh/sheldon.zsh && echo 'Sheldon updated.'"

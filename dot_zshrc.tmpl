@@ -23,15 +23,17 @@ zsh-defer bashcompinit
 # 4. fzf-tab Configuration
 zstyle ':fzf-tab:complete:cd:*'           fzf-preview 'eza -1 --color=always --icons $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*'   fzf-preview 'eza -1 --color=always --icons $realpath'
+{{ if .kubernetes -}}
 zstyle ':fzf-tab:complete:kubectl:log:*'  fzf-preview 'kubectl logs $word'
 zstyle ':fzf-tab:complete:kubectl:describe:*' fzf-preview 'kubectl describe $word'
 zstyle ':fzf-tab:complete:kubectl:*'      fzf-flags --preview-window=right:60%
+{{ end -}}
 zstyle ':fzf-tab:complete:dbt:run:*'      fzf-preview '[[ -f models/$word.sql ]] && bat --color=always models/$word.sql || echo "Model SQL not found"'
 
 # 5. Tool Integrations
 # fzf: source static Homebrew-installed files instead of spawning `fzf --zsh`
-zsh-defer source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
-zsh-defer source /opt/homebrew/opt/fzf/shell/completion.zsh
+[[ -f /opt/homebrew/opt/fzf/shell/key-bindings.zsh ]] && zsh-defer source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+[[ -f /opt/homebrew/opt/fzf/shell/completion.zsh   ]] && zsh-defer source /opt/homebrew/opt/fzf/shell/completion.zsh
 # Generated init files (created by run_onchange_generate-tool-inits.sh or mnt())
 [[ -f ~/.zsh/zoxide_init.zsh   ]] && zsh-defer source ~/.zsh/zoxide_init.zsh
 [[ -f ~/.zsh/carapace_init.zsh ]] && zsh-defer source ~/.zsh/carapace_init.zsh
@@ -39,8 +41,10 @@ zsh-defer source /opt/homebrew/opt/fzf/shell/completion.zsh
 [[ -f ~/.zsh/atuin_init.zsh    ]] && zsh-defer source ~/.zsh/atuin_init.zsh
 [[ -f ~/.zsh/direnv_init.zsh   ]] && zsh-defer source ~/.zsh/direnv_init.zsh
 [[ -f ~/.zsh/navi_widget.zsh   ]] && zsh-defer source ~/.zsh/navi_widget.zsh
+{{ if .kubernetes -}}
 # kubecolor: use kubectl completions for kubecolor
 command -v kubecolor &>/dev/null && compdef kubecolor=kubectl
+{{- end }}
 
 # 6. Key Bindings
 bindkey '^[[A' history-substring-search-up

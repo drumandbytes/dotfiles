@@ -16,8 +16,10 @@ for pid in $(ps -x | grep '/Applications/kitty.app/Contents/MacOS/kitty' | grep 
 done
 
 # k9s: update skin in config.yaml (takes effect on next launch)
-k9s_config="${XDG_CONFIG_HOME:-$HOME/Library/Application Support}/k9s/config.yaml"
-if [[ -f "$k9s_config" ]]; then
-    sed -i '' "s/skin: catppuccin-.*/skin: ${k9s_skin}/" "$k9s_config"
+if command -v k9s &>/dev/null; then
+    k9s_config="${XDG_CONFIG_HOME:-$HOME/Library/Application Support}/k9s/config.yaml"
+    if [[ -f "$k9s_config" ]]; then
+        sed -i '' "s/skin: catppuccin-.*/skin: ${k9s_skin}/" "$k9s_config"
+    fi
 fi
 
