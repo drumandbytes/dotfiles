@@ -22,6 +22,6 @@ mkdir -p "$themes_dir"
 
 base_url="https://github.com/catppuccin/bat/raw/main/themes"
 curl -fsSL "${base_url}/Catppuccin%20Macchiato.tmTheme" -o "$themes_dir/Catppuccin Macchiato.tmTheme"
-curl -fsSL "${base_url}/Catppuccin%20Latte.tmTheme"    -o "$themes_dir/Catppuccin Latte.tmTheme"
+curl -fsSL "${base_url}/Catppuccin%20Latte.tmTheme" -o "$themes_dir/Catppuccin Latte.tmTheme"
 
 bat cache --build
