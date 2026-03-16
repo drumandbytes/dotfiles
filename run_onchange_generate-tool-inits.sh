@@ -1,6 +1,7 @@
 #!/bin/bash
 # Runs once on fresh install and whenever this file changes (chezmoi run_onchange_).
 # Generates static init files and completions so the shell never spawns subprocesses at startup.
+# dot_Brewfile.tmpl hash: {{ include "dot_Brewfile.tmpl" | sha256sum }}
 
 set -euo pipefail
 
