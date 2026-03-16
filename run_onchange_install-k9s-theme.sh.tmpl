@@ -34,23 +34,17 @@ fi
 CONFIG_FILE="$K9S_CONFIG/config.yaml"
 mkdir -p "$(dirname "$CONFIG_FILE")"
 
-# Remove duplicate k9s: blocks left by previous buggy append
+if ! command -v yq &>/dev/null; then
+    echo "yq not found — install it with: brew install yq"
+    exit 1
+fi
+
+# Remove duplicate k9s: top-level keys left by previous buggy append
 if [[ -f "$CONFIG_FILE" ]] && [[ $(grep -c "^k9s:" "$CONFIG_FILE") -gt 1 ]]; then
     awk '/^k9s:/{count++; if (count > 1) exit} {print}' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
     mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
-    echo "🔧 Removed duplicate k9s: block from config.yaml"
+    echo "Fixed duplicate k9s: block in config.yaml"
 fi
 
-if command -v yq &>/dev/null; then
-    yq -i ".k9s.ui.skin = \"${skin}\"" "$CONFIG_FILE"
-    echo "✅ Set k9s skin to ${skin} in config.yaml"
-elif [[ ! -f "$CONFIG_FILE" ]] || ! grep -q "skin:" "$CONFIG_FILE"; then
-    cat >> "$CONFIG_FILE" <<EOF
-k9s:
-  ui:
-    skin: ${skin}
-EOF
-    echo "✅ Set k9s skin to ${skin} in config.yaml"
-else
-    echo "⚠️  skin already set in config.yaml but yq unavailable — skipping"
-fi
+yq -i ".k9s.ui.skin = \"${skin}\"" "$CONFIG_FILE"
+echo "✅ Set k9s skin to ${skin} in config.yaml"
