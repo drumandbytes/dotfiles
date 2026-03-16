@@ -17,13 +17,6 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | `~/.config/kitty/` | Terminal (kitty.conf + Catppuccin themes) |
 | `~/.config/git/config` | Git: delta pager, diff3 merge style |
 
-## Prerequisites
-
-- macOS with [Homebrew](https://brew.sh)
-- [chezmoi](https://chezmoi.io): `brew install chezmoi`
-
-Everything else is installed automatically on first `chezmoi apply`.
-
 ## Runtime version management
 
 Language runtimes are managed by [mise](https://mise.jdx.dev) rather than Homebrew, so versions can be pinned per project via `.mise.toml`:
@@ -39,13 +32,19 @@ Add per-project overrides with `mise use node@22` inside a project directory.
 
 ## Install
 
-On a fresh machine (installs chezmoi and applies dotfiles in one shot):
+On a fresh machine (installs Homebrew and chezmoi if needed, then applies dotfiles):
 
 ```zsh
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply https://github.com/drumandbytes/dotfiles
+bash <(curl -fsSL https://raw.githubusercontent.com/drumandbytes/dotfiles/main/install.sh)
 ```
 
-If chezmoi is already installed:
+If Homebrew is installed but chezmoi isn't:
+
+```zsh
+brew install chezmoi && chezmoi init --apply https://github.com/drumandbytes/dotfiles
+```
+
+If Homebrew and chezmoi are already installed:
 
 ```zsh
 chezmoi init --apply https://github.com/drumandbytes/dotfiles
@@ -58,7 +57,7 @@ During `chezmoi init` you'll be prompted for optional features (answers are save
 | `Enable Bitwarden integration` | Writes `BW_USER` to env and installs `bw-vault` script |
 | `Bitwarden account email` | Your Bitwarden login email (only asked if above is yes) |
 | `Enable Touch ID for sudo` | Runs a one-time script to add `pam_tid.so` to sudo PAM config |
-| `Install Docker + Colima` | Installs Docker daemon via Colima (lightweight alternative to Docker Desktop) |
+| `Install Docker + Colima` | Installs Docker daemon via Colima (lightweight alternative to Docker Desktop); on Apple Silicon uses `vmType=vz` + Rosetta for native speed and x86 image support |
 | `Install Kubernetes tools` | Installs kubectl, kubectx, k9s, vault, gcloud CLI |
 | `Install Java via mise` | Adds `temurin-21` to mise global config and installs libpq |
 
@@ -89,7 +88,8 @@ Tool inits (atuin, zoxide, etc.) are pre-generated once rather than evaluated on
 |----------|-------------|
 | `mnt` | Full maintenance: brew upgrade, sheldon update, regenerate inits & completions, recompile, backup, reload |
 | `comp-add <tool>` | Auto-detect and add zsh completions for a new tool; persists to chezmoi source |
-| `shadd <user/repo>` | Add a deferred sheldon plugin |
+| `uv-add <package>` | Install a global uv tool and persist it to `run_onchange_uv-tools.sh` |
+| `sh-add <user/repo>` | Add a deferred sheldon plugin; persists to sheldon config |
 | `bw-search` | fzf Bitwarden item search |
 | `help-cmd` | fzf search over all aliases and functions |
 | `fkill` | fzf process killer |
@@ -136,9 +136,6 @@ chezmoi diff
 
 # Apply all pending changes
 chezmoi apply
-
-# After editing source files directly
-chezmoi apply
 ```
 
 ## Troubleshooting chezmoi update
@@ -165,13 +162,23 @@ If chezmoi shows a diff you didn't expect, use `chezmoi diff` first to review it
 then choose `overwrite` to apply the source, or `skip` to keep the current file and
 run `chezmoi re-add ~/.config/...` to pull the current state back into source.
 
-## Adding a new tool completion
+## Adding things
 
 ```zsh
-comp-add <toolname>   # auto-detects syntax, writes file, persists to chezmoi source
+comp-add <toolname>        # add a zsh completion; auto-detects syntax, persists to chezmoi source
+uv-add <package>           # install a global uv tool and persist it to run_onchange_uv-tools.sh
+sh-add <user/repo>          # add a deferred sheldon plugin and persist it to plugins.toml
 ```
 
 ## Theme
 
-[Catppuccin](https://github.com/catppuccin/catppuccin) across kitty, bat, and delta — Macchiato (dark) / Latte (light).
-chezmoi tracks `theme.conf` as a symlink defaulting to Macchiato. `sync-theme` (a script in `~/.config/kitty/`) can override it at runtime to switch between Latte (light) and Macchiato (dark) based on the macOS appearance setting.
+[Catppuccin](https://github.com/catppuccin/catppuccin) across kitty, bat, delta, and btop — Macchiato (dark) / Latte (light).
+
+| Tool | Theme location |
+|------|---------------|
+| kitty | `~/.config/kitty/theme.conf` (symlink: Macchiato or Latte) |
+| bat | `~/.config/bat/themes/` (Macchiato + Latte, loaded automatically) |
+| delta | inherits bat theme via `~/.config/git/config` |
+| btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
+
+`sync-theme` (a script in `~/.config/kitty/`) switches kitty between Latte and Macchiato based on the macOS appearance setting at runtime.

@@ -8,7 +8,7 @@
 #   bw-vault --regen                  — force re-login and refresh session
 #   bw-vault login|logout|config ...  — pass through directly (no session needed)
 
-bw_exec=$(which bw)
+bw_exec=$(command -v bw)
 bw_session_file='/var/root/.bitwarden.session'
 
 _bw_regen() {
