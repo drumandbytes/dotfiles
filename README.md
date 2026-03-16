@@ -80,7 +80,7 @@ Startup is optimised for speed using `zsh-defer` and pre-generated static files:
 └── *_init.zsh         # deferred  — tool hooks (atuin, zoxide, mise, …)
 ```
 
-Tool inits (atuin, zoxide, etc.) are pre-generated once rather than evaluated on every shell start. Regenerate them with `mnt` (full maintenance) or by running `chezmoi apply` after touching `run_onchange_generate-tool-inits.sh`.
+Tool inits (atuin, zoxide, direnv, navi, etc.) are pre-generated once rather than evaluated on every shell start. Regenerate them with `mnt` (full maintenance) or by running `chezmoi apply` after touching `run_onchange_generate-tool-inits.sh.tmpl`.
 
 ## Key functions
 
@@ -91,7 +91,7 @@ Tool inits (atuin, zoxide, etc.) are pre-generated once rather than evaluated on
 | `uv-add <package>` | Install a global uv tool and persist it to `run_onchange_uv-tools.sh` |
 | `sh-add <user/repo>` | Add a deferred sheldon plugin; persists to sheldon config |
 | `bw-search` | fzf Bitwarden item search |
-| `help-cmd` | fzf search over all aliases and functions |
+| `help-cmd` | fzf search over all aliases and functions (personal shortcuts only) |
 | `fkill` | fzf process killer |
 | `zsh-bak` | Zip backup of zsh config to `~/Backups/zsh/` |
 
@@ -170,9 +170,21 @@ uv-add <package>           # install a global uv tool and persist it to run_onch
 sh-add <user/repo>          # add a deferred sheldon plugin and persist it to plugins.toml
 ```
 
+## Navi
+
+[navi](https://github.com/denisidoro/navi) is a command-line cheatsheet tool bound to a key widget (Ctrl+G by default). It lets you search, fill in variables, and insert commands into the prompt — complementing `help-cmd` which only covers personal aliases and functions.
+
+On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.local/share/navi/cheats/personal.cheat` from your aliases and functions, and clones the [denisidoro/cheats](https://github.com/denisidoro/cheats) community repo. The personal cheat file is regenerated automatically whenever `aliases.zsh` or `functions.zsh` changes.
+
+| Source | What it covers |
+| ------ | -------------- |
+| `personal.cheat` | All your aliases and functions, organised by section |
+| `denisidoro/cheats` | Community-maintained general shell cheatsheets |
+| `navi --cheatsh` | On-demand access to the full [cheat.sh](https://cheat.sh) database |
+
 ## Theme
 
-[Catppuccin](https://github.com/catppuccin/catppuccin) across kitty, bat, delta, and btop — Macchiato (dark) / Latte (light).
+[Catppuccin](https://github.com/catppuccin/catppuccin) across kitty, bat, delta, btop, and k9s — Macchiato (dark) / Latte (light).
 
 | Tool | Theme location |
 | ------ | --------------- |
@@ -180,5 +192,6 @@ sh-add <user/repo>          # add a deferred sheldon plugin and persist it to pl
 | bat | `~/.config/bat/themes/` (Macchiato + Latte, loaded automatically) |
 | delta | inherits bat theme via `~/.config/git/config` |
 | btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
+| k9s | `~/Library/Application Support/k9s/skins/` (all flavours; active: Macchiato) *(kubernetes only)* |
 
 `sync-theme` (a script in `~/.config/kitty/`) switches kitty between Latte and Macchiato based on the macOS appearance setting at runtime.
