@@ -21,7 +21,7 @@ apply = ["fpath"]
 # --- Deferred plugins ---
 [plugins.fzf-tab]
 github = "Aloxaf/fzf-tab"
-apply = ["source"]
+apply = ["defer"]
 
 # Fish-like inline suggestions
 [plugins.zsh-autosuggestions]

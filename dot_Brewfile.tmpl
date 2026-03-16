@@ -1,0 +1,110 @@
+# Taps
+tap "hashicorp/tap"
+tap "jeanregisser/tap"
+tap "lihaoyun6/tap"
+tap "mac-cleanup/mac-cleanup-py"
+tap "sinelaw/fresh"
+tap "theboredteam/boring-notch"
+
+# --- Core CLI tools ---
+brew "bat"
+brew "btop"
+brew "carapace"
+brew "doggo"
+brew "duf"
+brew "dust"
+brew "eza"
+brew "fd"
+brew "flowrs"
+brew "fzf"
+brew "gh"
+brew "git-delta"
+brew "git-filter-repo"
+brew "glab"
+brew "gnupg"
+brew "gping"
+brew "gron"
+brew "jid"
+brew "jq"
+brew "just"
+brew "lazygit"
+brew "mac-cleanup-go"
+brew "mise"
+brew "pinentry-mac"
+brew "ripgrep"
+brew "rust"
+brew "sheldon"
+brew "shfmt"
+brew "sl"
+brew "starship"
+brew "tldr"
+brew "wget2"
+brew "xh"
+brew "zoxide"
+brew "sinelaw/fresh/fresh"
+
+# --- Bitwarden ---
+{{ if .bitwarden -}}
+brew "bitwarden-cli"
+cask "bitwarden"
+{{ end -}}
+
+# --- Docker + Colima ---
+{{ if .docker -}}
+brew "colima", restart_service: :changed
+brew "docker"
+brew "docker-buildx"
+brew "docker-compose"
+{{ end -}}
+
+# --- Kubernetes ---
+{{ if .kubernetes -}}
+brew "kubernetes-cli"
+brew "kubectx"
+brew "k9s"
+brew "mintoolkit"
+brew "hashicorp/tap/vault"
+cask "gcloud-cli"
+{{ end -}}
+
+# --- Java (runtime managed via mise, libpq for psql client) ---
+{{ if .java -}}
+brew "libpq", link: true
+{{ end -}}
+
+# --- macOS apps ---
+cask "lihaoyun6/tap/airbattery"
+cask "alt-tab"
+cask "theboredteam/boring-notch/boring-notch"
+cask "brave-browser"
+cask "claude"
+cask "cork"
+cask "displaylink"
+cask "hammerspoon"
+cask "hot"
+cask "kitty"
+cask "linearmouse"
+cask "logi-options+"
+cask "mos@beta"
+cask "raycast"
+cask "spotify"
+cask "telegram"
+
+# --- Dev apps ---
+cask "dbeaver-community"
+cask "gimp"
+cask "slack"
+cask "vscodium"
+
+# --- VSCodium extensions ---
+vscode "adpyke.codesnap"
+vscode "catppuccin.catppuccin-vsc"
+vscode "catppuccin.catppuccin-vsc-icons"
+vscode "drinfinite.batch-rename"
+vscode "gitlab.gitlab-workflow"
+vscode "imgildev.ovsx-tree-maker"
+vscode "ms-python.debugpy"
+vscode "ms-python.python"
+vscode "ms-python.vscode-python-envs"
+vscode "pixl-garden.bongocat"
+

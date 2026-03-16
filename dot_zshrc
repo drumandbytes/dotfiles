@@ -1,0 +1,63 @@
+# Profile if ZSH_PROFILE=1 is set
+[[ -n "$ZSH_PROFILE" ]] && zmodload zsh/zprof
+
+# 1. Load Modular Configs
+source ~/.zsh/env.zsh
+source ~/.zsh/functions.zsh
+source ~/.zsh/aliases.zsh
+
+# 2. Load Static Sheldon (Instant)
+[[ -f ~/.zsh/sheldon.zsh ]] && source ~/.zsh/sheldon.zsh
+zsh-defer _zsh_autosuggest_start
+
+# 3. Completion Engine
+autoload -Uz compinit
+if [[ -n ~/.zcompdump(N.mh+24) ]]; then
+    compinit
+else
+    compinit -C
+fi
+zsh-defer autoload -U +X bashcompinit
+zsh-defer bashcompinit
+
+# 4. fzf-tab Configuration
+zstyle ':fzf-tab:complete:cd:*'           fzf-preview 'eza -1 --color=always --icons $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*'   fzf-preview 'eza -1 --color=always --icons $realpath'
+zstyle ':fzf-tab:complete:kubectl:log:*'  fzf-preview 'kubectl logs $word'
+zstyle ':fzf-tab:complete:kubectl:describe:*' fzf-preview 'kubectl describe $word'
+zstyle ':fzf-tab:complete:kubectl:*'      fzf-flags --preview-window=right:60%
+zstyle ':fzf-tab:complete:dbt:run:*'      fzf-preview '[[ -f models/$word.sql ]] && bat --color=always models/$word.sql || echo "Model SQL not found"'
+
+# 5. Tool Integrations
+# fzf: source static Homebrew-installed files instead of spawning `fzf --zsh`
+zsh-defer source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+zsh-defer source /opt/homebrew/opt/fzf/shell/completion.zsh
+# Generated init files (created by run_onchange_generate-tool-inits.sh or mnt())
+[[ -f ~/.zsh/zoxide_init.zsh   ]] && zsh-defer source ~/.zsh/zoxide_init.zsh
+[[ -f ~/.zsh/carapace_init.zsh ]] && zsh-defer source ~/.zsh/carapace_init.zsh
+[[ -f ~/.zsh/mise_init.zsh     ]] && zsh-defer source ~/.zsh/mise_init.zsh
+[[ -f ~/.zsh/atuin_init.zsh    ]] && zsh-defer source ~/.zsh/atuin_init.zsh
+[[ -f ~/.zsh/direnv_init.zsh   ]] && zsh-defer source ~/.zsh/direnv_init.zsh
+[[ -f ~/.zsh/navi_widget.zsh   ]] && zsh-defer source ~/.zsh/navi_widget.zsh
+# kubecolor: use kubectl completions for kubecolor
+command -v kubecolor &>/dev/null && compdef kubecolor=kubectl
+
+# 6. Key Bindings
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+
+# 7. Shell Options
+HISTSIZE=50000
+SAVEHIST=50000
+HISTFILE=~/.zsh_history
+setopt INC_APPEND_HISTORY SHARE_HISTORY HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE \
+       APPEND_HISTORY HIST_REDUCE_BLANKS HIST_VERIFY EXTENDED_HISTORY AUTO_CD \
+       CORRECT
+
+# 8. Async compile (background, does not block startup)
+{
+    zcompile ~/.zshrc
+    for f in ~/.zsh/*.zsh(N); do zcompile "$f"; done
+} &!
+
+[[ -n "$ZSH_PROFILE" ]] && zprof

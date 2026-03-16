@@ -1,2 +1,10 @@
 [data]
-  name = "drumandbytes"
+{{- $bitwarden := promptBoolOnce . "bitwarden" "Enable Bitwarden integration" }}
+  bitwarden = {{ $bitwarden }}
+{{- if $bitwarden }}
+  bw_email = {{ promptStringOnce . "bw_email" "Bitwarden account email" | quote }}
+{{- end }}
+  touch_id_sudo = {{ promptBoolOnce . "touch_id_sudo" "Enable Touch ID for sudo (macOS only)" }}
+  docker      = {{ promptBoolOnce . "docker"      "Install Docker + Colima" }}
+  kubernetes  = {{ promptBoolOnce . "kubernetes"  "Install Kubernetes tools (kubectl, kubectx, k9s)" }}
+  java        = {{ promptBoolOnce . "java"        "Install Java via mise (temurin-21)" }}
