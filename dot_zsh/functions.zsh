@@ -1,6 +1,7 @@
 # === chezmoi Helpers ===
-# Ensure the chezmoi source dir is on main with upstream tracking, then pull + apply.
-# Fixes the common "initiated from wrong branch / no tracking info" failure.
+# Sync the chezmoi source dir to origin/main, then apply.
+# Handles: wrong branch, missing upstream tracking, and local diverged commits
+# (which cause rebase conflicts with plain `chezmoi update`).
 _chezmoi_sync() {
     local src
     src=$(chezmoi source-path 2>/dev/null) || { echo "❌ chezmoi source-path failed"; return 1; }
@@ -12,12 +13,15 @@ _chezmoi_sync() {
         git -C "$src" checkout main || return 1
     fi
 
-    if ! git -C "$src" rev-parse --abbrev-ref --symbolic-full-name '@{u}' &>/dev/null; then
-        echo "🔧 Setting upstream tracking for main → origin/main"
-        git -C "$src" branch --set-upstream-to=origin/main main
-    fi
+    echo "🔄 Fetching origin/main..."
+    git -C "$src" fetch origin main || { echo "❌ fetch failed"; return 1; }
 
-    chezmoi update
+    # Hard-reset to origin/main so local diverged commits never cause rebase conflicts.
+    # The chezmoi source should always mirror the remote — local edits belong in the
+    # working tree, not as extra commits in the source dir.
+    git -C "$src" reset --hard origin/main
+
+    chezmoi apply
 }
 
 # === Elite Maintenance Workflow ===
