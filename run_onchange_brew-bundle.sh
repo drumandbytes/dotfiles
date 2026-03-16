@@ -1,6 +1,7 @@
 #!/bin/bash
 # Runs whenever ~/.Brewfile changes (chezmoi run_onchange_).
 # Installs/updates all Homebrew packages declared in the Brewfile.
+# dot_Brewfile.tmpl hash: {{ include "dot_Brewfile.tmpl" | sha256sum }}
 
 set -euo pipefail
 
