@@ -135,9 +135,6 @@ chezmoi diff
 
 # Apply all pending changes
 chezmoi apply
-
-# After editing source files directly
-chezmoi apply
 ```
 
 ## Troubleshooting chezmoi update
