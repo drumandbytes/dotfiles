@@ -1,0 +1,3 @@
+default: true
+MD013: false  # line-length — too strict for tables and code blocks in docs
+MD033: false  # no-inline-html — allowed for badges and formatting
