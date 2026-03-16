@@ -1,6 +1,32 @@
+# === chezmoi Helpers ===
+# Ensure the chezmoi source dir is on main with upstream tracking, then pull + apply.
+# Fixes the common "initiated from wrong branch / no tracking info" failure.
+_chezmoi_sync() {
+    local src
+    src=$(chezmoi source-path 2>/dev/null) || { echo "❌ chezmoi source-path failed"; return 1; }
+
+    local branch
+    branch=$(git -C "$src" symbolic-ref --short HEAD 2>/dev/null)
+    if [[ "$branch" != "main" ]]; then
+        echo "⚠️  chezmoi source is on branch '$branch', switching to main..."
+        git -C "$src" checkout main || return 1
+    fi
+
+    if ! git -C "$src" rev-parse --abbrev-ref --symbolic-full-name '@{u}' &>/dev/null; then
+        echo "🔧 Setting upstream tracking for main → origin/main"
+        git -C "$src" branch --set-upstream-to=origin/main main
+    fi
+
+    chezmoi update
+}
+
 # === Elite Maintenance Workflow ===
 mnt() {
     echo "🚀 Starting Elite Maintenance..."
+
+    # 0. Sync dotfiles first so everything below reflects latest config
+    echo "📦 Syncing dotfiles..."
+    _chezmoi_sync || echo "⚠️  chezmoi sync failed — continuing anyway"
 
     # 1. System Updates & Cleanup
     echo "🍺 Updating Homebrew..."

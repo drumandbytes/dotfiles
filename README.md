@@ -133,6 +133,29 @@ chezmoi apply
 chezmoi apply
 ```
 
+## Troubleshooting chezmoi update
+
+**`chezmoi update` fails with "no tracking information" or "git: exit status 1"**
+
+This happens when the chezmoi source directory is on a branch without upstream tracking
+set (e.g. after `chezmoi init` from a local path or a non-`main` branch). Fix it with:
+
+```zsh
+src=$(chezmoi source-path)
+git -C "$src" checkout main
+git -C "$src" branch --set-upstream-to=origin/main main
+chezmoi update
+```
+
+Or just run `mnt` — it calls `_chezmoi_sync` automatically as its first step, which
+detects and fixes the branch/tracking state before running `chezmoi update`.
+
+**chezmoi apply is prompting about an unexpected diff**
+
+If chezmoi shows a diff you didn't expect, use `chezmoi diff` first to review it,
+then choose `overwrite` to apply the source, or `skip` to keep the current file and
+run `chezmoi re-add ~/.config/...` to pull the current state back into source.
+
 ## Adding a new tool completion
 
 ```zsh
