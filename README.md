@@ -151,9 +151,8 @@ hard reset to the remote:
 
 ```zsh
 src=$(chezmoi source-path)
-git -C "$src" checkout main
 git -C "$src" fetch origin main
-git -C "$src" reset --hard origin/main
+git -C "$src" checkout -B main origin/main
 chezmoi apply
 ```
 

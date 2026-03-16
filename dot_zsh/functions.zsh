@@ -1,25 +1,16 @@
 # === chezmoi Helpers ===
 # Sync the chezmoi source dir to origin/main, then apply.
-# Handles: wrong branch, missing upstream tracking, and local diverged commits
-# (which cause rebase conflicts with plain `chezmoi update`).
+# Handles: detached HEAD, wrong branch, missing tracking, diverged local commits.
 _chezmoi_sync() {
     local src
     src=$(chezmoi source-path 2>/dev/null) || { echo "❌ chezmoi source-path failed"; return 1; }
 
-    local branch
-    branch=$(git -C "$src" symbolic-ref --short HEAD 2>/dev/null)
-    if [[ "$branch" != "main" ]]; then
-        echo "⚠️  chezmoi source is on branch '$branch', switching to main..."
-        git -C "$src" checkout main || return 1
-    fi
-
     echo "🔄 Fetching origin/main..."
     git -C "$src" fetch origin main || { echo "❌ fetch failed"; return 1; }
 
-    # Hard-reset to origin/main so local diverged commits never cause rebase conflicts.
-    # The chezmoi source should always mirror the remote — local edits belong in the
-    # working tree, not as extra commits in the source dir.
-    git -C "$src" reset --hard origin/main
+    # checkout -B resets the main branch to origin/main regardless of current state:
+    # works from any branch, detached HEAD, or after a failed rebase.
+    git -C "$src" checkout -B main origin/main
 
     chezmoi apply
 }
