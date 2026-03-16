@@ -1,5 +1,4 @@
 local home = os.getenv("HOME")
-local kittyCli = "/opt/homebrew/bin/kitty"
 local freshConfigPath = home .. "/.config/fresh/config.json"
 local kittyThemeScript = home .. "/.config/kitty/sync-theme"
 
