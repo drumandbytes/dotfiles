@@ -5,9 +5,8 @@
 
 set -euo pipefail
 
-# Chezmoi scripts run without the user's shell profile. Add Homebrew to PATH
-# so we find the same bat the user's shell sees (ARM: /opt/homebrew, Intel: /usr/local).
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+# Chezmoi scripts run without the user's shell profile. Add Homebrew to PATH.
+export PATH="/opt/homebrew/bin:$PATH"
 
 if ! command -v bat &>/dev/null; then
     echo "bat not found — skipping theme install"
