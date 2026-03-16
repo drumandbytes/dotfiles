@@ -32,12 +32,18 @@ else
 fi
 
 CONFIG_FILE="$K9S_CONFIG/config.yaml"
-if [[ ! -f "$CONFIG_FILE" ]] || ! grep -q "skin:" "$CONFIG_FILE"; then
-    mkdir -p "$(dirname "$CONFIG_FILE")"
+mkdir -p "$(dirname "$CONFIG_FILE")"
+
+if command -v yq &>/dev/null; then
+    yq -i ".k9s.ui.skin = \"${skin}\"" "$CONFIG_FILE"
+    echo "✅ Set k9s skin to ${skin} in config.yaml"
+elif [[ ! -f "$CONFIG_FILE" ]] || ! grep -q "skin:" "$CONFIG_FILE"; then
     cat >> "$CONFIG_FILE" <<EOF
 k9s:
   ui:
     skin: ${skin}
 EOF
     echo "✅ Set k9s skin to ${skin} in config.yaml"
+else
+    echo "⚠️  skin already set in config.yaml but yq unavailable — skipping"
 fi
