@@ -23,14 +23,14 @@ SUDO_PAM="/etc/pam.d/sudo"
 
 # macOS 14+ (Sonoma): use sudo_local — not overwritten by OS updates
 major_version=$(sw_vers -productVersion | cut -d. -f1)
-if (( major_version >= 14 )); then
+if ((major_version >= 14)); then
     if grep -qF "pam_tid.so" "$SUDO_LOCAL" 2>/dev/null; then
         echo "Touch ID for sudo already configured ($SUDO_LOCAL)."
         exit 0
     fi
     echo "Enabling Touch ID for sudo via $SUDO_LOCAL..."
-    printf '# sudo_local: local config file which survives system update and is included for sudo\n%s\n' "$TID_LINE" \
-        | sudo tee "$SUDO_LOCAL" > /dev/null
+    printf '# sudo_local: local config file which survives system update and is included for sudo\n%s\n' "$TID_LINE" |
+        sudo tee "$SUDO_LOCAL" >/dev/null
     echo "Done."
     exit 0
 fi
@@ -46,5 +46,5 @@ echo "Enabling Touch ID for sudo in $SUDO_PAM..."
 sudo awk -v line="$TID_LINE" '
     /^# sudo:/ { print; print line; next }
     1
-' "$SUDO_PAM" > /tmp/_pam_sudo_tmp && sudo mv /tmp/_pam_sudo_tmp "$SUDO_PAM"
+' "$SUDO_PAM" >/tmp/_pam_sudo_tmp && sudo mv /tmp/_pam_sudo_tmp "$SUDO_PAM"
 echo "Done. Note: this will be reset on major macOS upgrades."
