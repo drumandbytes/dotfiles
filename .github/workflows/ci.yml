@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   pull_request:
 
@@ -8,7 +11,7 @@ jobs:
     name: shellcheck
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install shellcheck
         run: brew install shellcheck
       - name: Run shellcheck
@@ -18,7 +21,7 @@ jobs:
     name: shfmt
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install shfmt
         run: brew install shfmt
       - name: Check formatting
@@ -29,7 +32,7 @@ jobs:
     name: chezmoi templates
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install chezmoi
         run: brew install chezmoi
       - name: Validate templates
@@ -57,7 +60,7 @@ jobs:
     name: gitleaks
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v2
@@ -69,7 +72,7 @@ jobs:
     name: markdownlint
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: DavidAnson/markdownlint-cli2-action@v16
+      - uses: actions/checkout@v6
+      - uses: DavidAnson/markdownlint-cli2-action@v22
         with:
           globs: "**/*.md"
