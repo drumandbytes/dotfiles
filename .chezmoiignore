@@ -2,8 +2,7 @@
 {{ if not .bitwarden }}dot_local/bin/executable_bw-vault.tmpl{{ end }}
 {{ if not .touch_id_sudo }}run_once_enable-touchid-sudo.sh{{ end }}
 
-# theme.conf is a dynamic symlink managed by sync-theme, not chezmoi
-dot_config/kitty/theme.conf
+# theme.conf is managed as symlink_theme.conf (defaults to macchiato); sync-theme can override it
 
 # sheldon lock file and static cache are generated at runtime
 dot_config/sheldon/plugins.lock
