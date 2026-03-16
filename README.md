@@ -57,7 +57,7 @@ During `chezmoi init` you'll be prompted for optional features (answers are save
 | `Enable Bitwarden integration` | Writes `BW_USER` to env and installs `bw-vault` script |
 | `Bitwarden account email` | Your Bitwarden login email (only asked if above is yes) |
 | `Enable Touch ID for sudo` | Runs a one-time script to add `pam_tid.so` to sudo PAM config |
-| `Install Docker + Colima` | Installs Docker daemon via Colima (lightweight alternative to Docker Desktop) |
+| `Install Docker + Colima` | Installs Docker daemon via Colima (lightweight alternative to Docker Desktop); on Apple Silicon uses `vmType=vz` + Rosetta for native speed and x86 image support |
 | `Install Kubernetes tools` | Installs kubectl, kubectx, k9s, vault, gcloud CLI |
 | `Install Java via mise` | Adds `temurin-21` to mise global config and installs libpq |
 

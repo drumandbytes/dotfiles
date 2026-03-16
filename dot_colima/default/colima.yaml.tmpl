@@ -1,0 +1,5 @@
+{{ if eq .chezmoi.arch "arm64" -}}
+# Apple Silicon: use Apple Virtualization Framework + Rosetta for x86 image support
+vmType: vz
+rosetta: true
+{{ end -}}

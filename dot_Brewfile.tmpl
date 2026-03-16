@@ -56,7 +56,9 @@ brew "colima", restart_service: :changed
 brew "docker"
 brew "docker-buildx"
 brew "docker-compose"
+{{ if ne .chezmoi.arch "arm64" -}}
 brew "qemu"
+{{ end -}}
 brew "lima-additional-guestagents"
 {{ end -}}
 
