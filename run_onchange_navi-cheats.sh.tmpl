@@ -49,7 +49,7 @@ pending = []
 for line in open(functions_file):
     line = line.rstrip()
     # Skip template directives and blanks
-    if line.startswith("{{") or not line.strip():
+    if line.startswith("{{ "{{" }}") or not line.strip():
         pending = []
         continue
     # Comment line
