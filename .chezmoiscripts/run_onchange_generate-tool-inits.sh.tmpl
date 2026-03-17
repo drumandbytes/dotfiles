@@ -2,6 +2,7 @@
 # Runs once on fresh install and whenever this file changes (chezmoi run_onchange_).
 # Generates static init files and completions so the shell never spawns subprocesses at startup.
 # dot_Brewfile.tmpl hash: {{ include "dot_Brewfile.tmpl" | sha256sum }}
+# plugins.toml hash: {{ include "dot_config/sheldon/plugins.toml.tmpl" | sha256sum }}
 
 set -euo pipefail
 
@@ -10,6 +11,7 @@ mkdir -p ~/.zsh/completions
 cmd() { command -v "$1" &>/dev/null; }
 
 # --- Static init files (sourced deferred at startup) ---
+cmd sheldon && sheldon source >~/.zsh/sheldon.zsh
 cmd zoxide && zoxide init zsh >~/.zsh/zoxide_init.zsh
 cmd carapace && carapace _carapace zsh >~/.zsh/carapace_init.zsh
 cmd mise && mise activate zsh >~/.zsh/mise_init.zsh
