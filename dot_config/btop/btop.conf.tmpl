@@ -1,0 +1,5 @@
+{{- $dark := eq (output "sh" "-c" "defaults read -g AppleInterfaceStyle 2>/dev/null || true") "Dark\n" -}}
+#* Color theme, "Default" and "TTY" built-in, else select a file with path or
+#* name (without extension) relative to themes/ dir in system theme folder or
+#* ~/.config/btop/themes/
+color_theme = "catppuccin_{{ if $dark }}macchiato{{ else }}latte{{ end }}"

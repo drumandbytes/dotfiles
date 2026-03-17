@@ -56,3 +56,13 @@ if [[ -f "$k9s_config" ]]; then
     sed -i '' "s/skin: catppuccin-.*/skin: ${k9s_skin}/" "$k9s_config"
 fi
 {{- end }}
+
+# btop: update color_theme (takes effect on next launch or F5 refresh)
+btop_conf="${XDG_CONFIG_HOME:-$HOME/.config}/btop/btop.conf"
+if [[ -f "$btop_conf" ]]; then
+    if [[ "$mode" = "Dark" ]]; then
+        sed -i '' 's/^color_theme = .*/color_theme = "catppuccin_macchiato"/' "$btop_conf"
+    else
+        sed -i '' 's/^color_theme = .*/color_theme = "catppuccin_latte"/' "$btop_conf"
+    fi
+fi
