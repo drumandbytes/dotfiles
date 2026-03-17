@@ -15,7 +15,7 @@ jobs:
       - name: Install shellcheck
         run: brew install shellcheck
       - name: Run shellcheck
-        run: shellcheck run_once_*.sh run_onchange_*.sh
+        run: shellcheck .chezmoiscripts/run_once_*.sh .chezmoiscripts/run_onchange_*.sh
 
   shfmt:
     name: shfmt
@@ -26,26 +26,34 @@ jobs:
         run: brew install shfmt
       - name: Check formatting
         # -d prints a diff and exits non-zero if any file differs; -i 4 = 4-space indent
-        run: shfmt -d -i 4 run_once_*.sh run_onchange_*.sh
+        run: shfmt -d -i 4 .chezmoiscripts/run_once_*.sh .chezmoiscripts/run_onchange_*.sh
 
   chezmoi-templates:
     name: chezmoi templates
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Install chezmoi
-        run: brew install chezmoi
+      - name: Install chezmoi + shell linters
+        run: brew install chezmoi shellcheck shfmt
       - name: Validate templates
         run: |
           mkdir -p ~/.config/chezmoi
-          cat > ~/.config/chezmoi/chezmoi.toml <<'EOF'
+          cat > ~/.config/chezmoi/chezmoi.toml << EOF
+          sourceDir = "$(pwd)"
           [data]
-            bitwarden     = false
-            bw_email      = "test@example.com"
-            touch_id_sudo = false
-            docker        = false
-            kubernetes    = false
-            java          = false
+            editor         = "fresh"
+            alt_tools      = true
+            macos_utils    = true
+            macos_cosmetic = true
+            macos_media    = true
+            dev_apps       = true
+            touchbar       = false
+            bitwarden      = false
+            bw_email       = "test@example.com"
+            touch_id_sudo  = false
+            docker         = false
+            kubernetes     = false
+            java           = false
           EOF
 
           failed=0
@@ -54,6 +62,37 @@ jobs:
             echo "→ $f"
             chezmoi execute-template < "$f" > /dev/null || { echo "FAILED: $f"; failed=1; }
           done < <(find . -name '*.tmpl' ! -name '.chezmoi.toml.tmpl' ! -path './.git/*')
+          exit "$failed"
+
+      - name: Lint rendered .sh.tmpl scripts
+        # Render with all infra flags on so scripts are fully expanded (no early-exit stubs).
+        run: |
+          cat > ~/.config/chezmoi/chezmoi.toml << EOF
+          sourceDir = "$(pwd)"
+          [data]
+            editor         = "fresh"
+            alt_tools      = true
+            macos_utils    = true
+            macos_cosmetic = true
+            macos_media    = true
+            dev_apps       = true
+            touchbar       = false
+            bitwarden      = false
+            bw_email       = "test@example.com"
+            touch_id_sudo  = false
+            docker         = true
+            kubernetes     = true
+            java           = true
+          EOF
+
+          failed=0
+          while IFS= read -r f; do
+            rendered=$(chezmoi execute-template < "$f")
+            echo "→ shellcheck: $f"
+            echo "$rendered" | shellcheck - || { echo "FAILED (shellcheck): $f"; failed=1; }
+            echo "→ shfmt: $f"
+            echo "$rendered" | shfmt -d -i 4 - || { echo "FAILED (shfmt): $f"; failed=1; }
+          done < <(find .chezmoiscripts -name '*.sh.tmpl')
           exit "$failed"
 
   gitleaks:

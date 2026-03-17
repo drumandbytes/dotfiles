@@ -1,0 +1,67 @@
+#!/bin/zsh
+mode=$(defaults read -g AppleInterfaceStyle 2>/dev/null)
+if [[ "$mode" = "Dark" ]]; then
+    kitty_theme="themes/macchiato.conf"
+{{ if .kubernetes -}}
+    k9s_skin="catppuccin-macchiato"
+{{ end -}}
+else
+    kitty_theme="themes/latte.conf"
+{{ if .kubernetes -}}
+    k9s_skin="catppuccin-latte"
+{{ end -}}
+fi
+
+# kitty: swap symlink and reload live instances
+theme="$HOME/.config/kitty/theme.conf"
+rm -f "$theme"
+ln -s "$kitty_theme" "$theme"
+for pid in $(ps -x | grep '/Applications/kitty.app/Contents/MacOS/kitty' | grep -v grep | awk '{ print $1 }'); do
+    kill -SIGUSR1 "$pid"
+done
+# git delta: update syntax theme
+if [[ "$mode" = "Dark" ]]; then
+    git config --global delta.features "catppuccin-macchiato"
+else
+    git config --global delta.features "catppuccin-latte"
+fi
+
+# starship: update active palette (re-read on every prompt)
+if [[ "$mode" = "Dark" ]]; then
+    sed -i '' 's/^palette = "catppuccin_.*/palette = "catppuccin_macchiato"/' "$HOME/.config/starship.toml"
+else
+    sed -i '' 's/^palette = "catppuccin_.*/palette = "catppuccin_latte"/' "$HOME/.config/starship.toml"
+fi
+
+# atuin: update theme name (takes effect on next atuin invocation)
+if [[ "$mode" = "Dark" ]]; then
+    sed -i '' 's/^name = "catppuccin-.*/name = "catppuccin-macchiato-mauve"/' "$HOME/.config/atuin/config.toml"
+else
+    sed -i '' 's/^name = "catppuccin-.*/name = "catppuccin-latte-mauve"/' "$HOME/.config/atuin/config.toml"
+fi
+{{- if .alt_tools }}
+# eza: swap theme symlink (re-read on every eza invocation)
+eza_dir="$HOME/.config/eza"
+rm -f "$eza_dir/theme.yml"
+if [[ "$mode" = "Dark" ]]; then
+    ln -s "catppuccin-macchiato-mauve.yml" "$eza_dir/theme.yml"
+else
+    ln -s "catppuccin-latte-mauve.yml" "$eza_dir/theme.yml"
+fi
+{{- end }}
+
+# lazygit: swap theme symlink (re-read on next launch)
+lazygit_dir="$HOME/.config/lazygit"
+rm -f "$lazygit_dir/theme.yml"
+if [[ "$mode" = "Dark" ]]; then
+    ln -s "themes/catppuccin-macchiato.yml" "$lazygit_dir/theme.yml"
+else
+    ln -s "themes/catppuccin-latte.yml" "$lazygit_dir/theme.yml"
+fi
+{{ if .kubernetes }}
+# k9s: update skin in config.yaml (takes effect on next launch)
+k9s_config="${XDG_CONFIG_HOME:-$HOME/Library/Application Support}/k9s/config.yaml"
+if [[ -f "$k9s_config" ]]; then
+    sed -i '' "s/skin: catppuccin-.*/skin: ${k9s_skin}/" "$k9s_config"
+fi
+{{- end }}

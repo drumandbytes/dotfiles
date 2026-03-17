@@ -7,11 +7,14 @@
 [interactive]
     diffFilter = delta --color-only
 
+[include]
+    path = catppuccin.gitconfig
+
 [delta]
     navigate = true          # n/N to jump between diff sections
     line-numbers = true
     side-by-side = true
-    syntax-theme = Catppuccin Macchiato   # matches terminal theme; theme file installed by run_onchange_install-bat-themes.sh
+    features = catppuccin-macchiato   # updated by ~/.config/kitty/sync-theme on appearance change
 
 [merge]
     conflictstyle = diff3

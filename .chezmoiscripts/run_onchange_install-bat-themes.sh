@@ -27,3 +27,8 @@ curl -fsSL "${base_url}/Catppuccin%20Latte.tmTheme" -o "$themes_dir/Catppuccin L
         echo "Failed to download Catppuccin Latte theme" >&2
         exit 1
     }
+
+# Run from / to avoid bat misinterpreting 'cache' as a filename when a
+# directory named 'cache' exists in the CWD. See sharkdp/bat#1726.
+(cd / && bat cache --build)
+echo "✅ bat Catppuccin themes installed and cache rebuilt."

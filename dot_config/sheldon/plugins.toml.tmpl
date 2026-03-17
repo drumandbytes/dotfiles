@@ -1,3 +1,4 @@
+{{- /* chezmoi:template:left-delimiter="<%" right-delimiter="%>" */ -}}
 # ~/.config/sheldon/plugins.toml
 shell = "zsh"
 
@@ -39,11 +40,13 @@ apply = ["defer"]
 github = "MichaelAquilina/zsh-you-should-use"
 apply = ["defer"]
 
+<% if .alt_tools %>
 # Replace cat with bat + man page highlighting
 [plugins.zsh-bat]
 github = "fdellwing/zsh-bat"
 apply = ["defer"]
 
+<% end %>
 # Auto-close brackets, quotes, etc.
 [plugins.zsh-autopair]
 github = "hlissner/zsh-autopair"

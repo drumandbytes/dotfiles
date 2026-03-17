@@ -1,0 +1,17 @@
+#!/bin/bash
+# Install all four Catppuccin flavour themes for fresh editor.
+# Named install-* to ensure it runs after brew-bundle installs fresh-editor.
+{{ if ne .editor "fresh" -}}
+exit 0
+{{ end -}}
+
+set -euo pipefail
+
+themes_dir="${XDG_CONFIG_HOME:-$HOME/.config}/fresh/themes"
+mkdir -p "$themes_dir"
+
+base_url="https://raw.githubusercontent.com/milon/catppuccin-fresh/master"
+for flavor in latte frappe macchiato mocha; do
+    curl -fsSL "${base_url}/catppuccin-${flavor}.json" -o "${themes_dir}/catppuccin-${flavor}.json"
+done
+echo "fresh Catppuccin themes installed to ${themes_dir}"

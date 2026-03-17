@@ -1,9 +1,20 @@
+# Repo-level files that are not dotfiles
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+README.md
+UNLICENSE
+install.sh
+
 # Old script renamed to run_onchange_install-bat-themes.sh; ignore if leftover in source dir
 run_onchange_bat-catppuccin.sh
 
 # Optional features — excluded unless opted in via chezmoi init prompts
+{{ if not .alt_tools }}dot_config/bat/{{ end }}
+{{ if not .alt_tools }}dot_config/eza/{{ end }}
 {{ if not .bitwarden }}dot_local/bin/executable_bw-vault.tmpl{{ end }}
-{{ if not .touch_id_sudo }}run_once_enable-touchid-sudo.sh{{ end }}
+{{ if not .docker }}dot_colima/{{ end }}
+{{ if not .macos_utils }}dot_hammerspoon/{{ end }}
+{{ if not .touch_id_sudo }}.chezmoiscripts/run_once_enable-touchid-sudo.sh{{ end }}
 
 # theme.conf is managed as symlink_theme.conf (defaults to macchiato); sync-theme can override it
 

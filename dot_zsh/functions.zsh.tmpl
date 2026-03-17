@@ -27,7 +27,9 @@ mnt() {
     echo "🍺 Updating Homebrew..."
     brew update && brew upgrade --greedy && brew cleanup --prune=all
     mac-cleanup
+{{ if .alt_tools -}}
     tldr --update
+{{- end }}
 
     # 2. Sheldon Static Source
     echo "🛡️ Refreshing Sheldon plugins..."
@@ -36,7 +38,7 @@ mnt() {
 
     # 3. Static Initialization Caching
     echo "🏎️ Caching Tool Initializations..."
-    bash <(chezmoi execute-template < "$(chezmoi source-path)/run_onchange_generate-tool-inits.sh.tmpl")
+    bash <(chezmoi execute-template < "$(chezmoi source-path)/.chezmoiscripts/run_onchange_generate-tool-inits.sh.tmpl")
 
     # 4. Binary Compilation (Dynamic & Automatic)
     echo "🏗️  Rebuilding binaries from a clean slate..."
@@ -52,6 +54,7 @@ mnt() {
     exec zsh
 }
 
+{{ if .bitwarden -}}
 # === Bitwarden Search (ID-Based Parsing) ===
 bw-search() {
     if [[ -z "$BW_SESSION" ]]; then
@@ -69,21 +72,41 @@ bw-search() {
         esac
     fi
 }
+{{- end }}
 
-# === Sheldon Plugin Automation ===
 # === Sheldon Plugin Management ===
-# Add a deferred sheldon plugin and persist it to chezmoi source.
+# Add a deferred sheldon plugin directly to the chezmoi source template and activate it.
 sh-add() {
     local repo="${1:?Usage: sh-add <user/repo>}"
-    sheldon add "$repo" --github "$repo" --apply defer || return 1
+    local name="${repo##*/}"
+    local src
+    src="$(chezmoi source-path)/dot_config/sheldon/plugins.toml.tmpl"
+
+    [[ -f "$src" ]] || { echo "❌ chezmoi source not found: $src"; return 1; }
+    grep -qF "github = \"$repo\"" "$src" && { echo "⚠️  $repo already in plugins.toml"; return 0; }
+
+    # Insert new plugin block before the "Syntax highlighting (must be last)" marker
+    awk -v name="$name" -v repo="$repo" \
+        '/^# Syntax highlighting \(must be last\)/ {
+            print "[plugins." name "]"
+            print "github = \"" repo "\""
+            print "apply = [\"defer\"]"
+            print ""
+        }
+        { print }' "$src" > "${src}.tmp" && mv "${src}.tmp" "$src"
+
     echo "✅ Added sheldon plugin: $repo"
+
+    # Deploy rendered template, rebuild lock file, and hot-reload
+    chezmoi apply ~/.config/sheldon/plugins.toml
+    sheldon lock --update
     sheldon source > ~/.zsh/sheldon.zsh
     source ~/.zsh/sheldon.zsh
-    chezmoi re-add ~/.config/sheldon/plugins.toml
-    echo "📝 Persisted to plugins.toml"
+    echo "📝 Persisted and activated."
 }
 
 # === Interactive Tools (FZF) ===
+{{ if .alt_tools -}}
 help-cmd() {
     local FZF_DEFAULT_OPTS=""
     local cmd
@@ -96,6 +119,7 @@ help-cmd() {
         eval "$final_cmd"
     fi
 }
+{{- end }}
 
 fkill() {
     local pid
@@ -115,7 +139,7 @@ zsh-bak() {
     local bak_dir="$HOME/Backups/zsh"
     local marker="$bak_dir/.last_backup_check"
     mkdir -p "$bak_dir"
-    local changes=$(find ~/.zshrc ~/.zsh ~/.config/kitty ~/.config/sheldon/plugins.toml ~/.config/git -newer "$marker" 2>/dev/null)
+    local changes=$(command find ~/.zshrc ~/.zsh ~/.config/kitty ~/.config/sheldon/plugins.toml ~/.config/git -newer "$marker" 2>/dev/null)
     if [[ -n "$changes" || ! -f "$marker" ]]; then
         local bak_name="zsh_bak_$(date +%Y%m%d_%H%M%S).zip"
         zip -rq "$bak_dir/$bak_name" ~/.zshrc ~/.zsh ~/.config/kitty ~/.config/sheldon/plugins.toml ~/.config/git -x "*.zwc"
@@ -131,7 +155,7 @@ comp-add() {
     local tool="${1:?Usage: comp-add <toolname>}"
     local outfile="$HOME/.zsh/completions/_${tool}"
     local script
-    script="$(chezmoi source-path)/run_onchange_generate-tool-inits.sh.tmpl"
+    script="$(chezmoi source-path)/.chezmoiscripts/run_onchange_generate-tool-inits.sh.tmpl"
 
     # Try common completion syntax patterns in order of prevalence
     local cmd="" try
@@ -177,7 +201,7 @@ comp-add() {
 uv-add() {
     local pkg="${1:?Usage: uv-add <package>}"
     local script
-    script="$(chezmoi source-path)/run_onchange_uv-tools.sh"
+    script="$(chezmoi source-path)/.chezmoiscripts/run_onchange_uv-tools.sh"
 
     uv tool install "$pkg" || return 1
     echo "✅ Installed uv tool: ${pkg}"

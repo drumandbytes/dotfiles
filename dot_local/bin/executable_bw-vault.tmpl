@@ -1,3 +1,4 @@
+{{- if .bitwarden -}}
 #!/usr/bin/env zsh
 # bw-vault — thin Bitwarden CLI wrapper with session caching.
 # Session is persisted to /var/root/.bitwarden.session so non-interactive
@@ -42,3 +43,4 @@ case "$1" in
         fi
         ;;
 esac
+{{- end }}

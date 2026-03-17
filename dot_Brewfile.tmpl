@@ -1,61 +1,83 @@
+# =============================================================================
 # Taps
+# =============================================================================
+{{ if .kubernetes -}}
 tap "hashicorp/tap"
-tap "jeanregisser/tap"
+{{ end -}}
+{{ if .macos_cosmetic -}}
 tap "lihaoyun6/tap"
-tap "mac-cleanup/mac-cleanup-py"
-tap "sinelaw/fresh"
 tap "theboredteam/boring-notch"
+{{ end -}}
 
-# --- Core CLI tools ---
+# =============================================================================
+# Base — always installed
+# =============================================================================
+
+# Shell infrastructure
 brew "atuin"
-brew "bat"
-brew "btop"
 brew "carapace"
 brew "direnv"
+brew "fzf"
+brew "mise"
+brew "sheldon"
+brew "starship"
+brew "zoxide"
+
+# Git
+brew "git-delta"
+brew "gnupg"
+brew "lazygit"
+brew "pinentry-mac"
+
+# Core CLI
+brew "btop"
+brew "jq"
+brew "yq"
+brew "just"
+brew "mac-cleanup-go"
+brew "rust"
+brew "shfmt"
+brew "wget2"
+
+# Terminal & Font
+cask "kitty"
+cask "font-meslo-lg-nerd-font"
+
+# Editor
+{{ if eq .editor "fresh" -}}
+brew "fresh-editor"
+{{ end -}}
+
+# =============================================================================
+# Alt-tools — modern CLI replacements
+# =============================================================================
+{{ if .alt_tools -}}
+brew "bat"
 brew "doggo"
 brew "duf"
 brew "dust"
 brew "eza"
 brew "fd"
-brew "flowrs"
-brew "fzf"
-brew "gh"
-brew "git-delta"
-brew "git-filter-repo"
-brew "glab"
-brew "gnupg"
 brew "gping"
 brew "gron"
 brew "jid"
-brew "jq"
-brew "yq"
-brew "just"
-brew "kubecolor"
-brew "lazygit"
-brew "mac-cleanup-go"
-brew "mise"
 brew "navi"
-brew "pinentry-mac"
 brew "ripgrep"
-brew "rust"
-brew "sheldon"
-brew "shfmt"
-brew "sl"
-brew "starship"
-brew "stern"
 brew "tldr"
-brew "wget2"
 brew "xh"
-brew "zoxide"
-brew "sinelaw/fresh/fresh"
+{{ end -}}
 
-# --- Bitwarden ---
+# =============================================================================
+# Bitwarden
+# =============================================================================
 {{ if .bitwarden -}}
 brew "bitwarden-cli"
 cask "bitwarden"
 {{ end -}}
 
-# --- Docker + Colima ---
+# =============================================================================
+# Docker + Colima
+# =============================================================================
 {{ if .docker -}}
 brew "colima", restart_service: :changed
 brew "docker"
@@ -64,45 +86,74 @@ brew "docker-compose"
 brew "lima-additional-guestagents"
 {{ end -}}
 
-# --- Kubernetes ---
+# =============================================================================
+# Kubernetes
+# =============================================================================
 {{ if .kubernetes -}}
+brew "helm"
+brew "kubecolor"
 brew "kubernetes-cli"
 brew "kubectx"
 brew "k9s"
 brew "mintoolkit"
+brew "stern"
 brew "hashicorp/tap/vault"
 cask "gcloud-cli"
 {{ end -}}
 
-# --- Java (runtime managed via mise, libpq for psql client) ---
+# =============================================================================
+# Java (runtime managed via mise, libpq for psql client)
+# =============================================================================
 {{ if .java -}}
 brew "libpq", link: true
 {{ end -}}
 
-# --- macOS apps ---
-cask "lihaoyun6/tap/airbattery"
+# =============================================================================
+# macOS utilities
+# =============================================================================
+{{ if .macos_utils -}}
 cask "alt-tab"
-cask "theboredteam/boring-notch/boring-notch"
-cask "brave-browser"
-cask "claude"
-cask "cork"
 cask "displaylink"
 cask "hammerspoon"
 cask "hot"
-cask "kitty"
 cask "linearmouse"
 cask "mos@beta"
 cask "raycast"
+{{ end -}}
+
+# =============================================================================
+# macOS cosmetic
+# =============================================================================
+{{ if .macos_cosmetic -}}
+cask "lihaoyun6/tap/airbattery"
+cask "theboredteam/boring-notch/boring-notch"
+cask "cork"
+{{ end -}}
+
+# =============================================================================
+# Media & communication
+# =============================================================================
+{{ if .macos_media -}}
+cask "brave-browser"
+cask "slack"
 cask "spotify"
 cask "telegram"
+brew "spicetify-cli"
+{{ end -}}
 
-# --- Dev apps ---
+# =============================================================================
+# Dev apps
+# =============================================================================
+{{ if .dev_apps -}}
+brew "gh"
+brew "git-filter-repo"
+brew "glab"
+cask "claude"
 cask "dbeaver-community"
 cask "gimp"
-cask "slack"
 cask "vscodium"
 
-# --- VSCodium extensions ---
+# VSCodium extensions
 vscode "adpyke.codesnap"
 vscode "catppuccin.catppuccin-vsc"
 vscode "catppuccin.catppuccin-vsc-icons"
@@ -113,4 +164,11 @@ vscode "ms-python.debugpy"
 vscode "ms-python.python"
 vscode "ms-python.vscode-python-envs"
 vscode "pixl-garden.bongocat"
+{{ end -}}
 
+# =============================================================================
+# TouchBar
+# =============================================================================
+{{ if .touchbar -}}
+cask "bettertouchtool"
+{{ end -}}
