@@ -27,13 +27,17 @@ function themeSync.execute()
 {{ if eq .editor "fresh" }}
     -- Switch fresh editor theme
     local theme = (mode == "Dark") and "catppuccin-macchiato" or "catppuccin-latte"
+    local cfg = {}
     local ff = io.open(freshConfigPath, "r")
     if ff then
-        local cfg = hs.json.decode(ff:read("*all"))
+        cfg = hs.json.decode(ff:read("*all")) or {}
         ff:close()
-        if cfg and cfg.theme ~= theme then
-            cfg.theme = theme
-            local wf = io.open(freshConfigPath, "w")
+    end
+    if cfg.theme ~= theme then
+        cfg.theme = theme
+        hs.execute("mkdir -p " .. hs.fs.pathToAbsolute(home .. "/.config/fresh"))
+        local wf = io.open(freshConfigPath, "w")
+        if wf then
             wf:write(hs.json.encode(cfg, true))
             wf:close()
         end
