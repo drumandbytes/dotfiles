@@ -6,22 +6,22 @@
   editor = {{ promptStringOnce . "editor" "Preferred editor (fresh/nvim/vim/code)" | default "fresh" | quote }}
 
   # --- Tool groups ---
-  alt_tools   = {{ promptBoolOnce . "alt_tools"   "Install modern CLI replacements (eza, bat, fd, ripgrep, etc.)" }}
+  alt_tools   = {{ promptBoolOnce . "alt_tools"   "Install modern CLI replacements (eza, bat, fd, ripgrep, etc.) [y/n]" }}
 
   # --- macOS app groups (default: yes) ---
-  macos_utils    = {{ promptBoolOnce . "macos_utils"    "Install macOS utilities (Raycast, Alt-Tab, Hammerspoon, etc.)" }}
-  macos_cosmetic = {{ promptBoolOnce . "macos_cosmetic" "Install cosmetic macOS apps (Boring Notch, AirBattery, Cork)" }}
-  macos_media    = {{ promptBoolOnce . "macos_media"    "Install media & communication apps (Brave, Spotify, Telegram, Slack)" }}
-  dev_apps       = {{ promptBoolOnce . "dev_apps"       "Install dev apps (VSCodium, DBeaver, GIMP, GitLab CLI, GitHub CLI)" }}
-  touchbar       = {{ promptBoolOnce . "touchbar"       "Install BetterTouchTool (TouchBar Macs only)" }}
+  macos_utils    = {{ promptBoolOnce . "macos_utils"    "Install macOS utilities (Raycast, Alt-Tab, Hammerspoon, etc.) [y/n]" }}
+  macos_cosmetic = {{ promptBoolOnce . "macos_cosmetic" "Install cosmetic macOS apps (Boring Notch, AirBattery, Cork) [y/n]" }}
+  macos_media    = {{ promptBoolOnce . "macos_media"    "Install media & communication apps (Brave, Spotify, Telegram, Slack) [y/n]" }}
+  dev_apps       = {{ promptBoolOnce . "dev_apps"       "Install dev apps (VSCodium, DBeaver, GIMP, GitLab CLI, GitHub CLI) [y/n]" }}
+  touchbar       = {{ promptBoolOnce . "touchbar"       "Install BetterTouchTool (TouchBar Macs only) [y/n]" }}
 
   # --- Infrastructure ---
-{{- $bitwarden := promptBoolOnce . "bitwarden" "Enable Bitwarden integration" }}
+{{- $bitwarden := promptBoolOnce . "bitwarden" "Enable Bitwarden integration [y/n]" }}
   bitwarden = {{ $bitwarden }}
 {{- if $bitwarden }}
   bw_email = {{ promptStringOnce . "bw_email" "Bitwarden account email" | quote }}
 {{- end }}
-  touch_id_sudo = {{ promptBoolOnce . "touch_id_sudo" "Enable Touch ID for sudo (macOS only)" }}
-  docker      = {{ promptBoolOnce . "docker"      "Install Docker + Colima" }}
-  kubernetes  = {{ promptBoolOnce . "kubernetes"  "Install Kubernetes tools (kubectl, kubectx, k9s)" }}
-  java        = {{ promptBoolOnce . "java"        "Install Java via mise (temurin-21)" }}
+  touch_id_sudo = {{ promptBoolOnce . "touch_id_sudo" "Enable Touch ID for sudo (macOS only) [y/n]" }}
+  docker      = {{ promptBoolOnce . "docker"      "Install Docker + Colima [y/n]" }}
+  kubernetes  = {{ promptBoolOnce . "kubernetes"  "Install Kubernetes tools (kubectl, kubectx, k9s) [y/n]" }}
+  java        = {{ promptBoolOnce . "java"        "Install Java via mise (temurin-21) [y/n]" }}
