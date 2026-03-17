@@ -41,6 +41,7 @@ alias reload="exec zsh"
 
 # --- Maintenance & Updates ---
 alias sheldon-up="sheldon lock --update && sheldon source > ~/.zsh/sheldon.zsh && echo 'Sheldon updated.'"
+alias atuin-clean="atuin search --cmd-only --limit 10000 | fzf --multi | while read -r cmd; do atuin search --delete \"\$cmd\"; done"
 
 # --- Global Aliases ---
 alias -g L='| less'
