@@ -49,6 +49,15 @@ else
     ln -s "catppuccin-latte-mauve.yml" "$eza_dir/theme.yml"
 fi
 {{- end }}
+
+# lazygit: swap theme symlink (re-read on next launch)
+lazygit_dir="$HOME/.config/lazygit"
+rm -f "$lazygit_dir/theme.yml"
+if [[ "$mode" = "Dark" ]]; then
+    ln -s "themes/catppuccin-macchiato.yml" "$lazygit_dir/theme.yml"
+else
+    ln -s "themes/catppuccin-latte.yml" "$lazygit_dir/theme.yml"
+fi
 {{ if .kubernetes }}
 # k9s: update skin in config.yaml (takes effect on next launch)
 k9s_config="${XDG_CONFIG_HOME:-$HOME/Library/Application Support}/k9s/config.yaml"
@@ -56,13 +65,3 @@ if [[ -f "$k9s_config" ]]; then
     sed -i '' "s/skin: catppuccin-.*/skin: ${k9s_skin}/" "$k9s_config"
 fi
 {{- end }}
-
-# btop: update color_theme (takes effect on next launch or F5 refresh)
-btop_conf="${XDG_CONFIG_HOME:-$HOME/.config}/btop/btop.conf"
-if [[ -f "$btop_conf" ]]; then
-    if [[ "$mode" = "Dark" ]]; then
-        sed -i '' 's/^color_theme = .*/color_theme = "catppuccin_macchiato"/' "$btop_conf"
-    else
-        sed -i '' 's/^color_theme = .*/color_theme = "catppuccin_latte"/' "$btop_conf"
-    fi
-fi
