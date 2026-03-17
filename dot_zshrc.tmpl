@@ -58,12 +58,11 @@ bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 
 # 7. Shell Options
-HISTSIZE=50000
-SAVEHIST=50000
-HISTFILE=~/.zsh_history
-setopt INC_APPEND_HISTORY SHARE_HISTORY HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE \
-       APPEND_HISTORY HIST_REDUCE_BLANKS HIST_VERIFY EXTENDED_HISTORY AUTO_CD \
-       CORRECT
+# History is managed by atuin — disable zsh's own history file
+HISTSIZE=1000  # keep some in-memory for current session
+SAVEHIST=0
+unset HISTFILE
+setopt HIST_IGNORE_SPACE AUTO_CD CORRECT
 
 # 8. Async compile (background, does not block startup)
 {
