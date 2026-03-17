@@ -4,9 +4,6 @@
 {{ if .kubernetes -}}
 tap "hashicorp/tap"
 {{ end -}}
-{{ if eq .editor "fresh" -}}
-tap "sinelaw/fresh"
-{{ end -}}
 {{ if .macos_cosmetic -}}
 tap "lihaoyun6/tap"
 tap "theboredteam/boring-notch"
@@ -48,7 +45,7 @@ cask "font-meslo-lg-nerd-font"
 
 # Editor
 {{ if eq .editor "fresh" -}}
-brew "sinelaw/fresh/fresh"
+brew "fresh-editor"
 {{ end -}}
 
 # =============================================================================
