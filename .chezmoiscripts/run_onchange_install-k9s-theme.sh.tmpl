@@ -19,8 +19,8 @@ SKINS_DIR="$K9S_CONFIG/skins"
 mkdir -p "$SKINS_DIR"
 
 echo "Downloading Catppuccin skins for k9s..."
-curl -fsSL https://github.com/catppuccin/k9s/archive/main.tar.gz \
-    | tar xz -C "$SKINS_DIR" --strip-components=2 k9s-main/dist
+curl -fsSL https://github.com/catppuccin/k9s/archive/main.tar.gz |
+    tar xz -C "$SKINS_DIR" --strip-components=2 k9s-main/dist
 
 echo "✅ Catppuccin k9s skins installed."
 
@@ -41,7 +41,7 @@ fi
 
 # Remove duplicate k9s: top-level keys left by previous buggy append
 if [[ -f "$CONFIG_FILE" ]] && [[ $(grep -c "^k9s:" "$CONFIG_FILE") -gt 1 ]]; then
-    awk '/^k9s:/{count++; if (count > 1) exit} {print}' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
+    awk '/^k9s:/{count++; if (count > 1) exit} {print}' "$CONFIG_FILE" >"$CONFIG_FILE.tmp"
     mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
     echo "Fixed duplicate k9s: block in config.yaml"
 fi

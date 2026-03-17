@@ -9,14 +9,20 @@ set -euo pipefail
 export PATH="/opt/homebrew/bin:$PATH"
 
 cmd() { command -v "$1" &>/dev/null; }
-cmd navi || { echo "navi not found — skipping navi setup."; exit 0; }
-cmd python3 || { echo "python3 not found — skipping cheat generation."; exit 0; }
+cmd navi || {
+    echo "navi not found — skipping navi setup."
+    exit 0
+}
+cmd python3 || {
+    echo "python3 not found — skipping cheat generation."
+    exit 0
+}
 
 CHEAT_DIR="$HOME/.local/share/navi/cheats"
 mkdir -p "$CHEAT_DIR"
 
 # --- 1. Generate personal.cheat from aliases.zsh and functions.zsh ---
-python3 - "$HOME/.zsh/aliases.zsh" "$HOME/.zsh/functions.zsh" <<'PYEOF' > "$CHEAT_DIR/personal.cheat"
+python3 - "$HOME/.zsh/aliases.zsh" "$HOME/.zsh/functions.zsh" <<'PYEOF' >"$CHEAT_DIR/personal.cheat"
 import re, sys
 
 aliases_file, functions_file = sys.argv[1], sys.argv[2]
