@@ -1,13 +1,11 @@
 [settings]
 gpg_verify = false
-ruby.compile = false
 
 [tools]
 # Runtime versions managed globally by mise.
 # Pin versions per-project by adding a .mise.toml to the project root.
 uv   = "latest"
 node = "lts"
-ruby = "3.4"
 ruff = "latest"
 {{ if .java -}}
 java = "temurin-21"
