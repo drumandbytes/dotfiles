@@ -16,6 +16,10 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | `~/.config/starship.toml` | Prompt |
 | `~/.config/kitty/` | Terminal (kitty.conf + Catppuccin themes) |
 | `~/.config/git/config` | Git: delta pager, diff3 merge style |
+| `~/.config/bat/` | bat config + Catppuccin themes |
+| `~/.config/eza/` | eza color theme (Catppuccin symlink) |
+| `~/.config/lazygit/` | lazygit config + Catppuccin theme |
+| `~/.config/atuin/` | Shell history config + Catppuccin themes |
 | `~/.hammerspoon/init.lua` | Auto-reload config; theme sync on macOS appearance change |
 
 ## Runtime version management
@@ -25,11 +29,11 @@ Language runtimes are managed by [mise](https://mise.jdx.dev) rather than Homebr
 | Runtime | Global version |
 | --------- | --------------- |
 | `node` | LTS |
-| `ruby` | latest |
 | `uv` | latest |
+| `ruff` | latest |
 | `java` | temurin-21 *(optional)* |
 
-Add per-project overrides with `mise use node@22` inside a project directory.
+Ruby is not pinned globally — add it per-project with `mise use ruby@3.4` inside a project directory.
 
 ## Install
 
@@ -55,6 +59,13 @@ During `chezmoi init` you'll be prompted for optional features (answers are save
 
 | Prompt | What it does |
 | -------- | ----------- |
+| `Preferred editor` | Sets `$EDITOR`; controls which editor is installed (fresh, nvim, vim, code) |
+| `Install modern CLI replacements` | Installs eza, bat, fd, ripgrep, fzf, delta, etc. and enables them in shell config |
+| `Install macOS utilities` | Installs Raycast, Alt-Tab, Hammerspoon, mac-cleanup, etc. |
+| `Install cosmetic macOS apps` | Installs Boring Notch, AirBattery, Cork |
+| `Install media & communication apps` | Installs Brave, Spotify, Telegram, Slack, spicetify |
+| `Install dev apps` | Installs VSCodium, DBeaver, GIMP, GitLab CLI, GitHub CLI |
+| `Install BetterTouchTool` | For TouchBar Macs only |
 | `Enable Bitwarden integration` | Writes `BW_USER` to env and installs `bw-vault` script |
 | `Bitwarden account email` | Your Bitwarden login email (only asked if above is yes) |
 | `Enable Touch ID for sudo` | Runs a one-time script to add `pam_tid.so` to sudo PAM config |
@@ -192,6 +203,11 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 | kitty | `~/.config/kitty/theme.conf` (symlink: Macchiato or Latte) |
 | bat | `~/.config/bat/themes/` (Macchiato + Latte, loaded automatically) |
 | delta | inherits bat theme via `~/.config/git/config` |
+| eza | `~/.config/eza/theme.yml` (symlink: Macchiato or Latte) *(alt_tools only)* |
+| lazygit | `~/.config/lazygit/theme.yml` (symlink: Macchiato or Latte) |
+| atuin | `~/.config/atuin/themes/` (Macchiato + Latte) |
+| starship | palette set in `~/.config/starship.toml` (Macchiato or Latte) |
+| zsh-syntax-highlighting | `~/.zsh/catppuccin_*.zsh` (sourced from env.zsh based on appearance) |
 | btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
 | k9s | `~/Library/Application Support/k9s/skins/` (all flavours; follows macOS appearance via `sync-theme`) *(kubernetes only)* |
 
