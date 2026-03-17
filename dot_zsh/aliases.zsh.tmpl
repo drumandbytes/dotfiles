@@ -32,11 +32,11 @@ alias lg='lazygit'
 alias copylast="fc -ln -1 | sed 's/^[ \t]*//' | pbcopy"
 
 # --- Config Management ---
-alias zshconfig="{{ .editor }} ~/.zshrc"
-alias envconfig="{{ .editor }} ~/.zsh/env.zsh"
-alias aliasconfig="{{ .editor }} ~/.zsh/aliases.zsh"
-alias funcconfig="{{ .editor }} ~/.zsh/functions.zsh"
-alias sheldonconfig="{{ .editor }} ~/.config/sheldon/plugins.toml"
+alias zshconfig="chezmoi edit ~/.zshrc"
+alias envconfig="chezmoi edit ~/.zsh/env.zsh"
+alias aliasconfig="chezmoi edit ~/.zsh/aliases.zsh"
+alias funcconfig="chezmoi edit ~/.zsh/functions.zsh"
+alias sheldonconfig="chezmoi edit ~/.config/sheldon/plugins.toml"
 alias reload="exec zsh"
 
 # --- Maintenance & Updates ---
