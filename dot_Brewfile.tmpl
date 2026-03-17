@@ -8,9 +8,6 @@ tap "hashicorp/tap"
 tap "lihaoyun6/tap"
 tap "theboredteam/boring-notch"
 {{ end -}}
-{{ if .macos_media -}}
-tap "spicetify/tap"
-{{ end -}}
 
 # =============================================================================
 # Base — always installed
@@ -141,7 +138,7 @@ cask "brave-browser"
 cask "slack"
 cask "spotify"
 cask "telegram"
-brew "spicetify/tap/spicetify-cli"
+brew "spicetify-cli"
 {{ end -}}
 
 # =============================================================================
