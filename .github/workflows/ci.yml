@@ -48,6 +48,7 @@ jobs:
             macos_media    = true
             dev_apps       = true
             touchbar       = false
+            gaming         = false
             bitwarden      = false
             bw_email       = "test@example.com"
             touch_id_sudo  = false
@@ -77,6 +78,7 @@ jobs:
             macos_media    = true
             dev_apps       = true
             touchbar       = false
+            gaming         = false
             bitwarden      = false
             bw_email       = "test@example.com"
             touch_id_sudo  = false

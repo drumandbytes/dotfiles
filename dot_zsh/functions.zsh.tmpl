@@ -111,6 +111,7 @@ sh-add() {
 # lets you assign each to a template section via fzf, then inserts the line
 # directly into the chezmoi source (dot_Brewfile.tmpl).
 brewsync() {
+    local FZF_DEFAULT_OPTS=""
     local src brewfile tmp
     src="$(chezmoi source-path)/dot_Brewfile.tmpl"
     brewfile="$HOME/.Brewfile"
@@ -152,9 +153,10 @@ brewsync() {
         [macos_media]="Media"
         [dev_apps]="Dev apps"
         [touchbar]="TouchBar"
+        [gaming]="Gaming"
     )
     local -a categories=(base alt_tools bitwarden docker kubernetes java \
-                         macos_utils macos_cosmetic macos_media dev_apps touchbar skip)
+                         macos_utils macos_cosmetic macos_media dev_apps touchbar gaming skip)
     local added=0
 
     for entry in "${untracked[@]}"; do

@@ -14,6 +14,7 @@
   macos_media    = {{ promptBoolOnce . "macos_media"    "Install media & communication apps (Brave, Spotify, Telegram, Slack) [y/n]" }}
   dev_apps       = {{ promptBoolOnce . "dev_apps"       "Install dev apps (VSCodium, DBeaver, GIMP, GitLab CLI, GitHub CLI) [y/n]" }}
   touchbar       = {{ promptBoolOnce . "touchbar"       "Install BetterTouchTool (TouchBar Macs only) [y/n]" }}
+  gaming         = {{ promptBoolOnce . "gaming"         "Install gaming & peripherals (Steam, Discord, 8BitDo, QMK Toolbox) [y/n]" }}
 
   # --- Infrastructure ---
 {{- $bitwarden := promptBoolOnce . "bitwarden" "Enable Bitwarden integration [y/n]" }}
