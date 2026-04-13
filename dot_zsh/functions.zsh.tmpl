@@ -119,13 +119,20 @@ brewsync() {
     [[ -f "$src" ]]      || { echo "❌ Brewfile template not found: $src"; return 1 }
     [[ -f "$brewfile" ]] || { echo "❌ ~/.Brewfile not found — run: chezmoi apply ~/.Brewfile"; return 1 }
 
-    # Collect untracked top-level formulae and casks
+    # Collect untracked top-level formulae and casks.
+    # Use the short name (strip tap prefix) for matching: brew leaves may return
+    # "hashicorp/tap/vault" or just "vault"; brew list --cask always returns the
+    # short form (e.g. "airbattery") even when the Brewfile has the tap-qualified
+    # form (e.g. cask "lihaoyun6/tap/airbattery").  The regex ([^"'/]+/)* matches
+    # zero or more leading tap path components so both forms are detected.
     local -a untracked=()
     while IFS= read -r pkg; do
-        grep -qE "^brew [\"']${pkg}[\"']" "$brewfile" || untracked+=("brew:::$pkg")
+        local short="${pkg##*/}"
+        grep -qE "^brew [\"']([^\"'/]+/)*${short}[\"']" "$brewfile" || untracked+=("brew:::$pkg")
     done < <(brew leaves)
     while IFS= read -r cask; do
-        grep -qE "^cask [\"']${cask}[\"']" "$brewfile" || untracked+=("cask:::$cask")
+        local short="${cask##*/}"
+        grep -qE "^cask [\"']([^\"'/]+/)*${short}[\"']" "$brewfile" || untracked+=("cask:::$cask")
     done < <(brew list --cask 2>/dev/null)
 
     (( ${#untracked[@]} == 0 )) && { echo "✅ All installed packages are tracked in ~/.Brewfile"; return 0 }
@@ -190,6 +197,8 @@ brewsync() {
         echo "  ✅  [$chosen] $new_line"
         (( added++ ))
     done
+
+    rm -f "$tmp"
 
     if (( added > 0 )); then
         echo "\n📝 Updated: $(basename "$src")"
