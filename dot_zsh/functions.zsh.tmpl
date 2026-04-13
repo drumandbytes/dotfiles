@@ -1,3 +1,8 @@
+# === FZF Helpers ===
+# Use for menu/list selections — prevents the file-preview in FZF_DEFAULT_OPTS
+# from running on plain lists where {} is not a file path.
+_fzf_menu() { FZF_DEFAULT_OPTS="" fzf "$@" }
+
 # === chezmoi Helpers ===
 # Sync the chezmoi source dir to origin/main, then apply.
 # Handles: detached HEAD, wrong branch, missing tracking, diverged local commits.
@@ -62,10 +67,10 @@ bw-search() {
         return 1
     fi
     local item item_id choice
-    item=$(bw-vault list items 2>/dev/null | jq -r '.[] | "\(.name) (\(.login.username)) [\(.id)]"' | fzf --header "Search Bitwarden" --height 40%)
+    item=$(bw-vault list items 2>/dev/null | jq -r '.[] | "\(.name) (\(.login.username)) [\(.id)]"' | _fzf_menu --header "Search Bitwarden" --height 40%)
     if [[ -n "$item" ]]; then
         item_id=$(echo "$item" | sed -n 's/.*\[\(.*\)\].*/\1/p')
-        choice=$(echo "Password\nUsername" | fzf --height 10% --reverse)
+        choice=$(echo "Password\nUsername" | _fzf_menu --height 10% --reverse)
         case "$choice" in
             Password) bw-vault get password "$item_id" | pbcopy && echo "✅ Password copied." ;;
             Username) bw-vault get item "$item_id" | jq -r '.login.username' | pbcopy && echo "✅ Username copied." ;;
@@ -111,7 +116,6 @@ sh-add() {
 # lets you assign each to a template section via fzf, then inserts the line
 # directly into the chezmoi source (dot_Brewfile.tmpl).
 brewsync() {
-    local FZF_DEFAULT_OPTS=""
     local src brewfile tmp
     src="$(chezmoi source-path)/dot_Brewfile.tmpl"
     brewfile="$HOME/.Brewfile"
@@ -165,7 +169,7 @@ brewsync() {
 
         local chosen
         chosen=$(printf '%s\n' "${categories[@]}" | \
-            fzf --height 15 --layout=reverse --border --no-sort \
+            _fzf_menu --height 15 --layout=reverse --border --no-sort \
                 --prompt="  Section > " \
                 --header="  ➕  $type \"$name\"")
         [[ -z "$chosen" || "$chosen" == "skip" ]] && { echo "  ⏭  Skipped: $name"; continue }
@@ -213,12 +217,11 @@ brewsync() {
 # === Interactive Tools (FZF) ===
 {{ if .alt_tools -}}
 help-cmd() {
-    local FZF_DEFAULT_OPTS=""
     local cmd
     cmd=$( {
         alias | sed 's/^/alias: /'
         command rg '^[[:space:]]*[a-zA-Z0-9_-]+\(\)' ~/.zsh/functions.zsh | sed -E 's/^[[:space:]]*([a-zA-Z0-9_-]+).*/func:  \1/'
-    } | fzf --height 40% --layout=reverse --border --ansi --header 'Search Personal Aliases & Functions' )
+    } | _fzf_menu --height 40% --layout=reverse --border --ansi --header 'Search Personal Aliases & Functions' )
     if [[ -n "$cmd" ]]; then
         local final_cmd=$(echo "$cmd" | sed -E 's/^(alias|func):[[:space:]]+//' | cut -d'=' -f1)
         eval "$final_cmd"
@@ -228,7 +231,7 @@ help-cmd() {
 
 fkill() {
     local pid
-    pid=$(ps -ef | sed 1d | fzf -m --ansi --layout=reverse --header 'Select process to kill' | awk '{print $2}')
+    pid=$(ps -ef | sed 1d | _fzf_menu -m --ansi --layout=reverse --header 'Select process to kill' | awk '{print $2}')
     [[ -n "$pid" ]] && echo "$pid" | xargs kill "-${1:-9}"
 }
 
