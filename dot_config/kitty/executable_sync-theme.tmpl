@@ -60,7 +60,7 @@ else
 fi
 {{ if .kubernetes }}
 # k9s: update skin in config.yaml (takes effect on next launch)
-k9s_config="${XDG_CONFIG_HOME:-$HOME/Library/Application Support}/k9s/config.yaml"
+k9s_config="${XDG_CONFIG_HOME:-$HOME/.config}/k9s/config.yaml"
 if [[ -f "$k9s_config" ]]; then
     sed -i '' "s/skin: catppuccin-.*/skin: ${k9s_skin}/" "$k9s_config"
 fi

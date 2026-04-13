@@ -93,7 +93,7 @@ sh-add() {
             print "apply = [\"defer\"]"
             print ""
         }
-        { print }' "$src" > "${src}.tmp" && mv "${src}.tmp" "$src"
+        { print }' "$src" > "${src}.tmp" && mv "${src}.tmp" "$src" || rm -f "${src}.tmp"
 
     echo "✅ Added sheldon plugin: $repo"
 
@@ -289,7 +289,7 @@ comp-add() {
     if [[ -f "$script" ]] && ! grep -qF "_${tool}" "$script"; then
         awk -v line="cmd ${tool} && ${cmd} > ~/.zsh/completions/_${tool}" \
             '/^# --- end completions ---/{print line} 1' \
-            "$script" > "${script}.tmp" && mv "${script}.tmp" "$script" && chmod +x "$script"
+            "$script" > "${script}.tmp" && mv "${script}.tmp" "$script" && chmod +x "$script" || rm -f "${script}.tmp"
 
         echo "📝 Persisted to $(basename "$script")"
     fi
@@ -311,7 +311,7 @@ uv-add() {
     if [[ -f "$script" ]] && ! grep -qF "\"${pkg}\"" "$script"; then
         awk -v line="uv tool install \"${pkg}\"" \
             '/^# --- end uv tools ---/{print line} 1' \
-            "$script" > "${script}.tmp" && mv "${script}.tmp" "$script"
+            "$script" > "${script}.tmp" && mv "${script}.tmp" "$script" || rm -f "${script}.tmp"
 
         echo "📝 Persisted to $(basename "$script")"
     fi
