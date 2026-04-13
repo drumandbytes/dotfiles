@@ -226,7 +226,7 @@ help-cmd() {
 fkill() {
     local pid
     pid=$(ps -ef | sed 1d | fzf -m --ansi --layout=reverse --header 'Select process to kill' | awk '{print $2}')
-    [[ -n "$pid" ]] && echo $pid | xargs kill "-${1:-9}"
+    [[ -n "$pid" ]] && echo "$pid" | xargs kill "-${1:-9}"
 }
 
 fgb() {
