@@ -1,8 +1,8 @@
 {{- if .bitwarden -}}
 #!/usr/bin/env zsh
 # bw-vault — thin Bitwarden CLI wrapper with session caching.
-# Session is persisted to /var/root/.bitwarden.session so non-interactive
-# scripts (e.g. cron jobs running as root) can reuse it without prompting.
+# Session key is cached in $XDG_CACHE_HOME/bitwarden.session (chmod 600)
+# so subsequent calls reuse it without re-prompting.
 #
 # Usage:
 #   bw-vault <bw subcommand + args>   — runs bw with a valid session
@@ -10,21 +10,23 @@
 #   bw-vault login|logout|config ...  — pass through directly (no session needed)
 
 bw_exec=$(command -v bw)
-bw_session_file='/var/root/.bitwarden.session'
+bw_session_file="${XDG_CACHE_HOME:-$HOME/.cache}/bitwarden.session"
 
 _bw_regen() {
     $bw_exec logout 2>/dev/null
     local raw_key
     raw_key=$($bw_exec login "{{ .bw_email }}" --raw)
     if [[ -n "$raw_key" ]]; then
-        echo "$raw_key" | sudo tee "$bw_session_file" > /dev/null
+        mkdir -p "$(dirname "$bw_session_file")"
+        echo "$raw_key" > "$bw_session_file"
+        chmod 600 "$bw_session_file"
         echo "$raw_key"
     fi
 }
 
 if [[ -z "$BW_SESSION" ]]; then
-    if sudo test -s "$bw_session_file" 2>/dev/null; then
-        BW_SESSION=$(sudo cat "$bw_session_file" 2>/dev/null)
+    if [[ -s "$bw_session_file" ]]; then
+        BW_SESSION=$(cat "$bw_session_file")
     fi
 fi
 
