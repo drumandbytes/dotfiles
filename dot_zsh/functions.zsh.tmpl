@@ -154,9 +154,10 @@ brewsync() {
         [dev_apps]="Dev apps"
         [touchbar]="TouchBar"
         [gaming]="Gaming"
+        [productivity]="Productivity"
     )
     local -a categories=(base alt_tools bitwarden docker kubernetes java \
-                         macos_utils macos_cosmetic macos_media dev_apps touchbar gaming skip)
+                         macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity skip)
     local added=0
 
     for entry in "${untracked[@]}"; do
