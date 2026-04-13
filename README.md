@@ -11,7 +11,7 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | `~/.zshrc` | Zsh entrypoint — modular, deferred, fast |
 | `~/.zsh/env.zsh` | Exports, PATH, editor |
 | `~/.zsh/aliases.zsh` | Shell aliases (eza, k8s, git, etc.) |
-| `~/.zsh/functions.zsh` | Functions: `mnt`, `comp-add`, `bw-search`, lazy loaders |
+| `~/.zsh/functions.zsh` | Functions: `mnt`, `brewsync`, `comp-add`, `bw-search`, `_fzf_menu`, lazy loaders |
 | `~/.config/sheldon/plugins.toml` | Zsh plugin manager config |
 | `~/.config/starship.toml` | Prompt |
 | `~/.config/kitty/` | Terminal (kitty.conf + Catppuccin themes) |
@@ -66,6 +66,8 @@ During `chezmoi init` you'll be prompted for optional features (answers are save
 | `Install media & communication apps` | Installs Brave, Spotify, Telegram, Slack, spicetify |
 | `Install dev apps` | Installs VSCodium, DBeaver, GIMP, GitLab CLI, GitHub CLI |
 | `Install BetterTouchTool` | For TouchBar Macs only |
+| `Install gaming & peripherals` | Installs Steam, Discord, 8BitDo Ultimate Software, QMK Toolbox |
+| `Install productivity apps` | Installs Notion, Obsidian, Grammarly Desktop, Calibre |
 | `Enable Bitwarden integration` | Writes `BW_USER` to env and installs `bw-vault` script |
 | `Bitwarden account email` | Your Bitwarden login email (only asked if above is yes) |
 | `Enable Touch ID for sudo` | Runs a one-time script to add `pam_tid.so` to sudo PAM config |
@@ -99,6 +101,7 @@ Tool inits (atuin, zoxide, direnv, navi, etc.) are pre-generated once rather tha
 | Function | Description |
 | ---------- | ----------- |
 | `mnt` | Full maintenance: brew upgrade, sheldon update, regenerate inits & completions, recompile, backup, reload |
+| `brewsync` | Interactively promote untracked brew packages into the chezmoi-managed Brewfile; assigns each to a section via fzf |
 | `comp-add <tool>` | Auto-detect and add zsh completions for a new tool; persists to chezmoi source |
 | `uv-add <package>` | Install a global uv tool and persist it to `run_onchange_uv-tools.sh` |
 | `sh-add <user/repo>` | Add a deferred sheldon plugin; persists to sheldon config |
@@ -177,9 +180,10 @@ run `chezmoi re-add ~/.config/...` to pull the current state back into source.
 ## Adding things
 
 ```zsh
+brewsync                   # detect untracked brew packages and categorise them into the Brewfile interactively
 comp-add <toolname>        # add a zsh completion; auto-detects syntax, persists to chezmoi source
 uv-add <package>           # install a global uv tool and persist it to run_onchange_uv-tools.sh
-sh-add <user/repo>          # add a deferred sheldon plugin and persist it to plugins.toml
+sh-add <user/repo>         # add a deferred sheldon plugin and persist it to plugins.toml
 ```
 
 ## Navi
@@ -209,6 +213,6 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 | starship | palette set in `~/.config/starship.toml` (Macchiato or Latte) |
 | zsh-syntax-highlighting | `~/.zsh/catppuccin_*.zsh` (sourced from env.zsh based on appearance) |
 | btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
-| k9s | `~/Library/Application Support/k9s/skins/` (all flavours; follows macOS appearance via `sync-theme`) *(kubernetes only)* |
+| k9s | `~/.config/k9s/skins/` (all flavours; follows macOS appearance via `sync-theme`) *(kubernetes only)* |
 
 `sync-theme` (a script in `~/.config/kitty/`) switches kitty and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance. Hammerspoon also updates the fresh editor theme via `~/.config/fresh/config.json`.

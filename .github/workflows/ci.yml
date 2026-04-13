@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install chezmoi + shell linters
         run: brew install chezmoi shellcheck shfmt
-      - name: Validate templates
+      - name: Validate templates (minimal flags)
         run: |
           mkdir -p ~/.config/chezmoi
           cat > ~/.config/chezmoi/chezmoi.toml << EOF
@@ -60,6 +60,35 @@ jobs:
 
           failed=0
           # Skip .chezmoi.toml.tmpl — it uses promptBoolOnce which requires interaction
+          while IFS= read -r f; do
+            echo "→ $f"
+            chezmoi execute-template < "$f" > /dev/null || { echo "FAILED: $f"; failed=1; }
+          done < <(find . -name '*.tmpl' ! -name '.chezmoi.toml.tmpl' ! -path './.git/*')
+          exit "$failed"
+
+      - name: Validate templates (all flags enabled)
+        run: |
+          cat > ~/.config/chezmoi/chezmoi.toml << EOF
+          sourceDir = "$(pwd)"
+          [data]
+            editor         = "fresh"
+            alt_tools      = true
+            macos_utils    = true
+            macos_cosmetic = true
+            macos_media    = true
+            dev_apps       = true
+            touchbar       = true
+            gaming         = true
+            productivity   = true
+            bitwarden      = true
+            bw_email       = "test@example.com"
+            touch_id_sudo  = true
+            docker         = true
+            kubernetes     = true
+            java           = true
+          EOF
+
+          failed=0
           while IFS= read -r f; do
             echo "→ $f"
             chezmoi execute-template < "$f" > /dev/null || { echo "FAILED: $f"; failed=1; }
