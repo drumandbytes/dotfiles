@@ -105,6 +105,99 @@ sh-add() {
     echo "📝 Persisted and activated."
 }
 
+# === Brew Drift Detection ===
+# Interactively promote untracked brew packages into the chezmoi-managed
+# Brewfile template. Picks up brew leaves + casks not yet in ~/.Brewfile,
+# lets you assign each to a template section via fzf, then inserts the line
+# directly into the chezmoi source (dot_Brewfile.tmpl).
+brewsync() {
+    local src brewfile tmp
+    src="$(chezmoi source-path)/dot_Brewfile.tmpl"
+    brewfile="$HOME/.Brewfile"
+    tmp="${src}.tmp"
+
+    [[ -f "$src" ]]      || { echo "❌ Brewfile template not found: $src"; return 1 }
+    [[ -f "$brewfile" ]] || { echo "❌ ~/.Brewfile not found — run: chezmoi apply ~/.Brewfile"; return 1 }
+
+    # Collect untracked top-level formulae and casks
+    local -a untracked=()
+    while IFS= read -r pkg; do
+        grep -qE "^brew [\"']${pkg}[\"']" "$brewfile" || untracked+=("brew:::$pkg")
+    done < <(brew leaves)
+    while IFS= read -r cask; do
+        grep -qE "^cask [\"']${cask}[\"']" "$brewfile" || untracked+=("cask:::$cask")
+    done < <(brew list --cask 2>/dev/null)
+
+    (( ${#untracked[@]} == 0 )) && { echo "✅ All installed packages are tracked in ~/.Brewfile"; return 0 }
+    echo "🍺 ${#untracked[@]} untracked package(s) — categorize each or skip:\n"
+
+    # Maps section name → unique header string used as awk anchor.
+    # Conditional sections appear twice in the file (taps block + main block);
+    # anchoring on the section header comment targets the main block only.
+    local -A section_anchors=(
+        [alt_tools]="Alt-tools"
+        [bitwarden]="Bitwarden"
+        [docker]="Docker"
+        [kubernetes]="Kubernetes"
+        [java]="Java"
+        [macos_utils]="macOS utilities"
+        [macos_cosmetic]="macOS cosmetic"
+        [macos_media]="Media"
+        [dev_apps]="Dev apps"
+        [touchbar]="TouchBar"
+    )
+    local -a categories=(base alt_tools bitwarden docker kubernetes java \
+                         macos_utils macos_cosmetic macos_media dev_apps touchbar skip)
+    local added=0
+
+    for entry in "${untracked[@]}"; do
+        local type="${entry%%:::*}" name="${entry##*:::}"
+
+        local chosen
+        chosen=$(printf '%s\n' "${categories[@]}" | \
+            fzf --height 15 --layout=reverse --border --no-sort \
+                --prompt="  Section > " \
+                --header="  ➕  $type \"$name\"")
+        [[ -z "$chosen" || "$chosen" == "skip" ]] && { echo "  ⏭  Skipped: $name"; continue }
+
+        local new_line="$type \"$name\""
+
+        if [[ "$chosen" == "base" ]]; then
+            # 2-line lookahead buffer: when we see "# Alt-tools", prev1 = "# ==="
+            # and prev2 = the blank line before it.  Emit: blank → new_line → # === → # Alt-tools
+            awk -v nl="$new_line" '
+                BEGIN { p2=""; p1=""; n=0 }
+                /^# Alt-tools/ {
+                    if (n >= 2) print p2
+                    print nl
+                    print p1
+                    print
+                    p2=""; p1=""; n=0; next
+                }
+                { if (n >= 2) print p2; p2=p1; p1=$0; n++ }
+                END { if (n >= 2) print p2; if (n >= 1) print p1 }
+            ' "$src" > "$tmp" && mv "$tmp" "$src"
+        else
+            # Insert new_line before the {{ end -}} that closes this section.
+            local anchor="${section_anchors[$chosen]}"
+            awk -v anchor="$anchor" -v nl="$new_line" '
+                $0 ~ anchor { in_sec=1 }
+                in_sec && /^\{\{ end/ { print nl; in_sec=0 }
+                { print }
+            ' "$src" > "$tmp" && mv "$tmp" "$src"
+        fi
+
+        echo "  ✅  [$chosen] $new_line"
+        (( added++ ))
+    done
+
+    if (( added > 0 )); then
+        echo "\n📝 Updated: $(basename "$src")"
+        echo "   Deploy : chezmoi apply ~/.Brewfile"
+        echo "   Commit : chezmoi cd && git add -p && git commit"
+    fi
+}
+
 # === Interactive Tools (FZF) ===
 {{ if .alt_tools -}}
 help-cmd() {
