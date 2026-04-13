@@ -1,8 +1,8 @@
 {{- if .bitwarden -}}
 #!/usr/bin/env zsh
 # bw-vault — thin Bitwarden CLI wrapper with session caching.
-# Session is persisted to /var/root/.bitwarden.session so non-interactive
-# scripts (e.g. cron jobs running as root) can reuse it without prompting.
+# Session is persisted to /var/root/.bitwarden.session so only root can
+# read it — intentional security boundary requiring Touch ID sudo to access.
 #
 # Usage:
 #   bw-vault <bw subcommand + args>   — runs bw with a valid session
