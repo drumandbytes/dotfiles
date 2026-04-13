@@ -185,7 +185,7 @@ brewsync() {
                 END { if (n >= 2) print p2; if (n >= 1) print p1 }
             ' "$src" > "$tmp" && mv "$tmp" "$src"
         else
-            # Insert new_line before the {{ end -}} that closes this section.
+            # Insert new_line before the end-block that closes this section.
             local anchor="${section_anchors[$chosen]}"
             awk -v anchor="$anchor" -v nl="$new_line" '
                 $0 ~ anchor { in_sec=1 }
