@@ -49,6 +49,7 @@ jobs:
             dev_apps       = true
             touchbar       = false
             gaming         = false
+            productivity   = false
             bitwarden      = false
             bw_email       = "test@example.com"
             touch_id_sudo  = false
@@ -79,6 +80,7 @@ jobs:
             dev_apps       = true
             touchbar       = false
             gaming         = false
+            productivity   = false
             bitwarden      = false
             bw_email       = "test@example.com"
             touch_id_sudo  = false
