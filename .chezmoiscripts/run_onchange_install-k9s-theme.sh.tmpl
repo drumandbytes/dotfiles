@@ -33,7 +33,7 @@ fi
 
 CONFIG_FILE="$K9S_CONFIG/config.yaml"
 mkdir -p "$(dirname "$CONFIG_FILE")"
-[[ -f "$CONFIG_FILE" ]] || echo '{}' > "$CONFIG_FILE"
+[[ -f "$CONFIG_FILE" ]] || echo '{}' >"$CONFIG_FILE"
 
 if ! command -v yq &>/dev/null; then
     echo "yq not found — install it with: brew install yq"
