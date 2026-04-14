@@ -88,7 +88,7 @@ sh-add() {
     src="$(chezmoi source-path)/dot_config/sheldon/plugins.toml.tmpl"
 
     [[ -f "$src" ]] || { echo "❌ chezmoi source not found: $src"; return 1; }
-    grep -qF "github = \"$repo\"" "$src" && { echo "⚠️  $repo already in plugins.toml"; return 0; }
+    command grep -qF "github = \"$repo\"" "$src" && { echo "⚠️  $repo already in plugins.toml"; return 0; }
 
     # Insert new plugin block before the "Syntax highlighting (must be last)" marker
     awk -v name="$name" -v repo="$repo" \
@@ -237,7 +237,7 @@ fkill() {
 
 fgb() {
     local branches branch
-    branches=$(git branch --all | grep -v HEAD) &&
+    branches=$(git branch --all | command grep -v HEAD) &&
     branch=$(echo "$branches" | fzf-tmux -d $(( 2 + $(echo "$branches" | wc -l) )) +m \
              --preview 'git log --oneline --graph --date=short --color=always' ) &&
     git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
@@ -292,7 +292,7 @@ comp-add() {
     echo "✅ Generated ~/.zsh/completions/_${tool}  (via: ${cmd})"
 
     # Persist to chezmoi source script (insert before marker)
-    if [[ -f "$script" ]] && ! grep -qF "_${tool}" "$script"; then
+    if [[ -f "$script" ]] && ! command grep -qF "_${tool}" "$script"; then
         awk -v line="cmd ${tool} && ${cmd} > ~/.zsh/completions/_${tool}" \
             '/^# --- end completions ---/{print line} 1' \
             "$script" > "${script}.tmp" && mv "${script}.tmp" "$script" && chmod +x "$script" || rm -f "${script}.tmp"
@@ -314,7 +314,7 @@ uv-add() {
     uv tool install "$pkg" || return 1
     echo "✅ Installed uv tool: ${pkg}"
 
-    if [[ -f "$script" ]] && ! grep -qF "\"${pkg}\"" "$script"; then
+    if [[ -f "$script" ]] && ! command grep -qF "\"${pkg}\"" "$script"; then
         awk -v line="uv tool install \"${pkg}\"" \
             '/^# --- end uv tools ---/{print line} 1' \
             "$script" > "${script}.tmp" && mv "${script}.tmp" "$script" || rm -f "${script}.tmp"
