@@ -133,11 +133,11 @@ brewsync() {
     local -a untracked=()
     while IFS= read -r pkg; do
         local short="${pkg##*/}"
-        grep -qE "^brew [\"']([^\"'/]+/)*${short}[\"']" "$brewfile" || untracked+=("brew:::$pkg")
+        command grep -qE "^brew [\"']([^\"'/]+/)*${short}[\"']" "$brewfile" || untracked+=("brew:::$pkg")
     done < <(brew leaves)
     while IFS= read -r cask; do
         local short="${cask##*/}"
-        grep -qE "^cask [\"']([^\"'/]+/)*${short}[\"']" "$brewfile" || untracked+=("cask:::$cask")
+        command grep -qE "^cask [\"']([^\"'/]+/)*${short}[\"']" "$brewfile" || untracked+=("cask:::$cask")
     done < <(brew list --cask 2>/dev/null)
 
     (( ${#untracked[@]} == 0 )) && { echo "✅ All installed packages are tracked in ~/.Brewfile"; return 0 }
