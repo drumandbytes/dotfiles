@@ -111,20 +111,60 @@ sh-add() {
 }
 
 # === Brew Drift Detection ===
-# Interactively promote untracked brew packages into the chezmoi-managed
-# Brewfile template. Picks up brew leaves + casks not yet in ~/.Brewfile,
-# lets you assign each to a template section via fzf, then inserts the line
-# directly into the chezmoi source (dot_Brewfile.tmpl).
+# Two-way sync: promote untracked packages into dot_Brewfile.tmpl and remove
+# stale entries (in Brewfile but no longer installed). Skipped packages are
+# persisted to .brewsync_skip so they are never prompted again.
 brewsync() {
-    local src brewfile tmp
+    local src brewfile tmp skip_file
     src="$(chezmoi source-path)/dot_Brewfile.tmpl"
     brewfile="$HOME/.Brewfile"
     tmp="${src}.tmp"
+    skip_file="$(chezmoi source-path)/.brewsync_skip"
 
     [[ -f "$src" ]]      || { echo "❌ Brewfile template not found: $src"; return 1 }
     [[ -f "$brewfile" ]] || { echo "❌ ~/.Brewfile not found — run: chezmoi apply ~/.Brewfile"; return 1 }
+    touch "$skip_file"
 
-    # Collect untracked top-level formulae and casks.
+    # ── Stale detection ──────────────────────────────────────────────────────
+    # Find packages listed in ~/.Brewfile that are no longer installed.
+    local formula_list cask_list
+    formula_list=$(brew list --formula 2>/dev/null)
+    cask_list=$(brew list --cask 2>/dev/null)
+
+    local -a stale=()
+    while IFS= read -r name; do
+        local short="${name##*/}"
+        echo "$formula_list" | command grep -qxF "$short" || stale+=("brew:::$name")
+    done < <(command grep -E "^brew [\"']" "$brewfile" | sed -E "s/^brew [\"']([^\"']+)[\"'].*/\1/")
+    while IFS= read -r name; do
+        local short="${name##*/}"
+        echo "$cask_list" | command grep -qxF "$short" || stale+=("cask:::$name")
+    done < <(command grep -E "^cask [\"']" "$brewfile" | sed -E "s/^cask [\"']([^\"']+)[\"'].*/\1/")
+
+    local removed=0
+    if (( ${#stale[@]} > 0 )); then
+        echo "🗑️  ${#stale[@]} stale package(s) found in ~/.Brewfile (no longer installed):\n"
+        for entry in "${stale[@]}"; do
+            local type="${entry%%:::*}" name="${entry##*:::}"
+            local short="${name##*/}"
+
+            local choice
+            choice=$(printf '%s\n' "remove" "keep" | \
+                _fzf_menu --height 5 --layout=reverse --border --no-sort \
+                    --prompt="  Action > " \
+                    --header="  🗑️  $type \"$name\" — not installed")
+            [[ -z "$choice" || "$choice" == "keep" ]] && { echo "  ⏸  Kept: $name"; continue }
+
+            # Remove matching line from template (handles tap-qualified names)
+            command grep -vE "^${type} [\"']([^\"'/]+/)*${short}[\"']" "$src" >"$tmp" \
+                && mv "$tmp" "$src" || rm -f "$tmp"
+            echo "  🗑️  Removed: $name"
+            (( removed++ ))
+        done
+        echo ""
+    fi
+
+    # ── Untracked detection ──────────────────────────────────────────────────
     # Use the short name (strip tap prefix) for matching: brew leaves may return
     # "hashicorp/tap/vault" or just "vault"; brew list --cask always returns the
     # short form (e.g. "airbattery") even when the Brewfile has the tap-qualified
@@ -140,8 +180,17 @@ brewsync() {
         command grep -qE "^cask [\"']([^\"'/]+/)*${short}[\"']" "$brewfile" || untracked+=("cask:::$cask")
     done < <(brew list --cask 2>/dev/null)
 
-    (( ${#untracked[@]} == 0 )) && { echo "✅ All installed packages are tracked in ~/.Brewfile"; return 0 }
-    echo "🍺 ${#untracked[@]} untracked package(s) — categorize each or skip:\n"
+    # Filter out permanently skipped entries
+    local -a pending=()
+    for entry in "${untracked[@]}"; do
+        command grep -qxF "$entry" "$skip_file" || pending+=("$entry")
+    done
+
+    if (( ${#pending[@]} == 0 )); then
+        (( removed == 0 )) && echo "✅ All installed packages are tracked in ~/.Brewfile"
+        return 0
+    fi
+    echo "🍺 ${#pending[@]} untracked package(s) — categorize each or skip:\n"
 
     # Maps section name → unique header string used as awk anchor.
     # Conditional sections appear twice in the file (taps block + main block);
@@ -164,7 +213,7 @@ brewsync() {
                          macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity skip)
     local added=0
 
-    for entry in "${untracked[@]}"; do
+    for entry in "${pending[@]}"; do
         local type="${entry%%:::*}" name="${entry##*:::}"
 
         local chosen
@@ -172,7 +221,11 @@ brewsync() {
             _fzf_menu --height 15 --layout=reverse --border --no-sort \
                 --prompt="  Section > " \
                 --header="  ➕  $type \"$name\"")
-        [[ -z "$chosen" || "$chosen" == "skip" ]] && { echo "  ⏭  Skipped: $name"; continue }
+        if [[ -z "$chosen" || "$chosen" == "skip" ]]; then
+            echo "$entry" >>"$skip_file"
+            echo "  ⏭  Skipped forever: $name"
+            continue
+        fi
 
         local new_line="$type \"$name\""
 
@@ -190,7 +243,7 @@ brewsync() {
                 }
                 { if (n >= 2) print p2; p2=p1; p1=$0; n++ }
                 END { if (n >= 2) print p2; if (n >= 1) print p1 }
-            ' "$src" > "$tmp" && mv "$tmp" "$src"
+            ' "$src" >"$tmp" && mv "$tmp" "$src"
         else
             # Insert new_line before the end-block that closes this section.
             local anchor="${section_anchors[$chosen]}"
@@ -198,7 +251,7 @@ brewsync() {
                 $0 ~ anchor { in_sec=1 }
                 in_sec && /^\{\{ end/ { print nl; in_sec=0 }
                 { print }
-            ' "$src" > "$tmp" && mv "$tmp" "$src"
+            ' "$src" >"$tmp" && mv "$tmp" "$src"
         fi
 
         echo "  ✅  [$chosen] $new_line"
@@ -207,7 +260,7 @@ brewsync() {
 
     rm -f "$tmp"
 
-    if (( added > 0 )); then
+    if (( added > 0 || removed > 0 )); then
         echo "\n📝 Updated: $(basename "$src")"
         echo "   Deploy : chezmoi apply ~/.Brewfile"
         echo "   Commit : chezmoi cd && git add -p && git commit"
