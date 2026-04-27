@@ -1,3 +1,12 @@
+_claude_switch_profile() {
+  local profile_id="$1"
+  local config_dir="$2"
+  shift 2
+  defaults write HamedElfayome.Claude-Usage activeProfileId "$profile_id"
+  killall "Claude Usage" && open -a "Claude Usage"
+  CLAUDE_CONFIG_DIR="$config_dir" command claude "$@"
+}
+
 # === FZF Helpers ===
 # Use for menu/list selections — prevents the file-preview in FZF_DEFAULT_OPTS
 # from running on plain lists where {} is not a file path.
