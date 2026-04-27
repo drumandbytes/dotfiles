@@ -28,8 +28,8 @@ alias kex='k exec -it'
 {{- end }}
 
 # --- Claude Code profiles ---
-alias claude-personal='CLAUDE_CONFIG_DIR=$HOME/.claude-personal command claude'
-alias claude-work='CLAUDE_CONFIG_DIR=$HOME/.claude-work command claude'
+alias claude-personal='_claude_switch_profile "2024A47A-47A6-4D1A-A275-B23E005B6556" "$HOME/.claude-personal"'
+alias claude-work='_claude_switch_profile "421504E0-F356-48EC-974A-F54C5562F99B" "$HOME/.claude-work"'
 alias claude="echo 'Use claude-personal or claude-work'"
 
 # --- Git & Workflow ---
