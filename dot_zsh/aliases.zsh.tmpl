@@ -47,6 +47,14 @@ alias reload="exec zsh"
 # --- Maintenance & Updates ---
 alias sheldon-up="sheldon lock --update && sheldon source > ~/.zsh/sheldon.zsh && echo 'Sheldon updated.'"
 alias atuin-clean="atuin search --cmd-only --limit 10000 | fzf --multi | while read -r cmd; do atuin search --delete \"\$cmd\"; done"
+alias dots-setup="~/.local/bin/dots-setup"
+alias dots-diff="chezmoi diff"
+alias dots-add="chezmoi add"
+alias dots-edit="chezmoi edit"
+alias dots-apply="chezmoi apply"
+alias dots-status="chezmoi status"
+alias dots-push="git -C \$(chezmoi source-path) push"
+alias dots-log="git -C \$(chezmoi source-path) log --oneline -20"
 
 # --- Global Aliases ---
 alias -g L='| less'

@@ -2,11 +2,19 @@
 gpg_verify = false
 
 [tools]
-# Runtime versions managed globally by mise.
-# Pin versions per-project by adding a .mise.toml to the project root.
-uv   = "latest"
-node = "lts"
-ruff = "latest"
-{{ if .java -}}
-java = "temurin-21"
-{{ end -}}
+# === Always active ===
+node = "lts"     # JavaScript runtime
+uv   = "latest"  # Python package manager + Python version installer
+ruff = "latest"  # Python linter/formatter
+
+# === Add runtimes with: mise-add <tool> [version] ===
+# mise:end
+
+# === Reference — uncomment or use mise-add to enable ===
+# java   = "temurin-21"  # Java LTS
+# python = "latest"      # Python (uv handles most needs; use this for direct python binary)
+# ruby   = "latest"      # Ruby
+# go     = "latest"      # Go
+# deno   = "latest"      # Deno
+# bun    = "latest"      # Bun
+# rust   = "latest"      # Rust (brew "rust" in base covers this for most uses)

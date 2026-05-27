@@ -1,5 +1,7 @@
 #!/bin/bash
-# Bootstrap script: installs Homebrew (if missing) then applies dotfiles via chezmoi.
+# Bootstrap script: installs Homebrew + chezmoi, applies base dotfiles, then
+# runs the interactive machine setup wizard (dots-setup).
+#
 # Usage: bash <(curl -fsSL https://raw.githubusercontent.com/drumandbytes/dotfiles/main/install.sh)
 
 set -euo pipefail
@@ -24,6 +26,17 @@ if ! command -v chezmoi &>/dev/null; then
     brew install chezmoi
 fi
 
-# --- dotfiles ---
-echo "Applying dotfiles..."
-chezmoi init --apply https://github.com/drumandbytes/dotfiles
+# --- Phase 1: init + base apply ---
+# chezmoi init clones the repo and writes ~/.config/chezmoi/chezmoi.toml with
+# safe defaults (all feature flags off). The first apply installs only base
+# packages — importantly including fzf, which dots-setup needs.
+echo "Initialising dotfiles (base pass)..."
+chezmoi init https://github.com/drumandbytes/dotfiles
+chezmoi apply
+
+# --- Phase 2: interactive machine setup ---
+# dots-setup runs the profile wizard, writes the real chezmoi.toml, then calls
+# chezmoi apply again to install the selected packages.
+echo ""
+echo "Launching machine setup wizard..."
+~/.local/bin/dots-setup

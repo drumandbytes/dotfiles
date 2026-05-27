@@ -209,7 +209,6 @@ brewsync() {
         [bitwarden]="Bitwarden"
         [docker]="Docker"
         [kubernetes]="Kubernetes"
-        [java]="Java"
         [macos_utils]="macOS utilities"
         [macos_cosmetic]="macOS cosmetic"
         [macos_media]="Media"
@@ -217,9 +216,10 @@ brewsync() {
         [touchbar]="TouchBar"
         [gaming]="Gaming"
         [productivity]="Productivity"
+        [peripherals]="Peripherals"
     )
-    local -a categories=(base alt_tools bitwarden docker kubernetes java \
-                         macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity skip)
+    local -a categories=(base alt_tools bitwarden docker kubernetes \
+                         macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity peripherals skip)
     local added=0
 
     for entry in "${pending[@]}"; do
@@ -402,6 +402,158 @@ gcloud() {
 gsutil() { gcloud; gsutil "$@" }
 bq()     { gcloud; bq "$@" }
 {{ end }}
+# === brew install interceptor ===
+# Nudges toward pkg-add when running brew install directly, mirroring the
+# you-should-use plugin pattern for aliases. Passes through all other subcommands.
+brew() {
+  if [[ "$1" == "install" ]]; then
+    local type="brew"
+    local -a pkgs=()
+
+    for arg in "${@:2}"; do
+      case "$arg" in
+        --cask|--casks) type="cask" ;;
+        --formula|--formulae) type="brew" ;;
+        -*) ;;
+        *) pkgs+=("$arg") ;;
+      esac
+    done
+
+    if (( ${#pkgs[@]} > 0 )); then
+      echo "💡 To track in your dotfiles, use:"
+      for pkg in "${pkgs[@]}"; do
+        echo "   pkg-add <category> ${pkg} ${type}"
+      done
+      echo ""
+      printf "Continue with untracked install? [y/N] "
+      local answer; read -r answer
+      [[ "$answer" =~ ^[Yy]$ ]] || return 0
+    fi
+  fi
+  command brew "$@"
+}
+
+# === mise Runtime Management ===
+# Add a runtime to the global mise config and persist to chezmoi.
+# Usage: mise-add <tool> [version]   e.g. mise-add python latest  |  mise-add go 1.22
+mise-add() {
+  local tool="${1:?Usage: mise-add <tool> [version]}"
+  local version="${2:-latest}"
+  local config
+  config="$(chezmoi source-path)/dot_config/mise/config.toml.tmpl"
+
+  if grep -qE "^${tool}\s*=" "$config"; then
+    echo "⚠️  '${tool}' is already in mise config." >&2; return 1
+  fi
+
+  mise use --global "${tool}@${version}" || return 1
+
+  awk -v tool="$tool" -v ver="$version" \
+    '/^# mise:end$/ { print tool " = \"" ver "\"" }
+     { print }' "$config" > "${config}.tmp" && mv "${config}.tmp" "$config"
+
+  chezmoi add "$config"
+  echo "✅ mise: ${tool}@${version} active and persisted."
+}
+
+# === Package Management ===
+# Add a package to a Brewfile category and dots-setup registry.
+# Usage: pkg-add <category> <package> [brew|cask] [--always]
+#   --always: no exclude guard — package always installs when category is enabled
+pkg-add() {
+  local category="${1:?Usage: pkg-add <category> <package> [brew|cask] [--always]}"
+  local package="${2:?Usage: pkg-add <category> <package> [brew|cask] [--always]}"
+  local type="${3:-brew}"
+  local excludable=true
+  [[ "${4:-}" == "--always" ]] && excludable=false
+
+  local src; src=$(chezmoi source-path)
+  local brewfile="$src/dot_Brewfile.tmpl"
+  local setup="$src/dot_local/bin/executable_dots-setup"
+
+  if ! grep -qE "\[${category}\]=" "$setup"; then
+    echo "❌ Category '${category}' not found." >&2
+    echo "   Create it first: pkg-group-add '${category}' 'Description'" >&2
+    return 1
+  fi
+  if grep -qE "(brew|cask) \"(.*\/)?${package}\"" "$brewfile"; then
+    echo "⚠️  '${package}' is already in the Brewfile." >&2; return 1
+  fi
+
+  # Update CAT_PKGS in dots-setup
+  sed -i '' "s/\(\[${category}\]=\"[^\"]*\)\"/\1 ${package}\"/" "$setup"
+
+  # Insert entry before # pkg:end:<category> marker in Brewfile
+  local marker="# pkg:end:${category}"
+  if ! grep -qF "$marker" "$brewfile"; then
+    echo "❌ Marker '${marker}' not found in Brewfile — run 'chezmoi update' first." >&2; return 1
+  fi
+
+  local tmp="${brewfile}.tmp"
+  awk -v cat="$category" -v pkg="$package" -v type="$type" -v excl="$excludable" '
+    /^# pkg:end:/ && substr($0, 12) == cat {
+      if (excl == "true") print "{{ if not (has .machine_excludes \"" pkg "\") -}}"
+      print type " \"" pkg "\""
+      if (excl == "true") print "{{ end -}}"
+    }
+    { print }
+  ' "$brewfile" > "$tmp" && mv "$tmp" "$brewfile" || { rm -f "$tmp"; return 1; }
+
+  chezmoi add "$setup" "$brewfile"
+  git -C "$src" add "$setup" "$brewfile"
+  git -C "$src" commit -m "feat(brew): add ${package} to ${category}"
+  echo "✅ '${package}' added to [${category}] (${type}) and committed."
+  echo "   Run 'chezmoi apply' to install, or 'dots-setup' to reconfigure first."
+  echo "   Push when ready: git -C \$(chezmoi source-path) push"
+}
+
+# Create a new package group across Brewfile, dots-setup, and chezmoi config.
+# Usage: pkg-group-add <category> <description>
+pkg-group-add() {
+  local category="${1:?Usage: pkg-group-add <category> 'Description'}"
+  local description="${2:?Usage: pkg-group-add <category> 'Description'}"
+
+  local src; src=$(chezmoi source-path)
+  local brewfile="$src/dot_Brewfile.tmpl"
+  local setup="$src/dot_local/bin/executable_dots-setup"
+  local config="$src/.chezmoi.toml.tmpl"
+
+  if grep -qE "\[${category}\]=" "$setup"; then
+    echo "⚠️  Category '${category}' already exists." >&2; return 1
+  fi
+
+  local tmp; tmp=$(mktemp)
+
+  # Append category to CAT_ORDER (single-line array)
+  sed -i '' "s/^CAT_ORDER=(\(.*\))/CAT_ORDER=(\1 ${category})/" "$setup"
+
+  # Insert into CAT_DESC and CAT_PKGS before their closing )
+  awk -v cat="$category" -v desc="$description" '
+    /^CAT_DESC=\($/ { in_desc=1 }
+    /^CAT_PKGS=\($/ { in_pkgs=1 }
+    /^\)$/ {
+      if (in_desc) { print "  [" cat "]=\"" desc "\""; in_desc=0 }
+      if (in_pkgs) { print "  [" cat "]=\"\""; in_pkgs=0 }
+    }
+    { print }
+  ' "$setup" > "$tmp" && mv "$tmp" "$setup" || { rm -f "$tmp"; return 1; }
+
+  # Append new section to Brewfile
+  printf '\n# =============================================================================\n# %s\n# =============================================================================\n{{ if .%s -}}\n# pkg:end:%s\n{{ end -}}\n' \
+    "$description" "$category" "$category" >> "$brewfile"
+
+  # Append flag to chezmoi.toml.tmpl
+  printf '  %-14s = false\n' "$category" >> "$config"
+
+  chezmoi add "$setup" "$brewfile" "$config"
+  git -C "$src" add "$setup" "$brewfile" "$config"
+  git -C "$src" commit -m "feat(brew): add ${category} package group"
+  echo "✅ Created group '${category}': ${description}"
+  echo "   Add packages : pkg-add ${category} <package> [brew|cask]"
+  echo "   Configure    : dots-setup"
+  echo "   Push when ready: git -C \$(chezmoi source-path) push"
+}
+
 # === Clipboard helpers ===
 copy()      { pbcopy < "$1" }
 paste()     { pbpaste }

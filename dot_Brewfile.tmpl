@@ -8,6 +8,12 @@ tap "hashicorp/tap"
 tap "lihaoyun6/tap"
 tap "theboredteam/boring-notch"
 {{ end -}}
+{{ if .dev_apps -}}
+tap "hamed-elfayome/claude-usage"
+{{ end -}}
+{{ if .productivity -}}
+tap "xykong/tap"
+{{ end -}}
 
 # =============================================================================
 # Base — always installed
@@ -54,25 +60,38 @@ brew "imagemagick"
 brew "jpegoptim"
 brew "parallel"
 brew "pv"
-brew "atuin"
 cask "mac-mouse-fix"
+
 # =============================================================================
 # Alt-tools — modern CLI replacements
 # =============================================================================
 {{ if .alt_tools -}}
 brew "bat"
-brew "doggo"
 brew "duf"
 brew "dust"
 brew "eza"
 brew "fd"
-brew "gping"
-brew "gron"
-brew "jid"
-brew "navi"
 brew "ripgrep"
 brew "tldr"
+{{ if not (has .machine_excludes "doggo") -}}
+brew "doggo"
+{{ end -}}
+{{ if not (has .machine_excludes "gping") -}}
+brew "gping"
+{{ end -}}
+{{ if not (has .machine_excludes "gron") -}}
+brew "gron"
+{{ end -}}
+{{ if not (has .machine_excludes "jid") -}}
+brew "jid"
+{{ end -}}
+{{ if not (has .machine_excludes "navi") -}}
+brew "navi"
+{{ end -}}
+{{ if not (has .machine_excludes "xh") -}}
 brew "xh"
+{{ end -}}
+# pkg:end:alt_tools
 {{ end -}}
 
 # =============================================================================
@@ -81,6 +100,7 @@ brew "xh"
 {{ if .bitwarden -}}
 brew "bitwarden-cli"
 cask "bitwarden"
+# pkg:end:bitwarden
 {{ end -}}
 
 # =============================================================================
@@ -91,7 +111,10 @@ brew "colima", restart_service: :changed
 brew "docker"
 brew "docker-buildx"
 brew "docker-compose"
+{{ if not (has .machine_excludes "lima-additional-guestagents") -}}
 brew "lima-additional-guestagents"
+{{ end -}}
+# pkg:end:docker
 {{ end -}}
 
 # =============================================================================
@@ -103,18 +126,25 @@ brew "kubecolor"
 brew "kubernetes-cli"
 brew "kubectx"
 brew "k9s"
+{{ if not (has .machine_excludes "kubeconform") -}}
+brew "kubeconform"
+{{ end -}}
+{{ if not (has .machine_excludes "mintoolkit") -}}
 brew "mintoolkit"
+{{ end -}}
+{{ if not (has .machine_excludes "stern") -}}
 brew "stern"
+{{ end -}}
+{{ if not (has .machine_excludes "vault") -}}
 brew "hashicorp/tap/vault"
+{{ end -}}
+{{ if not (has .machine_excludes "gcloud-cli") -}}
 cask "gcloud-cli"
+{{ end -}}
+{{ if not (has .machine_excludes "kustomize") -}}
 brew "kustomize"
 {{ end -}}
-
-# =============================================================================
-# Java (runtime managed via mise, libpq for psql client)
-# =============================================================================
-{{ if .java -}}
-brew "libpq", link: true
+# pkg:end:kubernetes
 {{ end -}}
 
 # =============================================================================
@@ -122,74 +152,133 @@ brew "libpq", link: true
 # =============================================================================
 {{ if .macos_utils -}}
 cask "alt-tab"
-cask "displaylink"
 cask "hammerspoon"
 cask "hot"
 cask "mos@beta"
 cask "raycast"
+{{ if not (has .machine_excludes "displaylink") -}}
+cask "displaylink"
+{{ end -}}
+{{ if not (has .machine_excludes "linearmouse") -}}
+cask "linearmouse"
+{{ end -}}
+{{ if not (has .machine_excludes "netspot") -}}
+cask "netspot"
+{{ end -}}
+{{ if not (has .machine_excludes "sniffnet") -}}
 brew "sniffnet"
-cask "calibre"
-cask "grammarly-desktop"
+{{ end -}}
+{{ if not (has .machine_excludes "keyboardcleantool") -}}
 cask "keyboardcleantool"
+{{ end -}}
+{{ if not (has .machine_excludes "nordvpn") -}}
 cask "nordvpn"
-cask "notion"
-cask "obsidian"
-cask "qmk-toolbox"
+{{ end -}}
+{{ if not (has .machine_excludes "transmission") -}}
 cask "transmission"
+{{ end -}}
+{{ if not (has .machine_excludes "utm") -}}
 cask "utm"
+{{ end -}}
+{{ if not (has .machine_excludes "duckdb") -}}
 brew "duckdb"
+{{ end -}}
+{{ if not (has .machine_excludes "rbenv") -}}
 brew "rbenv"
+{{ end -}}
+# pkg:end:macos_utils
 {{ end -}}
 
 # =============================================================================
 # macOS cosmetic
 # =============================================================================
 {{ if .macos_cosmetic -}}
+{{ if not (has .machine_excludes "airbattery") -}}
 cask "lihaoyun6/tap/airbattery"
+{{ end -}}
+{{ if not (has .machine_excludes "boring-notch") -}}
 cask "theboredteam/boring-notch/boring-notch"
+{{ end -}}
+{{ if not (has .machine_excludes "cork") -}}
 cask "cork"
+{{ end -}}
+# pkg:end:macos_cosmetic
 {{ end -}}
 
 # =============================================================================
 # Media & communication
 # =============================================================================
 {{ if .macos_media -}}
+{{ if not (has .machine_excludes "brave-browser") -}}
 cask "brave-browser"
+{{ end -}}
+{{ if not (has .machine_excludes "slack") -}}
 cask "slack"
+{{ end -}}
+{{ if not (has .machine_excludes "spotify") -}}
 cask "spotify"
+{{ end -}}
+{{ if not (has .machine_excludes "telegram") -}}
 cask "telegram"
+{{ end -}}
+{{ if not (has .machine_excludes "iina") -}}
 cask "iina"
+{{ end -}}
+{{ if not (has .machine_excludes "spicetify-cli") -}}
+brew "spicetify-cli"
+{{ end -}}
+# pkg:end:macos_media
 {{ end -}}
 
 # =============================================================================
 # Dev apps
 # =============================================================================
 {{ if .dev_apps -}}
-brew "gh"
+brew "cloudflared", restart_service: :changed
+brew "ffmpeg"
+brew "git"
 brew "git-filter-repo"
+brew "gh"
 brew "glab"
+brew "hcloud"
+brew "libpq", link: true
+brew "rtk"
+brew "uv"
+brew "webp"
+{{ if not (has .machine_excludes "claude") -}}
 cask "claude"
+{{ end -}}
+{{ if not (has .machine_excludes "claude-usage-tracker") -}}
+cask "hamed-elfayome/claude-usage/claude-usage-tracker"
+{{ end -}}
+{{ if not (has .machine_excludes "dbeaver-community") -}}
 cask "dbeaver-community"
+{{ end -}}
+{{ if not (has .machine_excludes "gimp") -}}
 cask "gimp"
+{{ end -}}
+{{ if not (has .machine_excludes "vscodium") -}}
 cask "vscodium"
-
-# VSCodium extensions
 vscode "adpyke.codesnap"
+vscode "anthropic.claude-code"
 vscode "catppuccin.catppuccin-vsc"
 vscode "catppuccin.catppuccin-vsc-icons"
 vscode "drinfinite.batch-rename"
 vscode "gitlab.gitlab-workflow"
 vscode "imgildev.ovsx-tree-maker"
+vscode "jeanp413.open-remote-ssh"
 vscode "ms-python.debugpy"
 vscode "ms-python.python"
 vscode "ms-python.vscode-python-envs"
 vscode "pixl-garden.bongocat"
-brew "cloudflared"
-brew "git"
-brew "hcloud"
-brew "uv"
+{{ end -}}
+{{ if not (has .machine_excludes "cyberduck") -}}
 cask "cyberduck"
+{{ end -}}
+{{ if not (has .machine_excludes "macfuse") -}}
 cask "macfuse"
+{{ end -}}
+# pkg:end:dev_apps
 {{ end -}}
 
 # =============================================================================
@@ -197,23 +286,62 @@ cask "macfuse"
 # =============================================================================
 {{ if .touchbar -}}
 cask "bettertouchtool"
+# pkg:end:touchbar
 {{ end -}}
 
 # =============================================================================
 # Productivity
 # =============================================================================
 {{ if .productivity -}}
+{{ if not (has .machine_excludes "calibre") -}}
 cask "calibre"
+{{ end -}}
+{{ if not (has .machine_excludes "dockdoor") -}}
+cask "dockdoor"
+{{ end -}}
+{{ if not (has .machine_excludes "flux-markdown") -}}
+cask "xykong/tap/flux-markdown"
+{{ end -}}
+{{ if not (has .machine_excludes "grammarly-desktop") -}}
 cask "grammarly-desktop"
+{{ end -}}
+{{ if not (has .machine_excludes "notion") -}}
 cask "notion"
+{{ end -}}
+{{ if not (has .machine_excludes "obsidian") -}}
 cask "obsidian"
+{{ end -}}
+# pkg:end:productivity
 {{ end -}}
 
 # =============================================================================
 # Gaming & peripherals
 # =============================================================================
 {{ if .gaming -}}
+{{ if not (has .machine_excludes "discord") -}}
 cask "discord"
-cask "qmk-toolbox"
+{{ end -}}
+{{ if not (has .machine_excludes "steam") -}}
 cask "steam"
+{{ end -}}
+# pkg:end:gaming
+{{ end -}}
+
+# =============================================================================
+# Peripherals
+# =============================================================================
+{{ if .peripherals -}}
+{{ if not (has .machine_excludes "8bitdo-ultimate-software") -}}
+cask "8bitdo-ultimate-software"
+{{ end -}}
+{{ if not (has .machine_excludes "balenaetcher") -}}
+cask "balenaetcher"
+{{ end -}}
+{{ if not (has .machine_excludes "f3") -}}
+brew "f3"
+{{ end -}}
+{{ if not (has .machine_excludes "qmk-toolbox") -}}
+cask "qmk-toolbox"
+{{ end -}}
+# pkg:end:peripherals
 {{ end -}}

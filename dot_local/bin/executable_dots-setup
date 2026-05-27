@@ -1,0 +1,249 @@
+#!/usr/bin/env bash
+# dots-setup — interactive machine profile wizard
+# Writes ~/.config/chezmoi/chezmoi.toml then runs chezmoi apply.
+# Run any time to reconfigure this machine.
+
+set -euo pipefail
+
+CHEZMOI_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/chezmoi/chezmoi.toml"
+
+bold=$'\e[1m'; reset=$'\e[0m'; cyan=$'\e[36m'; green=$'\e[32m'; dim=$'\e[2m'
+
+if ! command -v fzf &>/dev/null; then
+  echo "fzf is required (brew install fzf). Run 'chezmoi apply' first to install base packages." >&2
+  exit 1
+fi
+
+# ── Package registry ─────────────────────────────────────────────────────────
+# CAT_ORDER defines display order. CAT_PKGS lists every individually-selectable
+# package within each category — names match the identifiers used in the
+# Brewfile's has .machine_excludes checks.
+
+CAT_ORDER=(alt_tools bitwarden docker kubernetes macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity peripherals)
+
+declare -A CAT_DESC
+CAT_DESC=(
+  [alt_tools]="Modern CLI replacements"
+  [bitwarden]="Password manager (CLI + app)"
+  [docker]="Docker via Colima"
+  [kubernetes]="k8s tools (kubectl, k9s, helm, vault…)"
+  [java]="Java runtime (temurin-21) + psql client"
+  [macos_utils]="macOS utilities (Raycast, Hammerspoon, AltTab…)"
+  [macos_cosmetic]="Visual extras (AirBattery, BoringNotch, Cork)"
+  [macos_media]="Media & communication"
+  [dev_apps]="Dev tools (VSCodium, DBeaver, gh, glab…)"
+  [touchbar]="BetterTouchTool (TouchBar Macs only)"
+  [gaming]="Steam, Discord"
+  [productivity]="Notion, Obsidian, Grammarly, Calibre, Dockdoor, Flux Markdown"
+  [peripherals]="8BitDo, QMK Toolbox, BalenaEtcher, F3"
+)
+
+declare -A CAT_PKGS
+CAT_PKGS=(
+  [alt_tools]="bat doggo duf dust eza fd gping gron jid navi ripgrep tldr xh"
+  [bitwarden]="bitwarden-cli bitwarden"
+  [docker]="colima docker docker-buildx docker-compose lima-additional-guestagents"
+  [kubernetes]="helm kubecolor kubernetes-cli kubectx k9s kubeconform mintoolkit stern vault gcloud-cli kustomize"
+  [macos_utils]="alt-tab displaylink hammerspoon hot mos raycast sniffnet keyboardcleantool linearmouse netspot nordvpn transmission utm duckdb rbenv"
+  [macos_cosmetic]="airbattery boring-notch cork"
+  [macos_media]="brave-browser slack spotify spicetify-cli telegram iina"
+  [dev_apps]="cloudflared ffmpeg gh git git-filter-repo glab claude claude-usage-tracker dbeaver-community gimp hcloud rtk uv vscodium webp cyberduck macfuse"
+  [touchbar]="bettertouchtool"
+  [gaming]="discord steam"
+  [productivity]="calibre dockdoor flux-markdown grammarly-desktop notion obsidian"
+  [peripherals]="8bitdo-ultimate-software balenaetcher f3 qmk-toolbox"
+)
+
+# ── Profile definitions ──────────────────────────────────────────────────────
+# PROFILE_CATS: categories enabled by default for each profile
+# PROFILE_EXCL: category/package pairs excluded even when category is on
+
+declare -A PROFILE_CATS
+PROFILE_CATS=(
+  [work]="alt_tools bitwarden docker kubernetes dev_apps macos_utils macos_media"
+  [personal]="alt_tools bitwarden macos_utils macos_cosmetic macos_media productivity peripherals"
+  [minimal]="alt_tools"
+  [full]="alt_tools bitwarden docker kubernetes macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity peripherals"
+)
+
+declare -A PROFILE_EXCL
+PROFILE_EXCL=(
+  [work]="kubernetes/vault macos_media/spotify macos_media/iina macos_media/spicetify-cli"
+  [personal]="macos_utils/displaylink macos_utils/utm macos_utils/duckdb"
+  [minimal]=""
+  [full]=""
+)
+
+# ── Banner ───────────────────────────────────────────────────────────────────
+echo ""
+echo "${bold}${cyan}┌─ dots-setup ──────────────────────────────────────────────┐${reset}"
+echo "${bold}${cyan}│  Machine profile wizard                                    │${reset}"
+echo "${bold}${cyan}└───────────────────────────────────────────────────────────┘${reset}"
+echo ""
+
+# ── Step 1: Profile ──────────────────────────────────────────────────────────
+profile=$(printf '%s\n' work personal minimal full | \
+  fzf --no-multi --no-sort \
+    --prompt "Profile › " \
+    --header "Select a starting profile — you'll customise packages in the next step" \
+    --preview 'case {} in
+      work)     echo "alt_tools · bitwarden · docker · kubernetes · dev_apps · macos_utils · macos_media\n\nDefault excludes: vault, spotify, iina" ;;
+      personal) echo "alt_tools · bitwarden · macos_utils · macos_cosmetic · macos_media · productivity\n\nDefault excludes: displaylink, utm, duckdb" ;;
+      minimal)  echo "alt_tools only" ;;
+      full)     echo "Everything — all categories, no excludes" ;;
+    esac' \
+    --preview-window 'right:40%:wrap')
+
+echo ""
+echo "${bold}Profile: ${green}${profile}${reset}"
+echo ""
+
+# ── Step 2: Build items + preselection ──────────────────────────────────────
+all_items=()
+preselected=()
+
+for cat in "${CAT_ORDER[@]}"; do
+  for pkg in ${CAT_PKGS[$cat]}; do
+    item="${cat}/${pkg}"
+    all_items+=("$item")
+
+    cat_enabled=false
+    [[ " ${PROFILE_CATS[$profile]} " == *" $cat "* ]] && cat_enabled=true
+
+    if $cat_enabled; then
+      excl="${PROFILE_EXCL[$profile]:-}"
+      if [[ -z "$excl" || " $excl " != *" ${item} "* ]]; then
+        preselected+=("$item")
+      fi
+    fi
+  done
+done
+
+# ── Step 2: Build fzf display (interleaved category headers) ────────────────
+display_items=()
+prev_cat=""
+for item in "${all_items[@]}"; do
+  cat="${item%%/*}"
+  if [[ "$cat" != "$prev_cat" ]]; then
+    display_items+=("── ${CAT_DESC[$cat]}  ${dim}[${cat}]${reset}")
+    prev_cat="$cat"
+  fi
+  display_items+=("$item")
+done
+
+# Build fzf bind string to pre-select profile items on load
+bind_str="load"
+for item in "${preselected[@]}"; do
+  bind_str+="+select('${item})"
+done
+
+# ── Step 2: fzf multi-select ─────────────────────────────────────────────────
+echo "${bold}Customise packages${reset}  ${dim}Space/Tab: toggle · Enter: confirm · /: search${reset}"
+echo ""
+
+mapfile -t selected < <(
+  printf '%s\n' "${display_items[@]}" | \
+  fzf --multi --no-sort \
+    --bind "$bind_str" \
+    --bind 'tab:toggle+down' \
+    --bind 'shift-tab:toggle+up' \
+    --marker '✓ ' \
+    --pointer '▶ ' \
+    --color 'marker:2,pointer:6,header:3' \
+    --header "Profile: $profile  |  Space/Tab: toggle  |  Enter: confirm" \
+    --prompt "Packages › " | grep -v '^──'
+)
+
+if [[ ${#selected[@]} -eq 0 ]]; then
+  echo "No packages selected. Aborting." >&2
+  exit 1
+fi
+
+# ── Parse selection → category flags + machine_excludes ─────────────────────
+declare -A enabled_cats
+machine_excludes=()
+
+for item in "${selected[@]}"; do
+  cat="${item%%/*}"
+  enabled_cats["$cat"]=1
+done
+
+for cat in "${CAT_ORDER[@]}"; do
+  if [[ -n "${enabled_cats[$cat]:-}" ]]; then
+    for pkg in ${CAT_PKGS[$cat]}; do
+      item="${cat}/${pkg}"
+      found=false
+      for s in "${selected[@]}"; do
+        [[ "$s" == "$item" ]] && found=true && break
+      done
+      $found || machine_excludes+=("$pkg")
+    done
+  fi
+done
+
+# ── Step 3: Editor ───────────────────────────────────────────────────────────
+echo ""
+editor=$(printf '%s\n' fresh nvim vim code | \
+  fzf --no-multi --no-sort \
+    --prompt "Editor › " \
+    --header "Preferred editor")
+
+# ── Step 4: Touch ID for sudo ────────────────────────────────────────────────
+touch_id_sudo=$(printf '%s\n' true false | \
+  fzf --no-multi --no-sort \
+    --prompt "Touch ID for sudo › " \
+    --header "Enable Touch ID for sudo? (macOS 14+)")
+
+# ── Step 5: Bitwarden email ──────────────────────────────────────────────────
+bw_email=""
+if [[ -n "${enabled_cats[bitwarden]:-}" ]]; then
+  echo ""
+  printf "${bold}Bitwarden account email:${reset} "
+  read -r bw_email
+fi
+
+# ── Write chezmoi.toml ───────────────────────────────────────────────────────
+mkdir -p "$(dirname "$CHEZMOI_CONFIG")"
+
+# Build TOML array for machine_excludes
+excl_toml="["
+for e in "${machine_excludes[@]}"; do
+  excl_toml+="\"${e}\", "
+done
+excl_toml="${excl_toml%", "}]"
+
+_flag() { [[ -n "${enabled_cats[$1]:-}" ]] && echo true || echo false; }
+
+cat > "$CHEZMOI_CONFIG" <<TOML
+[git]
+  autoUpdate = true
+
+[data]
+  profile        = "$profile"
+  editor         = "$editor"
+  touch_id_sudo  = $touch_id_sudo
+
+  alt_tools      = $(_flag alt_tools)
+  bitwarden      = $(_flag bitwarden)
+  bw_email       = "$bw_email"
+  docker         = $(_flag docker)
+  kubernetes     = $(_flag kubernetes)
+  macos_utils    = $(_flag macos_utils)
+  macos_cosmetic = $(_flag macos_cosmetic)
+  macos_media    = $(_flag macos_media)
+  dev_apps       = $(_flag dev_apps)
+  touchbar       = $(_flag touchbar)
+  gaming         = $(_flag gaming)
+  productivity   = $(_flag productivity)
+
+  machine_excludes = $excl_toml
+TOML
+
+echo ""
+echo "${bold}${green}✓ Config written → $CHEZMOI_CONFIG${reset}"
+echo ""
+echo "${bold}Applying dotfiles...${reset}"
+chezmoi apply
+echo ""
+echo "${bold}${green}✓ Done.${reset}  Run ${bold}dots-setup${reset} any time to reconfigure."
+echo ""

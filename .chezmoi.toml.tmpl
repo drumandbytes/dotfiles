@@ -1,29 +1,27 @@
 [git]
   autoUpdate = true
 
+# All data values are managed by `dots-setup` (~/.local/bin/dots-setup).
+# This template provides safe defaults for the initial `chezmoi init` run
+# before the wizard has been executed. Run `dots-setup` to configure.
+
 [data]
-  # --- Editor (default: fresh) ---
-  editor = {{ promptStringOnce . "editor" "Preferred editor (fresh/nvim/vim/code)" | default "fresh" | quote }}
+  profile        = "custom"
+  editor         = "fresh"
+  touch_id_sudo  = false
 
-  # --- Tool groups ---
-  alt_tools   = {{ promptBoolOnce . "alt_tools"   "Install modern CLI replacements (eza, bat, fd, ripgrep, etc.) [y/n]" }}
+  alt_tools      = false
+  bitwarden      = false
+  bw_email       = ""
+  docker         = false
+  kubernetes     = false
+  macos_utils    = false
+  macos_cosmetic = false
+  macos_media    = false
+  dev_apps       = false
+  touchbar       = false
+  gaming         = false
+  productivity   = false
+  peripherals    = false
 
-  # --- macOS app groups (default: yes) ---
-  macos_utils    = {{ promptBoolOnce . "macos_utils"    "Install macOS utilities (Raycast, Alt-Tab, Hammerspoon, etc.) [y/n]" }}
-  macos_cosmetic = {{ promptBoolOnce . "macos_cosmetic" "Install cosmetic macOS apps (Boring Notch, AirBattery, Cork) [y/n]" }}
-  macos_media    = {{ promptBoolOnce . "macos_media"    "Install media & communication apps (Brave, Spotify, Telegram, Slack) [y/n]" }}
-  dev_apps       = {{ promptBoolOnce . "dev_apps"       "Install dev apps (VSCodium, DBeaver, GIMP, GitLab CLI, GitHub CLI) [y/n]" }}
-  touchbar       = {{ promptBoolOnce . "touchbar"       "Install BetterTouchTool (TouchBar Macs only) [y/n]" }}
-  gaming         = {{ promptBoolOnce . "gaming"         "Install gaming & peripherals (Steam, Discord, 8BitDo, QMK Toolbox) [y/n]" }}
-  productivity   = {{ promptBoolOnce . "productivity"   "Install productivity apps (Notion, Obsidian, Grammarly, Calibre) [y/n]" }}
-
-  # --- Infrastructure ---
-{{- $bitwarden := promptBoolOnce . "bitwarden" "Enable Bitwarden integration [y/n]" }}
-  bitwarden = {{ $bitwarden }}
-{{- if $bitwarden }}
-  bw_email = {{ promptStringOnce . "bw_email" "Bitwarden account email" | quote }}
-{{- end }}
-  touch_id_sudo = {{ promptBoolOnce . "touch_id_sudo" "Enable Touch ID for sudo (macOS only) [y/n]" }}
-  docker      = {{ promptBoolOnce . "docker"      "Install Docker + Colima [y/n]" }}
-  kubernetes  = {{ promptBoolOnce . "kubernetes"  "Install Kubernetes tools (kubectl, kubectx, k9s) [y/n]" }}
-  java        = {{ promptBoolOnce . "java"        "Install Java via mise (temurin-21) [y/n]" }}
+  machine_excludes = []
