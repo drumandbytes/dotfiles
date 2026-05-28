@@ -45,6 +45,11 @@ alias sheldonconfig="chezmoi edit ~/.config/sheldon/plugins.toml"
 alias reload="exec zsh"
 
 # --- Maintenance & Updates ---
+{{ if .alt_tools -}}
+alias brew-up="brew update && brew upgrade --greedy && brew cleanup --prune=all && tldr --update"
+{{- else -}}
+alias brew-up="brew update && brew upgrade --greedy && brew cleanup --prune=all"
+{{- end }}
 alias sheldon-up="sheldon lock --update && sheldon source > ~/.zsh/sheldon.zsh && echo 'Sheldon updated.'"
 alias atuin-clean="atuin search --cmd-only --limit 10000 | fzf --multi | while read -r cmd; do atuin search --delete \"\$cmd\"; done"
 alias dots-setup="~/.local/bin/dots-setup"
