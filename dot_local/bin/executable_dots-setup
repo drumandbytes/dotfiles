@@ -27,7 +27,6 @@ CAT_DESC=(
   [bitwarden]="Password manager (CLI + app)"
   [docker]="Docker via Colima"
   [kubernetes]="k8s tools (kubectl, k9s, helm, vault…)"
-  [java]="Java runtime (temurin-21) + psql client"
   [macos_utils]="macOS utilities (Raycast, Hammerspoon, AltTab…)"
   [macos_cosmetic]="Visual extras (AirBattery, BoringNotch, Cork)"
   [macos_media]="Media & communication"
@@ -314,9 +313,6 @@ excl_toml="${excl_toml%", "}]"
 _flag() { [[ -n "${enabled_cats[$1]:-}" ]] && echo true || echo false; }
 
 cat > "$CHEZMOI_CONFIG" <<TOML
-[git]
-  autoUpdate = true
-
 [data]
   profile        = "$profile"
   editor         = "$editor"
@@ -326,7 +322,6 @@ cat > "$CHEZMOI_CONFIG" <<TOML
   bitwarden      = $(_flag bitwarden)
   bw_email       = "$bw_email"
   docker         = $(_flag docker)
-  java           = false
   kubernetes     = $(_flag kubernetes)
   macos_utils    = $(_flag macos_utils)
   macos_cosmetic = $(_flag macos_cosmetic)

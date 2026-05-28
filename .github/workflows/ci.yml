@@ -9,11 +9,9 @@ on:
 jobs:
   shellcheck:
     name: shellcheck
-    runs-on: macos-latest
+    runs-on: ubuntu-latest  # shellcheck is preinstalled on ubuntu runners
     steps:
       - uses: actions/checkout@v6
-      - name: Install shellcheck
-        run: brew install shellcheck
       - name: Run shellcheck
         run: shellcheck .chezmoiscripts/run_once_*.sh .chezmoiscripts/run_onchange_*.sh
 
@@ -55,7 +53,6 @@ jobs:
             touch_id_sudo  = false
             docker         = false
             kubernetes     = false
-            java           = false
           EOF
 
           failed=0
@@ -85,7 +82,6 @@ jobs:
             touch_id_sudo  = true
             docker         = true
             kubernetes     = true
-            java           = true
           EOF
 
           failed=0
@@ -115,7 +111,6 @@ jobs:
             touch_id_sudo  = false
             docker         = true
             kubernetes     = true
-            java           = true
           EOF
 
           failed=0
@@ -130,7 +125,7 @@ jobs:
 
   gitleaks:
     name: gitleaks
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
@@ -142,7 +137,7 @@ jobs:
 
   markdownlint:
     name: markdownlint
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: DavidAnson/markdownlint-cli2-action@v23

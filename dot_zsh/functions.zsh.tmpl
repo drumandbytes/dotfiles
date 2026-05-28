@@ -553,9 +553,3 @@ pkg-group-add() {
   echo "   Configure    : dots-setup"
   echo "   Push when ready: git -C \$(chezmoi source-path) push"
 }
-
-# === Clipboard helpers ===
-copy()      { pbcopy < "$1" }
-paste()     { pbpaste }
-overwrite() { pbpaste > "$1" }
-append()    { pbpaste >> "$1" }

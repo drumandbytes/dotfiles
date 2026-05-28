@@ -5,6 +5,14 @@
 
 set -euo pipefail
 
+# Chezmoi scripts run without the user's shell profile. Add Homebrew to PATH.
+export PATH="/opt/homebrew/bin:$PATH"
+
+if ! command -v btop &>/dev/null; then
+    echo "btop not found — skipping theme install"
+    exit 0
+fi
+
 themes_dir="${XDG_CONFIG_HOME:-$HOME/.config}/btop/themes"
 mkdir -p "$themes_dir"
 
