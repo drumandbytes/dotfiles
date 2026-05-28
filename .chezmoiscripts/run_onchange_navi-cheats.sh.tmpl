@@ -80,6 +80,7 @@ PYEOF
 echo "✅ Generated $CHEAT_DIR/personal.cheat"
 
 # --- 2. Community repos — clone if missing, pull if older than 7 days ---
+# Uses git clone directly to avoid navi repo add's interactive file picker.
 REPO_CACHE="$CHEAT_DIR/.last_updated"
 _needs_update() {
     [[ ! -f "$REPO_CACHE" ]] && return 0
@@ -91,11 +92,14 @@ add_repo() {
     local repo="$1"
     local dest="$CHEAT_DIR/${repo//\//__}"
     if [[ ! -d "$dest" ]]; then
-        echo "Adding navi repo: $repo ..."
-        navi repo add "$repo" || echo "⚠️  Could not add $repo (check network)"
+        echo "Cloning navi repo: $repo ..."
+        git clone --depth=1 --quiet "https://github.com/${repo}.git" "$dest" \
+            || echo "⚠️  Could not clone $repo (check network)"
     elif _needs_update; then
         echo "Updating navi repo: $repo ..."
-        git -C "$dest" pull --ff-only --quiet 2>/dev/null || echo "⚠️  Could not update $repo"
+        git -C "$dest" fetch --depth=1 --quiet origin HEAD \
+            && git -C "$dest" reset --quiet --hard FETCH_HEAD \
+            || echo "⚠️  Could not update $repo"
     fi
 }
 
