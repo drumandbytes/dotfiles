@@ -126,7 +126,8 @@ _order_file=$(mktemp /tmp/dots-setup-order.XXXXXX)
 _cats_file=$(mktemp /tmp/dots-setup-cats.XXXXXX)
 _display_script=$(mktemp /tmp/dots-setup-display.XXXXXX)
 _toggle_script=$(mktemp /tmp/dots-setup-toggle.XXXXXX)
-trap 'rm -f "$_state_file" "$_order_file" "$_cats_file" "$_display_script" "$_toggle_script"' EXIT
+_pos_file=$(mktemp /tmp/dots-setup-pos.XXXXXX)
+trap 'rm -f "$_state_file" "$_order_file" "$_cats_file" "$_display_script" "$_toggle_script" "$_pos_file"' EXIT
 
 # Seed state with preselected items
 printf '%s\n' "${preselected[@]}" > "$_state_file"
@@ -200,9 +201,9 @@ echo "${bold}Customise packages${reset}  ${dim}Space/Tab: toggle · Enter: confi
 echo ""
 
 "$_display_script" | fzf --no-sort --no-preview --ansi \
-  --bind "space:execute-silent($_toggle_script {})+reload($_display_script)" \
-  --bind "tab:execute-silent($_toggle_script {})+reload($_display_script)+down" \
-  --bind "shift-tab:execute-silent($_toggle_script {})+reload($_display_script)+up" \
+  --bind "space:execute-silent(echo \$FZF_POS > $_pos_file; $_toggle_script {})+reload($_display_script)+transform(echo \"+pos(\$(cat $_pos_file))\")" \
+  --bind "tab:execute-silent(echo \$FZF_POS > $_pos_file; $_toggle_script {})+reload($_display_script)+transform(echo \"+pos(\$(cat $_pos_file))\")+down" \
+  --bind "shift-tab:execute-silent(echo \$FZF_POS > $_pos_file; $_toggle_script {})+reload($_display_script)+transform(echo \"+pos(\$(cat $_pos_file))\")+up" \
   --pointer '▶ ' \
   --color 'pointer:6,header:3' \
   --header "Profile: $profile  |  Space/Tab: toggle  |  Enter: confirm" \
