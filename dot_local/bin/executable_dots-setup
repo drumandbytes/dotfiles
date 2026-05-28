@@ -132,10 +132,11 @@ for item in "${all_items[@]}"; do
 done
 
 # Build fzf bind string to pre-select profile items on load
-bind_str="load:select-none"
+actions=()
 for item in "${preselected[@]}"; do
-  bind_str+="+select('${item})"
+  actions+=("select('${item})")
 done
+bind_str="load:$(IFS='+'; echo "${actions[*]:-ignore}")"
 
 # ── Step 2: fzf multi-select ─────────────────────────────────────────────────
 echo "${bold}Customise packages${reset}  ${dim}Space/Tab: toggle · Enter: confirm · /: search${reset}"
