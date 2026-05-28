@@ -119,96 +119,101 @@ for cat in "${CAT_ORDER[@]}"; do
   done
 done
 
-# ── Step 2: Build fzf display lists ─────────────────────────────────────────
-_build_display() {
-  local -n _items=$1
-  local -n _out=$2
-  local prev_cat=""
-  for item in "${_items[@]}"; do
-    local cat="${item%%/*}"
-    if [[ "$cat" != "$prev_cat" ]]; then
-      _out+=("── ${CAT_DESC[$cat]}  [${cat}]")
-      prev_cat="$cat"
-    fi
-    _out+=("$item")
-  done
-}
+# ── Step 2: State-file + reload package picker ───────────────────────────────
+# fzf's change-query is async so change-query+select-all can't reliably filter
+# a group. Instead we manage selection state in a file and use execute-silent
+# + reload, which is synchronous and works for both individual and group toggles.
 
-extra_items=()
+_state_file=$(mktemp /tmp/dots-setup-state.XXXXXX)
+_order_file=$(mktemp /tmp/dots-setup-order.XXXXXX)
+_cats_file=$(mktemp /tmp/dots-setup-cats.XXXXXX)
+_display_script=$(mktemp /tmp/dots-setup-display.XXXXXX)
+_toggle_script=$(mktemp /tmp/dots-setup-toggle.XXXXXX)
+trap 'rm -f "$_state_file" "$_order_file" "$_cats_file" "$_display_script" "$_toggle_script"' EXIT
+
+# Seed state with preselected items
+printf '%s\n' "${preselected[@]}" > "$_state_file"
+
+# Order file: H: headers, I: items
+prev_cat=""
 for item in "${all_items[@]}"; do
-  [[ " ${preselected[*]} " == *" $item "* ]] || extra_items+=("$item")
+  cat="${item%%/*}"
+  if [[ "$cat" != "$prev_cat" ]]; then
+    printf 'H:── %s  [%s]\n' "${CAT_DESC[$cat]}" "$cat" >> "$_order_file"
+    prev_cat="$cat"
+  fi
+  printf 'I:%s\n' "$item" >> "$_order_file"
 done
 
-profile_display=(); _build_display preselected profile_display
-extras_display=();  _build_display extra_items extras_display
+# Cats file: cat:pkg1 pkg2 ...
+for cat in "${CAT_ORDER[@]}"; do
+  printf '%s:%s\n' "$cat" "${CAT_PKGS[$cat]}" >> "$_cats_file"
+done
 
-# ── Group-toggle helper ───────────────────────────────────────────────────────
-# fzf's transform action calls this with the current item as $1 and an optional
-# suffix action (e.g. "+down") as $2. If the item is a category header, it
-# On a category header: select-all or deselect-all for that group based on
-# current selection state. {+} passes all selected items as extra args so the
-# script can decide select vs deselect without relying on change-query timing.
-_toggle_script=$(mktemp /tmp/dots-setup-toggle.XXXXXX)
-chmod +x "$_toggle_script"
-cat > "$_toggle_script" << 'TOGGLE'
+# Display script: reads order+state, prints [✓]/[ ] prefixed lines
+chmod +x "$_display_script"
+cat > "$_display_script" << DISPLAY
 #!/bin/bash
-item="$1"; shift
-# Items are always "cat/pkg"; headers never contain "/"
-if [[ "$item" != */* && "$item" =~ \[([a-z_]+)\]$ ]]; then
-  cat_name="${BASH_REMATCH[1]}"
-  selected_in_cat=0
-  for sel in "$@"; do
-    [[ "$sel" == "${cat_name}/"* ]] && (( selected_in_cat++ ))
-  done
-  if [[ "$selected_in_cat" -gt 0 ]]; then
-    printf 'change-query(%s/)+deselect-all+change-query()' "$cat_name"
+declare -A sel
+while IFS= read -r item; do sel["\$item"]=1; done < "$_state_file"
+while IFS= read -r line; do
+  type="\${line:0:2}" entry="\${line:2}"
+  if [[ "\$type" == "H:" ]]; then
+    printf '    %s\n' "\$entry"
+  elif [[ -n "\${sel[\$entry]:-}" ]]; then
+    printf '[✓] %s\n' "\$entry"
   else
-    printf 'change-query(%s/)+select-all+change-query()' "$cat_name"
+    printf '[ ] %s\n' "\$entry"
   fi
-  exit 0
+done < "$_order_file"
+DISPLAY
+
+# Toggle script: updates state file for item or whole category group
+chmod +x "$_toggle_script"
+cat > "$_toggle_script" << TOGGLE
+#!/bin/bash
+raw="\$1"
+# Strip display prefix
+item="\$(printf '%s' "\$raw" | sed 's/^\[.\] //' | sed 's/^    //')"
+if [[ "\$item" != */* && "\$item" =~ \[([a-z_]+)\]\$ ]]; then
+  cat_name="\${BASH_REMATCH[1]}"
+  pkgs=\$(grep "^\${cat_name}:" "$_cats_file" | cut -d: -f2-)
+  any=0
+  for pkg in \$pkgs; do
+    grep -qF "\${cat_name}/\${pkg}" "$_state_file" && any=1 && break
+  done
+  for pkg in \$pkgs; do
+    if [[ \$any -eq 1 ]]; then
+      grep -vF "\${cat_name}/\${pkg}" "$_state_file" > "$_state_file.tmp"
+    else
+      grep -vF "\${cat_name}/\${pkg}" "$_state_file" > "$_state_file.tmp"
+      echo "\${cat_name}/\${pkg}" >> "$_state_file.tmp"
+    fi
+    mv "$_state_file.tmp" "$_state_file"
+  done
+else
+  if grep -qF "\$item" "$_state_file"; then
+    grep -vF "\$item" "$_state_file" > "$_state_file.tmp" && mv "$_state_file.tmp" "$_state_file"
+  else
+    echo "\$item" >> "$_state_file"
+  fi
 fi
-printf 'toggle'
 TOGGLE
-trap 'rm -f "$_toggle_script"' EXIT
 
-_fzf_common=(
-  --multi --no-sort --no-preview --ansi
-  --bind "space:transform:$_toggle_script {} {+}"
-  --bind 'tab:toggle+down'
-  --bind 'shift-tab:toggle+up'
-  --marker '✓ '
-  --pointer '▶ '
-  --color 'marker:2,pointer:6,header:3'
-  --prompt "Packages › "
-)
-
-# ── Step 2a: Profile packages (all pre-selected — deselect to exclude) ───────
-echo "${bold}Profile packages${reset}  ${dim}Space/Tab: toggle · Enter: confirm${reset}"
+# ── fzf picker ────────────────────────────────────────────────────────────────
+echo "${bold}Customise packages${reset}  ${dim}Space/Tab: toggle · Enter: confirm${reset}"
 echo ""
 
-mapfile -t keep < <(
-  printf '%s\n' "${profile_display[@]}" | \
-  fzf "${_fzf_common[@]}" \
-    --bind 'load:select-all' \
-    --header "Profile: $profile — deselect to exclude  |  Enter: confirm" \
-    | grep -v '^──'
-)
+"$_display_script" | fzf --no-sort --no-preview --ansi \
+  --bind "space:execute-silent($_toggle_script {})+reload($_display_script)" \
+  --bind "tab:execute-silent($_toggle_script {})+reload($_display_script)+down" \
+  --bind "shift-tab:execute-silent($_toggle_script {})+reload($_display_script)+up" \
+  --pointer '▶ ' \
+  --color 'pointer:6,header:3' \
+  --header "Profile: $profile  |  Space/Tab: toggle  |  Enter: confirm" \
+  --prompt "Packages › " > /dev/null
 
-# ── Step 2b: Extra packages (opt-in) ─────────────────────────────────────────
-selected=("${keep[@]}")
-if [[ ${#extras_display[@]} -gt 0 ]]; then
-  echo ""
-  echo "${bold}Extra packages${reset}  ${dim}optional — select to add · Enter to skip${reset}"
-  echo ""
-
-  mapfile -t extras < <(
-    printf '%s\n' "${extras_display[@]}" | \
-    fzf "${_fzf_common[@]}" \
-      --header "Add extras (optional)  |  Enter with nothing selected to skip" \
-      | grep -v '^──'
-  )
-  selected+=("${extras[@]}")
-fi
+mapfile -t selected < <(grep -v '^$' "$_state_file")
 
 if [[ ${#selected[@]} -eq 0 ]]; then
   echo "No packages selected. Aborting." >&2
