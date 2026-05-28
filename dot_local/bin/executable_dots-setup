@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 # dots-setup — interactive machine profile wizard
 # Writes ~/.config/chezmoi/chezmoi.toml then runs chezmoi apply.
 # Run any time to reconfigure this machine.
@@ -21,7 +21,7 @@ fi
 
 CAT_ORDER=(alt_tools bitwarden docker kubernetes macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity peripherals)
 
-declare -A CAT_DESC
+typeset -A CAT_DESC
 CAT_DESC=(
   [alt_tools]="Modern CLI replacements"
   [bitwarden]="Password manager (CLI + app)"
@@ -38,7 +38,7 @@ CAT_DESC=(
   [peripherals]="8BitDo, QMK Toolbox, BalenaEtcher, F3"
 )
 
-declare -A CAT_PKGS
+typeset -A CAT_PKGS
 CAT_PKGS=(
   [alt_tools]="bat doggo duf dust eza fd gping gron jid navi ripgrep tldr xh"
   [bitwarden]="bitwarden-cli bitwarden"
@@ -55,10 +55,7 @@ CAT_PKGS=(
 )
 
 # ── Profile definitions ──────────────────────────────────────────────────────
-# PROFILE_CATS: categories enabled by default for each profile
-# PROFILE_EXCL: category/package pairs excluded even when category is on
-
-declare -A PROFILE_CATS
+typeset -A PROFILE_CATS
 PROFILE_CATS=(
   [work]="alt_tools bitwarden docker kubernetes dev_apps macos_utils macos_media"
   [personal]="alt_tools bitwarden macos_utils macos_cosmetic macos_media productivity peripherals"
@@ -66,7 +63,7 @@ PROFILE_CATS=(
   [full]="alt_tools bitwarden docker kubernetes macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity peripherals"
 )
 
-declare -A PROFILE_EXCL
+typeset -A PROFILE_EXCL
 PROFILE_EXCL=(
   [work]="kubernetes/vault macos_media/spotify macos_media/iina macos_media/spicetify-cli"
   [personal]="macos_utils/displaylink macos_utils/utm macos_utils/duckdb"
@@ -103,7 +100,7 @@ all_items=()
 preselected=()
 
 for cat in "${CAT_ORDER[@]}"; do
-  for pkg in ${CAT_PKGS[$cat]}; do
+  for pkg in ${=CAT_PKGS[$cat]}; do
     item="${cat}/${pkg}"
     all_items+=("$item")
 
@@ -153,14 +150,12 @@ done
 # Display script: reads order+state, prints [✓]/[ ] prefixed lines
 chmod +x "$_display_script"
 cat > "$_display_script" << DISPLAY
-#!/bin/bash
-declare -A sel
-while IFS= read -r item; do sel["\$item"]=1; done < "$_state_file"
+#!/bin/zsh
 while IFS= read -r line; do
   type="\${line:0:2}" entry="\${line:2}"
   if [[ "\$type" == "H:" ]]; then
     printf '    %s\n' "\$entry"
-  elif [[ -n "\${sel[\$entry]:-}" ]]; then
+  elif grep -qF "\$entry" "$_state_file" 2>/dev/null; then
     printf '[✓] %s\n' "\$entry"
   else
     printf '[ ] %s\n' "\$entry"
@@ -171,18 +166,18 @@ DISPLAY
 # Toggle script: updates state file for item or whole category group
 chmod +x "$_toggle_script"
 cat > "$_toggle_script" << TOGGLE
-#!/bin/bash
+#!/bin/zsh
 raw="\$1"
 # Strip display prefix
 item="\$(printf '%s' "\$raw" | sed 's/^\[.\] //' | sed 's/^    //')"
-if [[ "\$item" != */* && "\$item" =~ \[([a-z_]+)\]\$ ]]; then
-  cat_name="\${BASH_REMATCH[1]}"
+if [[ "\$item" != */* ]] && [[ "\$item" =~ '\[([a-z_]+)\]$' ]]; then
+  cat_name="\${match[1]}"
   pkgs=\$(grep "^\${cat_name}:" "$_cats_file" | cut -d: -f2-)
   any=0
-  for pkg in \$pkgs; do
+  for pkg in \${=pkgs}; do
     grep -qF "\${cat_name}/\${pkg}" "$_state_file" && any=1 && break
   done
-  for pkg in \$pkgs; do
+  for pkg in \${=pkgs}; do
     if [[ \$any -eq 1 ]]; then
       grep -vF "\${cat_name}/\${pkg}" "$_state_file" > "$_state_file.tmp"
     else
@@ -213,7 +208,7 @@ echo ""
   --header "Profile: $profile  |  Space/Tab: toggle  |  Enter: confirm" \
   --prompt "Packages › " > /dev/null
 
-mapfile -t selected < <(grep -v '^$' "$_state_file")
+selected=("${(@f)$(grep -v '^$' "$_state_file")}")
 
 if [[ ${#selected[@]} -eq 0 ]]; then
   echo "No packages selected. Aborting." >&2
@@ -221,17 +216,17 @@ if [[ ${#selected[@]} -eq 0 ]]; then
 fi
 
 # ── Parse selection → category flags + machine_excludes ─────────────────────
-declare -A enabled_cats
+typeset -A enabled_cats
 machine_excludes=()
 
 for item in "${selected[@]}"; do
   cat="${item%%/*}"
-  enabled_cats["$cat"]=1
+  enabled_cats[$cat]=1
 done
 
 for cat in "${CAT_ORDER[@]}"; do
   if [[ -n "${enabled_cats[$cat]:-}" ]]; then
-    for pkg in ${CAT_PKGS[$cat]}; do
+    for pkg in ${=CAT_PKGS[$cat]}; do
       item="${cat}/${pkg}"
       found=false
       for s in "${selected[@]}"; do
@@ -288,6 +283,7 @@ cat > "$CHEZMOI_CONFIG" <<TOML
   bitwarden      = $(_flag bitwarden)
   bw_email       = "$bw_email"
   docker         = $(_flag docker)
+  java           = false
   kubernetes     = $(_flag kubernetes)
   macos_utils    = $(_flag macos_utils)
   macos_cosmetic = $(_flag macos_cosmetic)
@@ -296,6 +292,7 @@ cat > "$CHEZMOI_CONFIG" <<TOML
   touchbar       = $(_flag touchbar)
   gaming         = $(_flag gaming)
   productivity   = $(_flag productivity)
+  peripherals    = $(_flag peripherals)
 
   machine_excludes = $excl_toml
 TOML
