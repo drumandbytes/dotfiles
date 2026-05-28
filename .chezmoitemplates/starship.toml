@@ -1,8 +1,7 @@
-{{- $dark := eq (output "sh" "-c" "defaults read -g AppleInterfaceStyle 2>/dev/null || true") "Dark\n" -}}
 "$schema" = 'https://starship.rs/config-schema.json'
 
-# Active palette — set by chezmoi at apply time; updated by sync-theme at runtime
-palette = "{{ if $dark }}catppuccin_macchiato{{ else }}catppuccin_latte{{ end }}"
+# Active palette — owned by sync-theme at runtime; chezmoi preserves your selection (see modify_starship.toml)
+palette = "catppuccin_macchiato"
 
 [character]
 success_symbol = "[[󰄛](green) ❯](peach)"

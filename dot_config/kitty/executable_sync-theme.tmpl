@@ -1,5 +1,7 @@
 #!/bin/zsh
-mode=$(defaults read -g AppleInterfaceStyle 2>/dev/null)
+# mode: explicit arg ("Dark"/"Light") wins — used by Hammerspoon and by the
+# `theme` command for a manual override; otherwise follow current macOS appearance.
+mode=${1:-$(defaults read -g AppleInterfaceStyle 2>/dev/null)}
 if [[ "$mode" = "Dark" ]]; then
     kitty_theme="themes/macchiato.conf"
 {{ if .kubernetes -}}

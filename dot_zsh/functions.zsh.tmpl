@@ -553,3 +553,18 @@ pkg-group-add() {
   echo "   Configure    : dots-setup"
   echo "   Push when ready: git -C \$(chezmoi source-path) push"
 }
+
+# === Theme override ===
+# Force light/dark across all tools (kitty, starship, atuin, delta, eza, lazygit,
+# k9s). Sticks until macOS appearance next changes, then auto-follow resumes.
+# chezmoi preserves whatever is active and will not revert it.
+theme() {
+  case "${1:-}" in
+    dark | Dark) ~/.config/kitty/sync-theme Dark ;;
+    light | Light) ~/.config/kitty/sync-theme Light ;;
+    *)
+      echo "Usage: theme <light|dark>" >&2
+      return 1
+      ;;
+  esac
+}

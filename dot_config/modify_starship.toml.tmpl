@@ -1,0 +1,22 @@
+#!/bin/sh
+# chezmoi modify_ script for ~/.config/starship.toml
+#
+# The active `palette` line is owned by sync-theme at runtime (it follows macOS
+# appearance, or a manual `theme light|dark`). chezmoi must NOT revert it — so on
+# every apply we read the CURRENT file from stdin, keep its palette, and re-emit
+# the managed body around it. Fresh machines (no current file) fall back to the
+# system appearance. Edit the managed body in .chezmoitemplates/starship.toml.
+
+palette="$(sed -n 's/^palette = "\(.*\)"/\1/p' | head -n1)"
+
+if [ -z "$palette" ]; then
+    if defaults read -g AppleInterfaceStyle 2>/dev/null | grep -q Dark; then
+        palette="catppuccin_macchiato"
+    else
+        palette="catppuccin_latte"
+    fi
+fi
+
+cat <<'STARSHIP_BODY' | sed "s|^palette = \".*\"|palette = \"${palette}\"|"
+{{ template "starship.toml" . -}}
+STARSHIP_BODY

@@ -1,0 +1,19 @@
+#!/bin/sh
+# chezmoi modify_ script for ~/.config/atuin/config.toml
+#
+# The theme `name` is owned by sync-theme at runtime (follows macOS appearance,
+# or a manual `theme light|dark`). chezmoi must NOT revert it — so we read the
+# CURRENT file from stdin and keep its theme name. Fresh machines (no current
+# file) fall back to the system appearance.
+
+name="$(sed -n 's/^name = "\(.*\)"/\1/p' | head -n1)"
+
+if [ -z "$name" ]; then
+    if defaults read -g AppleInterfaceStyle 2>/dev/null | grep -q Dark; then
+        name="catppuccin-macchiato-mauve"
+    else
+        name="catppuccin-latte-mauve"
+    fi
+fi
+
+printf '[theme]\nname = "%s"\n' "$name"

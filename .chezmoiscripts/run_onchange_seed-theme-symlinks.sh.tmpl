@@ -1,0 +1,35 @@
+#!/bin/bash
+# Seed Catppuccin theme symlinks to match current macOS appearance — but only
+# when they are ABSENT. chezmoi no longer manages these symlinks (sync-theme owns
+# them at runtime); this just bootstraps a fresh machine. Existing symlinks are
+# left untouched, so a runtime/manual selection is never clobbered.
+# (run_onchange: re-runs only if this script's content changes.)
+
+set -euo pipefail
+
+if [[ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" == "Dark" ]]; then
+    dark=1
+else
+    dark=0
+fi
+
+seed() {
+    # $1 = symlink path, $2 = dark target, $3 = light target (targets are relative)
+    local link="$1" dark_target="$2" light_target="$3"
+    [[ -e "$link" || -L "$link" ]] && return 0
+    mkdir -p "$(dirname "$link")"
+    if [[ "$dark" == "1" ]]; then
+        ln -s "$dark_target" "$link"
+    else
+        ln -s "$light_target" "$link"
+    fi
+    echo "  seeded $link"
+}
+
+seed "$HOME/.config/kitty/theme.conf" "themes/macchiato.conf" "themes/latte.conf"
+{{ if .alt_tools -}}
+seed "$HOME/.config/eza/theme.yml" "catppuccin-macchiato-mauve.yml" "catppuccin-latte-mauve.yml"
+{{ end -}}
+seed "$HOME/.config/lazygit/theme.yml" "themes/catppuccin-macchiato.yml" "themes/catppuccin-latte.yml"
+
+echo "✅ Theme symlinks checked (existing selections left untouched)."
