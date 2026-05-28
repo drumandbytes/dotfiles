@@ -153,21 +153,19 @@ chmod +x "$_toggle_script"
 cat > "$_toggle_script" << 'TOGGLE'
 #!/bin/bash
 item="$1"; shift
-if [[ "$item" =~ ^── ]]; then
-  cat_name=$(printf '%s' "$item" | grep -oE '\[[a-z_]+\]' | head -1 | tr -d '[]')
-  if [[ -n "$cat_name" ]]; then
-    # Count how many of this category's items are currently selected
-    selected_in_cat=0
-    for sel in "$@"; do
-      [[ "$sel" == "${cat_name}/"* ]] && (( selected_in_cat++ ))
-    done
-    if [[ "$selected_in_cat" -gt 0 ]]; then
-      printf 'change-query(%s/)+deselect-all+change-query()' "$cat_name"
-    else
-      printf 'change-query(%s/)+select-all+change-query()' "$cat_name"
-    fi
-    exit 0
+# Items are always "cat/pkg"; headers never contain "/"
+if [[ "$item" != */* && "$item" =~ \[([a-z_]+)\]$ ]]; then
+  cat_name="${BASH_REMATCH[1]}"
+  selected_in_cat=0
+  for sel in "$@"; do
+    [[ "$sel" == "${cat_name}/"* ]] && (( selected_in_cat++ ))
+  done
+  if [[ "$selected_in_cat" -gt 0 ]]; then
+    printf 'change-query(%s/)+deselect-all+change-query()' "$cat_name"
+  else
+    printf 'change-query(%s/)+select-all+change-query()' "$cat_name"
   fi
+  exit 0
 fi
 printf 'toggle'
 TOGGLE
