@@ -132,7 +132,7 @@ for item in "${all_items[@]}"; do
 done
 
 # Build fzf bind string to pre-select profile items on load
-bind_str="load"
+bind_str="load:select-none"
 for item in "${preselected[@]}"; do
   bind_str+="+select('${item})"
 done
