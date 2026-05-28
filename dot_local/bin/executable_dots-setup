@@ -119,41 +119,66 @@ for cat in "${CAT_ORDER[@]}"; do
   done
 done
 
-# ── Step 2: Build fzf display (interleaved category headers) ────────────────
-display_items=()
-prev_cat=""
+# ── Step 2: Build fzf display lists ─────────────────────────────────────────
+_build_display() {
+  local -n _items=$1
+  local -n _out=$2
+  local prev_cat=""
+  for item in "${_items[@]}"; do
+    local cat="${item%%/*}"
+    if [[ "$cat" != "$prev_cat" ]]; then
+      _out+=("── ${CAT_DESC[$cat]}  ${dim}[${cat}]${reset}")
+      prev_cat="$cat"
+    fi
+    _out+=("$item")
+  done
+}
+
+extra_items=()
 for item in "${all_items[@]}"; do
-  cat="${item%%/*}"
-  if [[ "$cat" != "$prev_cat" ]]; then
-    display_items+=("── ${CAT_DESC[$cat]}  ${dim}[${cat}]${reset}")
-    prev_cat="$cat"
-  fi
-  display_items+=("$item")
+  [[ " ${preselected[*]} " == *" $item "* ]] || extra_items+=("$item")
 done
 
-# Build fzf bind string to pre-select profile items on load
-actions=()
-for item in "${preselected[@]}"; do
-  actions+=("select('${item})")
-done
-bind_str="load:$(IFS='+'; echo "${actions[*]:-ignore}")"
+profile_display=(); _build_display preselected profile_display
+extras_display=();  _build_display extra_items extras_display
 
-# ── Step 2: fzf multi-select ─────────────────────────────────────────────────
-echo "${bold}Customise packages${reset}  ${dim}Space/Tab: toggle · Enter: confirm · /: search${reset}"
+_fzf_common=(
+  --multi --no-sort
+  --bind 'tab:toggle+down'
+  --bind 'shift-tab:toggle+up'
+  --marker '✓ '
+  --pointer '▶ '
+  --color 'marker:2,pointer:6,header:3'
+  --prompt "Packages › "
+)
+
+# ── Step 2a: Profile packages (all pre-selected — deselect to exclude) ───────
+echo "${bold}Profile packages${reset}  ${dim}Space/Tab: toggle · Enter: confirm${reset}"
 echo ""
 
-mapfile -t selected < <(
-  printf '%s\n' "${display_items[@]}" | \
-  fzf --multi --no-sort \
-    --bind "$bind_str" \
-    --bind 'tab:toggle+down' \
-    --bind 'shift-tab:toggle+up' \
-    --marker '✓ ' \
-    --pointer '▶ ' \
-    --color 'marker:2,pointer:6,header:3' \
-    --header "Profile: $profile  |  Space/Tab: toggle  |  Enter: confirm" \
-    --prompt "Packages › " | grep -v '^──'
+mapfile -t keep < <(
+  printf '%s\n' "${profile_display[@]}" | \
+  fzf "${_fzf_common[@]}" \
+    --bind 'load:select-all' \
+    --header "Profile: $profile — deselect to exclude  |  Enter: confirm" \
+    | grep -v '^──'
 )
+
+# ── Step 2b: Extra packages (opt-in) ─────────────────────────────────────────
+selected=("${keep[@]}")
+if [[ ${#extras_display[@]} -gt 0 ]]; then
+  echo ""
+  echo "${bold}Extra packages${reset}  ${dim}optional — select to add · Enter to skip${reset}"
+  echo ""
+
+  mapfile -t extras < <(
+    printf '%s\n' "${extras_display[@]}" | \
+    fzf "${_fzf_common[@]}" \
+      --header "Add extras (optional)  |  Enter with nothing selected to skip" \
+      | grep -v '^──'
+  )
+  selected+=("${extras[@]}")
+fi
 
 if [[ ${#selected[@]} -eq 0 ]]; then
   echo "No packages selected. Aborting." >&2
