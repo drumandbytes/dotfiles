@@ -200,9 +200,9 @@ echo "${bold}Customise packages${reset}  ${dim}Space/Tab: toggle · Enter: confi
 echo ""
 
 "$_display_script" | fzf --no-sort --no-preview --ansi \
-  --bind "space:execute-silent($_toggle_script {})+reload($_display_script)+keep-pos" \
-  --bind "tab:execute-silent($_toggle_script {})+reload($_display_script)+keep-pos+down" \
-  --bind "shift-tab:execute-silent($_toggle_script {})+reload($_display_script)+keep-pos+up" \
+  --bind "space:execute-silent($_toggle_script {})+reload($_display_script)" \
+  --bind "tab:execute-silent($_toggle_script {})+reload($_display_script)+down" \
+  --bind "shift-tab:execute-silent($_toggle_script {})+reload($_display_script)+up" \
   --pointer '▶ ' \
   --color 'pointer:6,header:3' \
   --header "Profile: $profile  |  Space/Tab: toggle  |  Enter: confirm" \
