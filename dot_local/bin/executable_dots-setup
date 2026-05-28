@@ -142,10 +142,31 @@ done
 profile_display=(); _build_display preselected profile_display
 extras_display=();  _build_display extra_items extras_display
 
+# ── Group-toggle helper ───────────────────────────────────────────────────────
+# fzf's transform action calls this with the current item as $1 and an optional
+# suffix action (e.g. "+down") as $2. If the item is a category header, it
+# toggles every item in that category via change-query+toggle-all+change-query.
+_toggle_script=$(mktemp /tmp/dots-setup-toggle.XXXXXX)
+chmod +x "$_toggle_script"
+cat > "$_toggle_script" << 'TOGGLE'
+#!/bin/bash
+item="$1" suffix="${2:-}"
+if [[ "$item" =~ ^── ]]; then
+  cat_name=$(printf '%s' "$item" | grep -oE '\[[a-z_]+\]' | head -1 | tr -d '[]')
+  if [[ -n "$cat_name" ]]; then
+    printf 'change-query(%s/)+toggle-all+change-query()%s' "$cat_name" "$suffix"
+    exit 0
+  fi
+fi
+printf 'toggle%s' "$suffix"
+TOGGLE
+trap 'rm -f "$_toggle_script"' EXIT
+
 _fzf_common=(
   --multi --no-sort --no-preview
-  --bind 'tab:toggle+down'
-  --bind 'shift-tab:toggle+up'
+  --bind "space:transform:$_toggle_script {} ''"
+  --bind "tab:transform:$_toggle_script {} +down"
+  --bind "shift-tab:transform:$_toggle_script {} +up"
   --marker '✓ '
   --pointer '▶ '
   --color 'marker:2,pointer:6,header:3'
