@@ -262,6 +262,12 @@ fi
 # ── Write chezmoi.toml ───────────────────────────────────────────────────────
 mkdir -p "$(dirname "$CHEZMOI_CONFIG")"
 
+# Preserve sourceDir if already set (manual per-machine override)
+_source_dir_line=""
+if [[ -f "$CHEZMOI_CONFIG" ]]; then
+  _source_dir_line=$(grep '^sourceDir' "$CHEZMOI_CONFIG" || true)
+fi
+
 # Build TOML array for machine_excludes
 excl_toml="["
 for e in "${machine_excludes[@]}"; do
@@ -297,6 +303,11 @@ cat > "$CHEZMOI_CONFIG" <<TOML
 
   machine_excludes = $excl_toml
 TOML
+
+# Re-inject sourceDir if it was present before (manual per-machine override)
+if [[ -n "$_source_dir_line" ]]; then
+  printf '%s\n' "$_source_dir_line" | cat - "$CHEZMOI_CONFIG" > "$CHEZMOI_CONFIG.tmp" && mv "$CHEZMOI_CONFIG.tmp" "$CHEZMOI_CONFIG"
+fi
 
 echo ""
 echo "${bold}${green}✓ Config written → $CHEZMOI_CONFIG${reset}"
