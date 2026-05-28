@@ -202,8 +202,8 @@ echo ""
 
 "$_display_script" | fzf --no-sort --no-preview --ansi \
   --bind "space:execute-silent(echo \$FZF_POS > $_pos_file; $_toggle_script {})+reload-sync($_display_script)+transform(echo \"pos(\$(cat $_pos_file))\")" \
-  --bind "tab:execute-silent(echo \$FZF_POS > $_pos_file; $_toggle_script {})+reload-sync($_display_script)+transform(echo \"pos(\$(cat $_pos_file))\")+down" \
-  --bind "shift-tab:execute-silent(echo \$FZF_POS > $_pos_file; $_toggle_script {})+reload-sync($_display_script)+transform(echo \"pos(\$(cat $_pos_file))\")+up" \
+  --bind "tab:execute-silent(echo \$FZF_POS > $_pos_file; $_toggle_script {})+reload-sync($_display_script)+transform(echo \"pos(\$(cat $_pos_file))\")" \
+  --bind "shift-tab:execute-silent(echo \$FZF_POS > $_pos_file; $_toggle_script {})+reload-sync($_display_script)+transform(echo \"pos(\$(cat $_pos_file))\")" \
   --pointer '▶ ' \
   --color 'pointer:6,header:3' \
   --header "Profile: $profile  |  Space/Tab: toggle  |  Enter: confirm" \
