@@ -73,22 +73,22 @@ brew "eza"
 brew "fd"
 brew "ripgrep"
 brew "tldr"
-{{ if not (has .machine_excludes "doggo") -}}
+{{ if not (has "doggo" .machine_excludes) -}}
 brew "doggo"
 {{ end -}}
-{{ if not (has .machine_excludes "gping") -}}
+{{ if not (has "gping" .machine_excludes) -}}
 brew "gping"
 {{ end -}}
-{{ if not (has .machine_excludes "gron") -}}
+{{ if not (has "gron" .machine_excludes) -}}
 brew "gron"
 {{ end -}}
-{{ if not (has .machine_excludes "jid") -}}
+{{ if not (has "jid" .machine_excludes) -}}
 brew "jid"
 {{ end -}}
-{{ if not (has .machine_excludes "navi") -}}
+{{ if not (has "navi" .machine_excludes) -}}
 brew "navi"
 {{ end -}}
-{{ if not (has .machine_excludes "xh") -}}
+{{ if not (has "xh" .machine_excludes) -}}
 brew "xh"
 {{ end -}}
 # pkg:end:alt_tools
@@ -111,7 +111,7 @@ brew "colima", restart_service: :changed
 brew "docker"
 brew "docker-buildx"
 brew "docker-compose"
-{{ if not (has .machine_excludes "lima-additional-guestagents") -}}
+{{ if not (has "lima-additional-guestagents" .machine_excludes) -}}
 brew "lima-additional-guestagents"
 {{ end -}}
 # pkg:end:docker
@@ -126,22 +126,22 @@ brew "kubecolor"
 brew "kubernetes-cli"
 brew "kubectx"
 brew "k9s"
-{{ if not (has .machine_excludes "kubeconform") -}}
+{{ if not (has "kubeconform" .machine_excludes) -}}
 brew "kubeconform"
 {{ end -}}
-{{ if not (has .machine_excludes "mintoolkit") -}}
+{{ if not (has "mintoolkit" .machine_excludes) -}}
 brew "mintoolkit"
 {{ end -}}
-{{ if not (has .machine_excludes "stern") -}}
+{{ if not (has "stern" .machine_excludes) -}}
 brew "stern"
 {{ end -}}
-{{ if not (has .machine_excludes "vault") -}}
+{{ if not (has "vault" .machine_excludes) -}}
 brew "hashicorp/tap/vault"
 {{ end -}}
-{{ if not (has .machine_excludes "gcloud-cli") -}}
+{{ if not (has "gcloud-cli" .machine_excludes) -}}
 cask "gcloud-cli"
 {{ end -}}
-{{ if not (has .machine_excludes "kustomize") -}}
+{{ if not (has "kustomize" .machine_excludes) -}}
 brew "kustomize"
 {{ end -}}
 # pkg:end:kubernetes
@@ -156,34 +156,34 @@ cask "hammerspoon"
 cask "hot"
 cask "mos@beta"
 cask "raycast"
-{{ if not (has .machine_excludes "displaylink") -}}
+{{ if not (has "displaylink" .machine_excludes) -}}
 cask "displaylink"
 {{ end -}}
-{{ if not (has .machine_excludes "linearmouse") -}}
+{{ if not (has "linearmouse" .machine_excludes) -}}
 cask "linearmouse"
 {{ end -}}
-{{ if not (has .machine_excludes "netspot") -}}
+{{ if not (has "netspot" .machine_excludes) -}}
 cask "netspot"
 {{ end -}}
-{{ if not (has .machine_excludes "sniffnet") -}}
+{{ if not (has "sniffnet" .machine_excludes) -}}
 brew "sniffnet"
 {{ end -}}
-{{ if not (has .machine_excludes "keyboardcleantool") -}}
+{{ if not (has "keyboardcleantool" .machine_excludes) -}}
 cask "keyboardcleantool"
 {{ end -}}
-{{ if not (has .machine_excludes "nordvpn") -}}
+{{ if not (has "nordvpn" .machine_excludes) -}}
 cask "nordvpn"
 {{ end -}}
-{{ if not (has .machine_excludes "transmission") -}}
+{{ if not (has "transmission" .machine_excludes) -}}
 cask "transmission"
 {{ end -}}
-{{ if not (has .machine_excludes "utm") -}}
+{{ if not (has "utm" .machine_excludes) -}}
 cask "utm"
 {{ end -}}
-{{ if not (has .machine_excludes "duckdb") -}}
+{{ if not (has "duckdb" .machine_excludes) -}}
 brew "duckdb"
 {{ end -}}
-{{ if not (has .machine_excludes "rbenv") -}}
+{{ if not (has "rbenv" .machine_excludes) -}}
 brew "rbenv"
 {{ end -}}
 # pkg:end:macos_utils
@@ -193,13 +193,13 @@ brew "rbenv"
 # macOS cosmetic
 # =============================================================================
 {{ if .macos_cosmetic -}}
-{{ if not (has .machine_excludes "airbattery") -}}
+{{ if not (has "airbattery" .machine_excludes) -}}
 cask "lihaoyun6/tap/airbattery"
 {{ end -}}
-{{ if not (has .machine_excludes "boring-notch") -}}
+{{ if not (has "boring-notch" .machine_excludes) -}}
 cask "theboredteam/boring-notch/boring-notch"
 {{ end -}}
-{{ if not (has .machine_excludes "cork") -}}
+{{ if not (has "cork" .machine_excludes) -}}
 cask "cork"
 {{ end -}}
 # pkg:end:macos_cosmetic
@@ -209,22 +209,22 @@ cask "cork"
 # Media & communication
 # =============================================================================
 {{ if .macos_media -}}
-{{ if not (has .machine_excludes "brave-browser") -}}
+{{ if not (has "brave-browser" .machine_excludes) -}}
 cask "brave-browser"
 {{ end -}}
-{{ if not (has .machine_excludes "slack") -}}
+{{ if not (has "slack" .machine_excludes) -}}
 cask "slack"
 {{ end -}}
-{{ if not (has .machine_excludes "spotify") -}}
+{{ if not (has "spotify" .machine_excludes) -}}
 cask "spotify"
 {{ end -}}
-{{ if not (has .machine_excludes "telegram") -}}
+{{ if not (has "telegram" .machine_excludes) -}}
 cask "telegram"
 {{ end -}}
-{{ if not (has .machine_excludes "iina") -}}
+{{ if not (has "iina" .machine_excludes) -}}
 cask "iina"
 {{ end -}}
-{{ if not (has .machine_excludes "spicetify-cli") -}}
+{{ if not (has "spicetify-cli" .machine_excludes) -}}
 brew "spicetify-cli"
 {{ end -}}
 # pkg:end:macos_media
@@ -245,19 +245,19 @@ brew "libpq", link: true
 brew "rtk"
 brew "uv"
 brew "webp"
-{{ if not (has .machine_excludes "claude") -}}
+{{ if not (has "claude" .machine_excludes) -}}
 cask "claude"
 {{ end -}}
-{{ if not (has .machine_excludes "claude-usage-tracker") -}}
+{{ if not (has "claude-usage-tracker" .machine_excludes) -}}
 cask "hamed-elfayome/claude-usage/claude-usage-tracker"
 {{ end -}}
-{{ if not (has .machine_excludes "dbeaver-community") -}}
+{{ if not (has "dbeaver-community" .machine_excludes) -}}
 cask "dbeaver-community"
 {{ end -}}
-{{ if not (has .machine_excludes "gimp") -}}
+{{ if not (has "gimp" .machine_excludes) -}}
 cask "gimp"
 {{ end -}}
-{{ if not (has .machine_excludes "vscodium") -}}
+{{ if not (has "vscodium" .machine_excludes) -}}
 cask "vscodium"
 vscode "adpyke.codesnap"
 vscode "anthropic.claude-code"
@@ -272,10 +272,10 @@ vscode "ms-python.python"
 vscode "ms-python.vscode-python-envs"
 vscode "pixl-garden.bongocat"
 {{ end -}}
-{{ if not (has .machine_excludes "cyberduck") -}}
+{{ if not (has "cyberduck" .machine_excludes) -}}
 cask "cyberduck"
 {{ end -}}
-{{ if not (has .machine_excludes "macfuse") -}}
+{{ if not (has "macfuse" .machine_excludes) -}}
 cask "macfuse"
 {{ end -}}
 # pkg:end:dev_apps
@@ -293,22 +293,22 @@ cask "bettertouchtool"
 # Productivity
 # =============================================================================
 {{ if .productivity -}}
-{{ if not (has .machine_excludes "calibre") -}}
+{{ if not (has "calibre" .machine_excludes) -}}
 cask "calibre"
 {{ end -}}
-{{ if not (has .machine_excludes "dockdoor") -}}
+{{ if not (has "dockdoor" .machine_excludes) -}}
 cask "dockdoor"
 {{ end -}}
-{{ if not (has .machine_excludes "flux-markdown") -}}
+{{ if not (has "flux-markdown" .machine_excludes) -}}
 cask "xykong/tap/flux-markdown"
 {{ end -}}
-{{ if not (has .machine_excludes "grammarly-desktop") -}}
+{{ if not (has "grammarly-desktop" .machine_excludes) -}}
 cask "grammarly-desktop"
 {{ end -}}
-{{ if not (has .machine_excludes "notion") -}}
+{{ if not (has "notion" .machine_excludes) -}}
 cask "notion"
 {{ end -}}
-{{ if not (has .machine_excludes "obsidian") -}}
+{{ if not (has "obsidian" .machine_excludes) -}}
 cask "obsidian"
 {{ end -}}
 # pkg:end:productivity
@@ -318,10 +318,10 @@ cask "obsidian"
 # Gaming & peripherals
 # =============================================================================
 {{ if .gaming -}}
-{{ if not (has .machine_excludes "discord") -}}
+{{ if not (has "discord" .machine_excludes) -}}
 cask "discord"
 {{ end -}}
-{{ if not (has .machine_excludes "steam") -}}
+{{ if not (has "steam" .machine_excludes) -}}
 cask "steam"
 {{ end -}}
 # pkg:end:gaming
@@ -331,16 +331,16 @@ cask "steam"
 # Peripherals
 # =============================================================================
 {{ if .peripherals -}}
-{{ if not (has .machine_excludes "8bitdo-ultimate-software") -}}
+{{ if not (has "8bitdo-ultimate-software" .machine_excludes) -}}
 cask "8bitdo-ultimate-software"
 {{ end -}}
-{{ if not (has .machine_excludes "balenaetcher") -}}
+{{ if not (has "balenaetcher" .machine_excludes) -}}
 cask "balenaetcher"
 {{ end -}}
-{{ if not (has .machine_excludes "f3") -}}
+{{ if not (has "f3" .machine_excludes) -}}
 brew "f3"
 {{ end -}}
-{{ if not (has .machine_excludes "qmk-toolbox") -}}
+{{ if not (has "qmk-toolbox" .machine_excludes) -}}
 cask "qmk-toolbox"
 {{ end -}}
 # pkg:end:peripherals
