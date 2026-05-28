@@ -46,11 +46,11 @@ CAT_PKGS=(
   [kubernetes]="helm kubecolor kubernetes-cli kubectx k9s kubeconform mintoolkit stern vault gcloud-cli kustomize"
   [macos_utils]="alt-tab displaylink hammerspoon hot mos raycast sniffnet keyboardcleantool linearmouse netspot nordvpn transmission utm duckdb rbenv"
   [macos_cosmetic]="airbattery boring-notch cork"
-  [macos_media]="brave-browser slack spotify spicetify-cli telegram iina"
+  [macos_media]="brave-browser slack spotify telegram iina"
   [dev_apps]="cloudflared ffmpeg gh git git-filter-repo glab claude claude-usage-tracker dbeaver-community gimp hcloud rtk uv vscodium webp cyberduck macfuse"
   [touchbar]="bettertouchtool"
   [gaming]="discord steam"
-  [productivity]="calibre dockdoor flux-markdown grammarly-desktop notion obsidian"
+  [productivity]="calibre flux-markdown grammarly-desktop notion obsidian"
   [peripherals]="8bitdo-ultimate-software balenaetcher f3 qmk-toolbox"
 )
 
@@ -65,7 +65,7 @@ PROFILE_CATS=(
 
 typeset -A PROFILE_EXCL
 PROFILE_EXCL=(
-  [work]="kubernetes/vault macos_media/spotify macos_media/iina macos_media/spicetify-cli"
+  [work]="kubernetes/vault macos_media/spotify macos_media/iina"
   [personal]="macos_utils/displaylink macos_utils/utm macos_utils/duckdb"
   [minimal]=""
   [full]=""
