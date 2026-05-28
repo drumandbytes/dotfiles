@@ -127,7 +127,7 @@ _build_display() {
   for item in "${_items[@]}"; do
     local cat="${item%%/*}"
     if [[ "$cat" != "$prev_cat" ]]; then
-      _out+=("── ${CAT_DESC[$cat]}  ${dim}[${cat}]${reset}")
+      _out+=("── ${CAT_DESC[$cat]}  [${cat}]")
       prev_cat="$cat"
     fi
     _out+=("$item")
@@ -174,7 +174,7 @@ TOGGLE
 trap 'rm -f "$_toggle_script"' EXIT
 
 _fzf_common=(
-  --multi --no-sort --no-preview
+  --multi --no-sort --no-preview --ansi
   --bind "space:transform:$_toggle_script {} {+}"
   --bind 'tab:toggle+down'
   --bind 'shift-tab:toggle+up'
