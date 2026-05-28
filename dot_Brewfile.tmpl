@@ -224,9 +224,6 @@ cask "telegram"
 {{ if not (has "iina" .machine_excludes) -}}
 cask "iina"
 {{ end -}}
-{{ if not (has "spicetify-cli" .machine_excludes) -}}
-brew "spicetify-cli"
-{{ end -}}
 # pkg:end:macos_media
 {{ end -}}
 
