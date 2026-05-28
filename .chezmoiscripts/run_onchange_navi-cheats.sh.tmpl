@@ -79,13 +79,23 @@ PYEOF
 
 echo "✅ Generated $CHEAT_DIR/personal.cheat"
 
-# --- 2. Community repos (idempotent — skip if already cloned) ---
+# --- 2. Community repos — clone if missing, pull if older than 7 days ---
+REPO_CACHE="$CHEAT_DIR/.last_updated"
+_needs_update() {
+    [[ ! -f "$REPO_CACHE" ]] && return 0
+    local age=$(( $(date +%s) - $(date -r "$REPO_CACHE" +%s) ))
+    (( age > 604800 ))  # 7 days in seconds
+}
+
 add_repo() {
     local repo="$1"
     local dest="$CHEAT_DIR/${repo//\//__}"
     if [[ ! -d "$dest" ]]; then
         echo "Adding navi repo: $repo ..."
         navi repo add "$repo" || echo "⚠️  Could not add $repo (check network)"
+    elif _needs_update; then
+        echo "Updating navi repo: $repo ..."
+        git -C "$dest" pull --ff-only --quiet 2>/dev/null || echo "⚠️  Could not update $repo"
     fi
 }
 
@@ -96,4 +106,5 @@ add_repo "tg-z/navi-cheats"
 add_repo "tsologub/navi-cheats"
 {{ end -}}
 
+_needs_update && touch "$REPO_CACHE"
 echo "✅ Navi setup complete."
