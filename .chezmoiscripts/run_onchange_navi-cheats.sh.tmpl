@@ -90,5 +90,10 @@ add_repo() {
 }
 
 add_repo "denisidoro/cheats"
+add_repo "denisidoro/navi-tldr-pages"
+add_repo "tg-z/navi-cheats"
+{{ if .kubernetes -}}
+add_repo "tsologub/navi-cheats"
+{{ end -}}
 
 echo "✅ Navi setup complete."

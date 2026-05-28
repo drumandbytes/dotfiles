@@ -1,0 +1,282 @@
+% macos, system
+
+# Flush DNS cache
+sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
+
+# Show what's listening on a port
+lsof -i :<port>
+
+$ port: echo "3000\n8080\n8443\n5432\n6379\n27017"
+
+# Kill process on a port
+kill -9 $(lsof -t -i:<port>)
+
+# Copy file path to clipboard
+echo "<path>" | pbcopy
+
+# Open current directory in Finder
+open .
+
+# Show/hide hidden files in Finder (toggle)
+defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder
+
+# Lock screen
+/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend
+
+# Get macOS version
+sw_vers
+
+# List all running services
+sudo launchctl list | grep -v "com.apple"
+
+# Show disk usage for current directory
+du -sh * | sort -rh | head -20
+
+# Check system memory pressure
+memory_pressure
+
+# Show CPU usage by process
+top -o cpu -n 10 -l 1 | tail -15
+
+% macos, network
+
+# Show all network interfaces
+ifconfig | grep "^[a-z]"
+
+# Get public IP
+curl -s ifconfig.me
+
+# Get local IP
+ipconfig getifaddr en0
+
+# Scan local network
+arp -a
+
+# Show open network connections
+netstat -an | grep ESTABLISHED
+
+# Test DNS resolution
+dig <domain> +short
+
+$ domain: echo "google.com\ngithub.com"
+
+% macos, defaults
+
+# Show macOS build version
+defaults read loginwindow SystemVersionStampAsString
+
+# Disable Gatekeeper (allow apps from anywhere)
+sudo spctl --master-disable
+
+# Enable Gatekeeper
+sudo spctl --master-enable
+
+# Set screenshot location
+defaults write com.apple.screencapture location <path>
+
+$ path: echo "$HOME/Desktop\n$HOME/Downloads\n$HOME/Screenshots"
+
+{{ if .docker -}}
+% docker, containers
+
+# Start Colima
+colima start
+
+# Stop Colima
+colima stop
+
+# Colima status
+colima status
+
+# List running containers
+docker ps
+
+# List all containers
+docker ps -a
+
+# Stop all running containers
+docker stop $(docker ps -q)
+
+# Remove all stopped containers
+docker container prune -f
+
+# Pull and run container interactively
+docker run -it --rm <image> /bin/sh
+
+$ image: docker images --format "{{`{{.Repository}}:{{.Tag}}`}}" | head -20
+
+# Follow container logs
+docker logs -f <container>
+
+$ container: docker ps --format "{{`{{.Names}}`}}"
+
+# Exec into running container
+docker exec -it <container> /bin/sh
+
+# Show container resource usage
+docker stats --no-stream
+
+# Remove all unused images
+docker image prune -af
+
+# Full system cleanup (containers, images, volumes, networks)
+docker system prune -af --volumes
+
+% docker, compose
+
+# Start services in background
+docker compose up -d
+
+# Start specific service
+docker compose up -d <service>
+
+# Stop all services
+docker compose down
+
+# Stop and remove volumes
+docker compose down -v
+
+# View logs for all services
+docker compose logs -f
+
+# View logs for specific service
+docker compose logs -f <service>
+
+# Rebuild and restart
+docker compose up -d --build
+
+# List compose services
+docker compose ps
+
+{{ end -}}
+{{ if .kubernetes -}}
+% kubernetes, contexts
+
+# Switch context
+kubectx <context>
+
+$ context: kubectl config get-contexts -o name
+
+# Switch namespace
+kubens <namespace>
+
+$ namespace: kubectl get namespaces -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
+
+# Show current context
+kubectl config current-context
+
+% kubernetes, pods
+
+# Get pods in namespace
+kubectl get pods -n <namespace>
+
+$ namespace: kubectl get namespaces -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
+
+# Get all pods across all namespaces
+kubectl get pods -A
+
+# Describe pod
+kubectl describe pod <pod> -n <namespace>
+
+$ pod: kubectl get pods -n <namespace> -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
+
+# Exec into pod
+kubectl exec -it <pod> -n <namespace> -- /bin/sh
+
+# Follow pod logs
+kubectl logs -f <pod> -n <namespace>
+
+# Follow logs for all pods matching label
+stern <label> -n <namespace>
+
+$ label: echo "app\ncomponent\nrelease"
+
+# Delete pod (will restart if managed)
+kubectl delete pod <pod> -n <namespace>
+
+# Get pod events
+kubectl get events -n <namespace> --sort-by='.lastTimestamp'
+
+# Port forward to pod
+kubectl port-forward <pod> <local_port>:<remote_port> -n <namespace>
+
+$ local_port: echo "8080\n8443\n5432\n6379\n3000"
+$ remote_port: echo "8080\n8443\n5432\n6379\n3000"
+
+% kubernetes, resources
+
+# Apply manifest
+kubectl apply -f <file>
+
+$ file: find . -name "*.yaml" -o -name "*.yml" 2>/dev/null | head -20
+
+# Delete resource from manifest
+kubectl delete -f <file>
+
+# Get all resources in namespace
+kubectl get all -n <namespace>
+
+# Get deployments
+kubectl get deployments -n <namespace>
+
+# Scale deployment
+kubectl scale deployment <deployment> --replicas=<replicas> -n <namespace>
+
+$ deployment: kubectl get deployments -n <namespace> -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
+$ replicas: echo "0\n1\n2\n3\n5"
+
+# Rollout restart deployment
+kubectl rollout restart deployment/<deployment> -n <namespace>
+
+# Get services
+kubectl get svc -n <namespace>
+
+# Get ingresses
+kubectl get ingress -n <namespace>
+
+% kubernetes, secrets
+
+# List secrets
+kubectl get secrets -n <namespace>
+
+# Decode secret value
+kubectl get secret <secret> -n <namespace> -o jsonpath='{.data.<key>}' | base64 -d
+
+$ secret: kubectl get secrets -n <namespace> -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
+$ key: kubectl get secret <secret> -n <namespace> -o jsonpath='{.data}' | jq -r 'keys[]'
+
+% kubernetes, helm
+
+# List all releases
+helm list -A
+
+# List releases in namespace
+helm list -n <namespace>
+
+# Install chart
+helm install <name> <chart> -n <namespace> --create-namespace
+
+$ chart: echo "stable/\nbitnami/\njetstack/"
+
+# Upgrade release
+helm upgrade <release> <chart> -n <namespace>
+
+$ release: helm list -A -o json | jq -r '.[].name'
+
+# Upgrade with values file
+helm upgrade <release> <chart> -f <values_file> -n <namespace>
+
+$ values_file: find . -name "values*.yaml" 2>/dev/null
+
+# Uninstall release
+helm uninstall <release> -n <namespace>
+
+# Show release values
+helm get values <release> -n <namespace>
+
+# Search Artifact Hub
+helm search hub <query>
+
+$ query: echo "nginx\npostgres\nredis\ncertificate"
+
+{{ end -}}
