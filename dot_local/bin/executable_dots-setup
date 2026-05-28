@@ -143,7 +143,7 @@ profile_display=(); _build_display preselected profile_display
 extras_display=();  _build_display extra_items extras_display
 
 _fzf_common=(
-  --multi --no-sort
+  --multi --no-sort --no-preview
   --bind 'tab:toggle+down'
   --bind 'shift-tab:toggle+up'
   --marker '✓ '
