@@ -1,0 +1,28 @@
+#!/bin/bash
+# Write the colima default config only on first apply — colima modifies this
+# file at runtime, so we must not overwrite it on each apply.
+# To re-apply: rm ~/.colima/default/colima.yaml && chezmoi state delete --bucket=scriptState --key=run_once_create-colima-config.sh.tmpl && chezmoi apply
+set -euo pipefail
+
+target="$HOME/.colima/default/colima.yaml"
+[[ -f "$target" ]] && exit 0
+
+mkdir -p "$(dirname "$target")"
+cat > "$target" <<'EOF'
+cpu: 4
+memory: 8
+disk: 100
+arch: host
+
+runtime: docker
+vmType: vz
+rosetta: false
+mountType: virtiofs
+mountInotify: true
+
+kubernetes:
+  enabled: false
+  version: v1.35.0+k3s1
+  k3sArgs:
+    - --disable=traefik
+EOF

@@ -492,9 +492,9 @@ pkg-add() {
   local tmp="${brewfile}.tmp"
   awk -v cat="$category" -v pkg="$package" -v type="$type" -v excl="$excludable" '
     /^# pkg:end:/ && substr($0, 12) == cat {
-      if (excl == "true") print "{{ if not (has .machine_excludes \"" pkg "\") -}}"
+      if (excl == "true") print "{{ "{{" }} if not (has \"" pkg "\" .machine_excludes) -{{ "}}" }}"
       print type " \"" pkg "\""
-      if (excl == "true") print "{{ end -}}"
+      if (excl == "true") print "{{ "{{" }} end -{{ "}}" }}"
     }
     { print }
   ' "$brewfile" > "$tmp" && mv "$tmp" "$brewfile" || { rm -f "$tmp"; return 1; }
