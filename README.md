@@ -10,7 +10,7 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | -------- | ----------- |
 | `~/.zshrc` | Zsh entrypoint — modular, deferred, fast |
 | `~/.zsh/env.zsh` | Exports, PATH, editor |
-| `~/.zsh/aliases.zsh` | Shell aliases (eza, k8s, git, etc.) |
+| `~/.zsh/aliases.zsh` | Shell aliases (eza, k8s, git, maintenance, etc.) |
 | `~/.zsh/functions.zsh` | Functions: `mnt`, `brewsync`, `comp-add`, `bw-search`, `_fzf_menu`, lazy loaders |
 | `~/.config/sheldon/plugins.toml` | Zsh plugin manager config |
 | `~/.config/starship.toml` | Prompt |
@@ -21,6 +21,7 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | `~/.config/lazygit/` | lazygit config + Catppuccin theme |
 | `~/.config/atuin/` | Shell history config + Catppuccin themes |
 | `~/.hammerspoon/init.lua` | Auto-reload config; theme sync on macOS appearance change |
+| `~/.local/share/navi/cheats/custom.cheat` | Custom navi cheatsheets (macOS, docker, kubernetes) |
 
 ## Runtime version management
 
@@ -31,7 +32,6 @@ Language runtimes are managed by [mise](https://mise.jdx.dev) rather than Homebr
 | `node` | LTS |
 | `uv` | latest |
 | `ruff` | latest |
-| `java` | temurin-21 *(optional)* |
 
 Ruby is not pinned globally — add it per-project with `mise use ruby@3.4` inside a project directory.
 
@@ -55,31 +55,45 @@ If Homebrew and chezmoi are already installed:
 chezmoi init --apply https://github.com/drumandbytes/dotfiles
 ```
 
-During `chezmoi init` you'll be prompted for optional features (answers are saved locally and never committed):
+After the initial apply, run the machine profile wizard to select packages and features:
 
-| Prompt | What it does |
-| -------- | ----------- |
-| `Preferred editor` | Sets `$EDITOR`; controls which editor is installed (fresh, nvim, vim, code) |
-| `Install modern CLI replacements` | Installs eza, bat, fd, ripgrep, fzf, delta, etc. and enables them in shell config |
-| `Install macOS utilities` | Installs Raycast, Alt-Tab, Hammerspoon, mac-cleanup, etc. |
-| `Install cosmetic macOS apps` | Installs Boring Notch, AirBattery, Cork |
-| `Install media & communication apps` | Installs Brave, Spotify, Telegram, Slack, spicetify |
-| `Install dev apps` | Installs VSCodium, DBeaver, GIMP, GitLab CLI, GitHub CLI |
-| `Install BetterTouchTool` | For TouchBar Macs only |
-| `Install gaming & peripherals` | Installs Steam, Discord, 8BitDo Ultimate Software, QMK Toolbox |
-| `Install productivity apps` | Installs Notion, Obsidian, Grammarly Desktop, Calibre |
-| `Enable Bitwarden integration` | Writes `BW_USER` to env and installs `bw-vault` script |
-| `Bitwarden account email` | Your Bitwarden login email (only asked if above is yes) |
-| `Enable Touch ID for sudo` | Runs a one-time script to add `pam_tid.so` to sudo PAM config |
-| `Install Docker + Colima` | Installs Docker daemon via Colima (lightweight alternative to Docker Desktop); on Apple Silicon uses `vmType=vz` + Rosetta for native speed and x86 image support |
-| `Install Kubernetes tools` | Installs kubectl, kubectx, k9s, vault, gcloud CLI |
-| `Install Java via mise` | Adds `temurin-21` to mise global config and installs libpq |
+```zsh
+dots-setup
+```
+
+`dots-setup` is an interactive fzf wizard that lets you choose a starting profile (work, personal, minimal, full) and then fine-tune individual packages. It writes `~/.config/chezmoi/chezmoi.toml` and runs `chezmoi apply`.
+
+| Profile | Included categories |
+| ------- | ------------------- |
+| `work` | alt_tools, bitwarden, docker, kubernetes, dev_apps, macos_utils, macos_media |
+| `personal` | alt_tools, bitwarden, macos_utils, macos_cosmetic, macos_media, productivity, peripherals |
+| `minimal` | alt_tools only |
+| `full` | Everything |
+
+Package categories you can toggle:
+
+| Category | What it installs |
+| -------- | ---------------- |
+| `alt_tools` | Modern CLI replacements: bat, eza, fd, ripgrep, dust, duf, navi, xh… |
+| `bitwarden` | Bitwarden CLI + app |
+| `docker` | Docker via Colima |
+| `kubernetes` | kubectl, kubectx, k9s, helm, vault, stern, kustomize, gcloud CLI |
+| `macos_utils` | Raycast, Hammerspoon, AltTab, Mos, Linearmouse, NordVPN, UTM… |
+| `macos_cosmetic` | AirBattery, Cork |
+| `macos_media` | Brave, Slack, Spotify, Telegram, IINA |
+| `dev_apps` | VSCodium, DBeaver, GIMP, GitHub CLI, GitLab CLI, Cloudflared, hcloud… |
+| `touchbar` | BetterTouchTool (TouchBar Macs only) |
+| `gaming` | Steam, Discord |
+| `productivity` | Notion, Obsidian, Grammarly, Calibre, Flux Markdown |
+| `peripherals` | 8BitDo, QMK Toolbox, BalenaEtcher, F3 |
 
 On first apply, chezmoi automatically:
 
-1. Runs `brew bundle --global` to install all Homebrew packages
+1. Runs `brew bundle --global` to install all selected Homebrew packages
 2. Runs `mise install` to set up language runtimes
 3. Generates static init files and completions (`~/.zsh/*_init.zsh`, `~/.zsh/completions/`)
+4. Seeds a Colima config (`~/.colima/default/colima.yaml`) optimised for Apple Silicon
+5. Generates navi cheatsheets and clones community repos
 
 ## Shell architecture
 
@@ -96,23 +110,37 @@ Startup is optimised for speed using `zsh-defer` and pre-generated static files:
 
 Tool inits (atuin, zoxide, direnv, navi, etc.) are pre-generated once rather than evaluated on every shell start. Regenerate them with `mnt` (full maintenance) or by running `chezmoi apply` after touching `run_onchange_generate-tool-inits.sh.tmpl`.
 
-## Key functions
+## Key functions & aliases
 
-| Function | Description |
-| ---------- | ----------- |
-| `mnt` | Full maintenance: brew upgrade, sheldon update, regenerate inits & completions, recompile, backup, reload |
-| `brewsync` | Interactively promote untracked brew packages into the chezmoi-managed Brewfile; assigns each to a section via fzf |
+| Command | Description |
+| ------- | ----------- |
+| `mnt` | Full maintenance: sync dotfiles, brew upgrade, sheldon update, regenerate inits & completions, recompile, backup, reload |
+| `brew-up` | Homebrew update + upgrade + cleanup + tldr update |
+| `brewsync` | Interactively promote untracked brew packages into the chezmoi-managed Brewfile |
 | `comp-add <tool>` | Auto-detect and add zsh completions for a new tool; persists to chezmoi source |
 | `uv-add <package>` | Install a global uv tool and persist it to `run_onchange_uv-tools.sh` |
 | `sh-add <user/repo>` | Add a deferred sheldon plugin; persists to sheldon config |
 | `bw-search` | fzf Bitwarden item search |
-| `help-cmd` | fzf search over all aliases and functions (personal shortcuts only) |
+| `help-cmd` | fzf search over all aliases and functions |
 | `fkill` | fzf process killer |
 | `zsh-bak` | Zip backup of zsh config to `~/Backups/zsh/` |
 
+### dots-* aliases
+
+| Alias | Command |
+| ----- | ------- |
+| `dots-setup` | Run the machine profile wizard |
+| `dots-apply` | `chezmoi apply` |
+| `dots-diff` | `chezmoi diff` |
+| `dots-status` | `chezmoi status` |
+| `dots-edit` | `chezmoi edit <file>` |
+| `dots-add` | `chezmoi add <file>` |
+| `dots-push` | Push chezmoi source to remote |
+| `dots-log` | Last 20 commits in chezmoi source |
+
 ## Optional: Bitwarden
 
-When Bitwarden is enabled, `~/.local/bin/bw-vault` is installed — a thin wrapper around the `bw` CLI that caches the session token in `/var/root/.bitwarden.session` so non-interactive scripts (cron jobs, etc.) can call it without prompting.
+When Bitwarden is enabled, `~/.local/bin/bw-vault` is installed — a thin wrapper around the `bw` CLI that caches the session token in `/var/root/.bitwarden.session` so non-interactive scripts can call it without prompting.
 
 ```zsh
 bw-vault list items            # auto-authenticates, returns items JSON
@@ -120,7 +148,7 @@ bw-vault get password <id>     # get a specific credential
 bw-vault --regen               # force re-login and refresh session
 ```
 
-The `bw-search` shell function (in `functions.zsh`) uses this for interactive fzf-based vault search with clipboard copy.
+The `bw-search` shell function uses this for interactive fzf-based vault search with clipboard copy.
 
 ## Optional: Touch ID for sudo
 
@@ -140,63 +168,49 @@ atuin import auto
 atuin sync
 ```
 
-## Day-to-day chezmoi workflow
+## Day-to-day workflow
 
 ```zsh
-# Edit a file and apply immediately
-chezmoi edit ~/.zshrc --apply
-
-# See what would change
-chezmoi diff
-
-# Apply all pending changes
-chezmoi apply
+dots-apply              # apply pending changes
+dots-diff               # preview what would change
+dots-status             # show which files are out of sync
+dots-edit ~/.zshrc      # edit a managed file and apply
+dots-push               # push source changes to remote
+chezmoi update          # pull latest from remote and apply
 ```
 
-## Troubleshooting chezmoi update
-
-**`chezmoi update` fails with "no tracking information", merge conflicts, or "git: exit status 1"**
-
-This happens when the chezmoi source directory is on the wrong branch or has local
-commits that diverge from `origin/main` (causing rebase conflicts). Fix it with a
-hard reset to the remote:
+To add a new file to chezmoi management:
 
 ```zsh
-src=$(chezmoi source-path)
-git -C "$src" fetch origin main
-git -C "$src" checkout -B main origin/main
-chezmoi apply
+dots-add ~/.config/something
 ```
 
-Or just run `mnt` — it calls `_chezmoi_sync` automatically as its first step, which
-handles wrong branch, missing tracking, and diverged commits without conflicts.
-
-**chezmoi apply is prompting about an unexpected diff**
-
-If chezmoi shows a diff you didn't expect, use `chezmoi diff` first to review it,
-then choose `overwrite` to apply the source, or `skip` to keep the current file and
-run `chezmoi re-add ~/.config/...` to pull the current state back into source.
-
-## Adding things
+## Adding packages and tools
 
 ```zsh
-brewsync                   # detect untracked brew packages and categorise them into the Brewfile interactively
-comp-add <toolname>        # add a zsh completion; auto-detects syntax, persists to chezmoi source
-uv-add <package>           # install a global uv tool and persist it to run_onchange_uv-tools.sh
-sh-add <user/repo>         # add a deferred sheldon plugin and persist it to plugins.toml
+dots-setup              # re-run wizard to change profile or toggle packages
+brewsync                # detect untracked brew packages and add them to the Brewfile interactively
+comp-add <toolname>     # add a zsh completion; auto-detects syntax, persists to chezmoi source
+uv-add <package>        # install a global uv tool and persist it to run_onchange_uv-tools.sh
+sh-add <user/repo>      # add a deferred sheldon plugin and persist it to plugins.toml
 ```
+
+To remove a package permanently, delete it from `dot_Brewfile.tmpl` and from the relevant category in `dot_local/bin/executable_dots-setup`.
 
 ## Navi
 
-[navi](https://github.com/denisidoro/navi) is a command-line cheatsheet tool bound to a key widget (Ctrl+G by default). It lets you search, fill in variables, and insert commands into the prompt — complementing `help-cmd` which only covers personal aliases and functions.
+[navi](https://github.com/denisidoro/navi) is a command-line cheatsheet tool. Press **Ctrl+G** mid-command to search cheatsheets and insert a command into the prompt. Or run `navi` to browse interactively.
 
-On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.local/share/navi/cheats/personal.cheat` from your aliases and functions, and clones the [denisidoro/cheats](https://github.com/denisidoro/cheats) community repo. The personal cheat file is regenerated automatically whenever `aliases.zsh` or `functions.zsh` changes.
+On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.local/share/navi/cheats/personal.cheat` from your aliases and functions, and clones community repos. The personal cheat file is regenerated automatically whenever `aliases.zsh` or `functions.zsh` changes.
 
 | Source | What it covers |
 | ------ | -------------- |
-| `personal.cheat` | All your aliases and functions, organised by section |
-| `denisidoro/cheats` | Community-maintained general shell cheatsheets |
-| `navi --cheatsh` | On-demand access to the full [cheat.sh](https://cheat.sh) database |
+| `personal.cheat` | All your aliases and functions, auto-generated |
+| `custom.cheat` | macOS system/network/defaults, docker/colima, kubectl/helm |
+| `denisidoro/cheats` | General shell cheatsheets |
+| `denisidoro/navi-tldr-pages` | tldr pages in navi format (~2000 commands) |
+| `tg-z/navi-cheats` | macOS-focused: brew, `defaults`, network tools |
+| `tsologub/navi-cheats` | kubectl, helm, docker *(kubernetes only)* |
 
 ## Theme
 
@@ -215,4 +229,28 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 | btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
 | k9s | `~/.config/k9s/skins/` (all flavours; follows macOS appearance via `sync-theme`) *(kubernetes only)* |
 
-`sync-theme` (a script in `~/.config/kitty/`) switches kitty and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance. Hammerspoon also updates the fresh editor theme via `~/.config/fresh/config.json`.
+`sync-theme` (a script in `~/.config/kitty/`) switches kitty and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance.
+
+## Troubleshooting
+
+**`chezmoi update` fails with merge conflicts or "git: exit status 1"**
+
+```zsh
+src=$(chezmoi source-path)
+git -C "$src" fetch origin main
+git -C "$src" checkout -B main origin/main
+chezmoi apply
+```
+
+Or run `mnt` — it calls `_chezmoi_sync` as its first step which handles wrong branch, missing tracking, and diverged commits.
+
+**chezmoi apply shows an unexpected diff**
+
+Use `chezmoi diff` to review it, then `overwrite` to apply the source or `skip` to keep the current file. To pull the current state back into source: `chezmoi re-add ~/.config/...`.
+
+**Re-run a one-time script (e.g. Colima config)**
+
+```zsh
+chezmoi state delete-bucket --bucket=scriptState
+chezmoi apply
+```
