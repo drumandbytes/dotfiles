@@ -272,8 +272,6 @@ excl_toml="${excl_toml%", "}]"
 _flag() { [[ -n "${enabled_cats[$1]:-}" ]] && echo true || echo false; }
 
 cat > "$CHEZMOI_CONFIG" <<TOML
-sourceDir = "$HOME/repositories/dotfiles"
-
 [git]
   autoUpdate = true
 
