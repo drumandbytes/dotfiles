@@ -145,28 +145,39 @@ extras_display=();  _build_display extra_items extras_display
 # ── Group-toggle helper ───────────────────────────────────────────────────────
 # fzf's transform action calls this with the current item as $1 and an optional
 # suffix action (e.g. "+down") as $2. If the item is a category header, it
-# toggles every item in that category via change-query+toggle-all+change-query.
+# On a category header: select-all or deselect-all for that group based on
+# current selection state. {+} passes all selected items as extra args so the
+# script can decide select vs deselect without relying on change-query timing.
 _toggle_script=$(mktemp /tmp/dots-setup-toggle.XXXXXX)
 chmod +x "$_toggle_script"
 cat > "$_toggle_script" << 'TOGGLE'
 #!/bin/bash
-item="$1" suffix="${2:-}"
+item="$1"; shift
 if [[ "$item" =~ ^── ]]; then
   cat_name=$(printf '%s' "$item" | grep -oE '\[[a-z_]+\]' | head -1 | tr -d '[]')
   if [[ -n "$cat_name" ]]; then
-    printf 'change-query(%s/)+toggle-all+change-query()%s' "$cat_name" "$suffix"
+    # Count how many of this category's items are currently selected
+    selected_in_cat=0
+    for sel in "$@"; do
+      [[ "$sel" == "${cat_name}/"* ]] && (( selected_in_cat++ ))
+    done
+    if [[ "$selected_in_cat" -gt 0 ]]; then
+      printf 'change-query(%s/)+deselect-all+change-query()' "$cat_name"
+    else
+      printf 'change-query(%s/)+select-all+change-query()' "$cat_name"
+    fi
     exit 0
   fi
 fi
-printf 'toggle%s' "$suffix"
+printf 'toggle'
 TOGGLE
 trap 'rm -f "$_toggle_script"' EXIT
 
 _fzf_common=(
   --multi --no-sort --no-preview
-  --bind "space:transform:$_toggle_script {} ''"
-  --bind "tab:transform:$_toggle_script {} +down"
-  --bind "shift-tab:transform:$_toggle_script {} +up"
+  --bind "space:transform:$_toggle_script {} {+}"
+  --bind 'tab:toggle+down'
+  --bind 'shift-tab:toggle+up'
   --marker '✓ '
   --pointer '▶ '
   --color 'marker:2,pointer:6,header:3'
