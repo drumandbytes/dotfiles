@@ -1,7 +1,8 @@
 #!/bin/bash
-# Runs whenever ~/.Brewfile changes (chezmoi run_onchange_).
+# Runs whenever ~/.Brewfile or profile data changes (chezmoi run_onchange_).
 # Installs/updates all Homebrew packages declared in the Brewfile.
-# dot_Brewfile.tmpl hash: {{ include "dot_Brewfile.tmpl" | sha256sum }}
+# Brewfile template hash: {{ include "dot_Brewfile.tmpl" | sha256sum }}
+# Profile data: {{ list .kubernetes .docker .dev_apps .gaming .productivity .alt_tools .bitwarden .macos_utils .macos_cosmetic .macos_media .touchbar .peripherals | join "," }} excludes={{ join "," .machine_excludes }}
 
 set -euo pipefail
 
