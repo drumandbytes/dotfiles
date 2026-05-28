@@ -127,7 +127,9 @@ _cats_file=$(mktemp /tmp/dots-setup-cats.XXXXXX)
 _display_script=$(mktemp /tmp/dots-setup-display.XXXXXX)
 _toggle_script=$(mktemp /tmp/dots-setup-toggle.XXXXXX)
 _pos_file=$(mktemp /tmp/dots-setup-pos.XXXXXX)
-trap 'rm -f "$_state_file" "$_order_file" "$_cats_file" "$_display_script" "$_toggle_script" "$_pos_file"' EXIT
+_desc_file=$(mktemp /tmp/dots-setup-desc.XXXXXX)
+_preview_script=$(mktemp /tmp/dots-setup-preview.XXXXXX)
+trap 'rm -f "$_state_file" "$_order_file" "$_cats_file" "$_display_script" "$_toggle_script" "$_pos_file" "$_desc_file" "$_preview_script"' EXIT
 
 # Seed state with preselected items
 printf '%s\n' "${preselected[@]}" > "$_state_file"
@@ -196,11 +198,45 @@ else
 fi
 TOGGLE
 
+# ── Descriptions ─────────────────────────────────────────────────────────────
+# Fetch brew descriptions for all packages in one call, then add cat descriptions.
+# Format for both: "key: description"
+{
+  all_pkgs=()
+  for cat in "${CAT_ORDER[@]}"; do
+    for pkg in ${=CAT_PKGS[$cat]}; do
+      all_pkgs+=("$pkg")
+    done
+  done
+  brew desc "${all_pkgs[@]}" 2>/dev/null || true
+  for cat in "${CAT_ORDER[@]}"; do
+    printf '%s: %s\n' "$cat" "${CAT_DESC[$cat]}"
+  done
+} > "$_desc_file"
+
+chmod +x "$_preview_script"
+cat > "$_preview_script" << PREVIEW
+#!/bin/zsh
+raw="\$1"
+item="\$(printf '%s' "\$raw" | sed 's/^\[.\] //' | sed 's/^    //')"
+
+if [[ "\$item" == */* ]]; then
+  key="\${item#*/}"
+else
+  [[ "\$item" =~ '\[([a-z_]+)\]' ]] && key="\${match[1]}" || exit 0
+fi
+
+desc=\$(grep "^\${key}: " "${_desc_file}" 2>/dev/null | sed 's/^[^:]*: //')
+printf '%s\n%s\n%s\n' "\$key" "────────────────────────────────────" "\${desc:-No description available.}"
+PREVIEW
+
 # ── fzf picker ────────────────────────────────────────────────────────────────
 echo "${bold}Customise packages${reset}  ${dim}Space/Tab: toggle · Enter: confirm${reset}"
 echo ""
 
-"$_display_script" | fzf --no-sort --no-preview --ansi \
+"$_display_script" | fzf --no-sort --ansi \
+  --preview "$_preview_script {}" \
+  --preview-window 'right:40%:wrap' \
   --bind "space:execute-silent(echo \$FZF_POS > $_pos_file; $_toggle_script {})+reload-sync($_display_script)+transform(echo \"pos(\$(cat $_pos_file))\")" \
   --bind "tab:execute-silent(echo \$FZF_POS > $_pos_file; $_toggle_script {})+reload-sync($_display_script)+transform(echo \"pos(\$(cat $_pos_file))\")" \
   --bind "shift-tab:execute-silent(echo \$FZF_POS > $_pos_file; $_toggle_script {})+reload-sync($_display_script)+transform(echo \"pos(\$(cat $_pos_file))\")" \
