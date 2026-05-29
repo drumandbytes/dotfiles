@@ -508,8 +508,8 @@ pkg-add() {
   git -C "$src" add "$setup" "$brewfile"
   git -C "$src" commit -m "feat(brew): add ${package} to ${category}"
   echo "✅ '${package}' added to [${category}] (${type}) and committed."
-  echo "   Run 'chezmoi apply' to install, or 'dots-setup' to reconfigure first."
-  echo "   Push when ready: git -C \$(chezmoi source-path) push"
+  echo "   Run 'dots-apply' to install, or 'dots-setup' to reconfigure first."
+  echo "   Push when ready: dots-push"
 }
 
 # Create a new package group across Brewfile, dots-setup, and chezmoi config.
@@ -556,7 +556,7 @@ pkg-group-add() {
   echo "✅ Created group '${category}': ${description}"
   echo "   Add packages : pkg-add ${category} <package> [brew|cask]"
   echo "   Configure    : dots-setup"
-  echo "   Push when ready: git -C \$(chezmoi source-path) push"
+  echo "   Push when ready: dots-push"
 }
 
 # === Theme override ===
