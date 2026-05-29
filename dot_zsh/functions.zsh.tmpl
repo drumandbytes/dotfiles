@@ -131,7 +131,7 @@ brewsync() {
     skip_file="$(chezmoi source-path)/.brewsync_skip"
 
     [[ -f "$src" ]]      || { echo "❌ Brewfile template not found: $src"; return 1 }
-    [[ -f "$brewfile" ]] || { echo "❌ ~/.Brewfile not found — run: chezmoi apply ~/.Brewfile"; return 1 }
+    [[ -f "$brewfile" ]] || { echo "❌ ~/.Brewfile not found — run: dots-apply ~/.Brewfile"; return 1 }
     touch "$skip_file"
 
     # ── Stale detection ──────────────────────────────────────────────────────
@@ -271,7 +271,7 @@ brewsync() {
 
     if (( added > 0 || removed > 0 )); then
         echo "\n📝 Updated: $(basename "$src")"
-        echo "   Deploy : chezmoi apply ~/.Brewfile"
+        echo "   Deploy : dots-apply ~/.Brewfile"
         echo "   Commit : chezmoi cd && git add -p && git commit"
     fi
 }

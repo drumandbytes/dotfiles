@@ -156,7 +156,7 @@ When Touch ID for sudo is enabled, a one-time script writes `/etc/pam.d/sudo_loc
 
 ```zsh
 chezmoi state delete-bucket --bucket=scriptState
-chezmoi apply
+dots-apply
 ```
 
 ## History
@@ -239,18 +239,18 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 src=$(chezmoi source-path)
 git -C "$src" fetch origin main
 git -C "$src" checkout -B main origin/main
-chezmoi apply
+dots-apply
 ```
 
 Or run `mnt` — it calls `_chezmoi_sync` as its first step which handles wrong branch, missing tracking, and diverged commits.
 
 **chezmoi apply shows an unexpected diff**
 
-Use `chezmoi diff` to review it, then `overwrite` to apply the source or `skip` to keep the current file. To pull the current state back into source: `chezmoi re-add ~/.config/...`.
+Use `dots-diff` to review it, then `overwrite` to apply the source or `skip` to keep the current file. To pull the current state back into source: `chezmoi re-add ~/.config/...`.
 
 **Re-run a one-time script (e.g. Colima config)**
 
 ```zsh
 chezmoi state delete-bucket --bucket=scriptState
-chezmoi apply
+dots-apply
 ```

@@ -21,7 +21,7 @@ These are personal dotfiles, but improvements and ideas are welcome.
 
 1. Fork the repo
 2. Create a branch: `git checkout -b fix/describe-your-change`
-3. Make your change and test it with `chezmoi apply --dry-run`
+3. Make your change and test it with `dots-apply --dry-run`
 4. Open a pull request with a clear description
 
 ## Reporting issues
