@@ -186,6 +186,9 @@ brew "duckdb"
 {{ if not (has "rbenv" .machine_excludes) -}}
 brew "rbenv"
 {{ end -}}
+{{ if not (has "hyperfine" .machine_excludes) -}}
+brew "hyperfine"
+{{ end -}}
 # pkg:end:macos_utils
 {{ end -}}
 

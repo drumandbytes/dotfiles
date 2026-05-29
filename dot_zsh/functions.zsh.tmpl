@@ -442,7 +442,7 @@ mise-add() {
   local config
   config="$(chezmoi source-path)/dot_config/mise/config.toml.tmpl"
 
-  if grep -qE "^${tool}\s*=" "$config"; then
+  if command grep -qE "^${tool}\s*=" "$config"; then
     echo "⚠️  '${tool}' is already in mise config." >&2; return 1
   fi
 
@@ -471,27 +471,32 @@ pkg-add() {
   local brewfile="$src/dot_Brewfile.tmpl"
   local setup="$src/dot_local/bin/executable_dots-setup"
 
-  if ! grep -qE "\[${category}\]=" "$setup"; then
+  if ! command grep -qE "\[${category}\]=" "$setup"; then
     echo "❌ Category '${category}' not found." >&2
     echo "   Create it first: pkg-group-add '${category}' 'Description'" >&2
     return 1
   fi
-  if grep -qE "(brew|cask) \"(.*\/)?${package}\"" "$brewfile"; then
+  if command grep -qE "(brew|cask) \"(.*\/)?${package}\"" "$brewfile"; then
     echo "⚠️  '${package}' is already in the Brewfile." >&2; return 1
   fi
 
-  # Update CAT_PKGS in dots-setup
-  sed -i '' "s/\(\[${category}\]=\"[^\"]*\)\"/\1 ${package}\"/" "$setup"
+  # Update CAT_PKGS in dots-setup (scoped to the CAT_PKGS block to avoid matching CAT_DESC)
+  awk -v cat="${category}" -v pkg="${package}" '
+    /^CAT_PKGS=/ { in_block=1 }
+    in_block && $0 ~ ("^  \\[" cat "\\]=\"") { sub(/"$/, " " pkg "\"") }
+    /^\)/ { in_block=0 }
+    { print }
+  ' "$setup" > "${setup}.tmp" && mv "${setup}.tmp" "$setup"
 
   # Insert entry before # pkg:end:<category> marker in Brewfile
   local marker="# pkg:end:${category}"
-  if ! grep -qF "$marker" "$brewfile"; then
+  if ! command grep -qF "$marker" "$brewfile"; then
     echo "❌ Marker '${marker}' not found in Brewfile — run 'chezmoi update' first." >&2; return 1
   fi
 
   local tmp="${brewfile}.tmp"
   awk -v cat="$category" -v pkg="$package" -v type="$type" -v excl="$excludable" '
-    /^# pkg:end:/ && substr($0, 12) == cat {
+    /^# pkg:end:/ && substr($0, 11) == cat {
       if (excl == "true") print "{{ "{{" }} if not (has \"" pkg "\" .machine_excludes) -{{ "}}" }}"
       print type " \"" pkg "\""
       if (excl == "true") print "{{ "{{" }} end -{{ "}}" }}"
@@ -518,7 +523,7 @@ pkg-group-add() {
   local setup="$src/dot_local/bin/executable_dots-setup"
   local config="$src/.chezmoi.toml.tmpl"
 
-  if grep -qE "\[${category}\]=" "$setup"; then
+  if command grep -qE "\[${category}\]=" "$setup"; then
     echo "⚠️  Category '${category}' already exists." >&2; return 1
   fi
 
