@@ -241,16 +241,13 @@ cask "iina"
 # Dev apps
 # =============================================================================
 {{ if .dev_apps -}}
-brew "cloudflared", restart_service: :changed
 brew "ffmpeg"
 brew "git"
 brew "git-filter-repo"
 brew "gh"
 brew "glab"
-brew "hcloud"
 brew "libpq", link: true
 brew "rtk"
-brew "uv"
 brew "webp"
 {{ if not (has "claude" .machine_excludes) -}}
 cask "claude"
@@ -281,9 +278,6 @@ vscode "pixl-garden.bongocat"
 {{ end -}}
 {{ if not (has "cyberduck" .machine_excludes) -}}
 cask "cyberduck"
-{{ end -}}
-{{ if not (has "macfuse" .machine_excludes) -}}
-cask "macfuse"
 {{ end -}}
 # pkg:end:dev_apps
 {{ end -}}
