@@ -279,6 +279,18 @@ vscode "pixl-garden.bongocat"
 {{ if not (has "cyberduck" .machine_excludes) -}}
 cask "cyberduck"
 {{ end -}}
+{{ if not (has "cloudflared" .machine_excludes) -}}
+brew "cloudflared", restart_service: :changed
+{{ end -}}
+{{ if not (has "hcloud" .machine_excludes) -}}
+brew "hcloud"
+{{ end -}}
+{{ if not (has "macfuse" .machine_excludes) -}}
+cask "macfuse"
+{{ end -}}
+{{ if not (has "uv" .machine_excludes) -}}
+brew "uv"
+{{ end -}}
 # pkg:end:dev_apps
 {{ end -}}
 
