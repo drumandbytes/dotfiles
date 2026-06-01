@@ -559,6 +559,45 @@ pkg-group-add() {
   echo "   Push when ready: dots-push"
 }
 
+# Add a Homebrew tap + package in one step.
+# Usage: tap-add <category> <tap> <package> [brew|cask] [--always]
+#   <tap>     owner/repo   e.g. hashicorp/tap
+#   <package> package name e.g. vault  →  stored as hashicorp/tap/vault
+tap-add() {
+  local category="${1:?Usage: tap-add <category> <tap> <package> [brew|cask] [--always]}"
+  local tap="${2:?Usage: tap-add <category> <tap> <package> [brew|cask] [--always]}"
+  local package="${3:?Usage: tap-add <category> <tap> <package> [brew|cask] [--always]}"
+  local type="${4:-brew}"
+
+  local src; src=$(chezmoi source-path)
+  local brewfile="$src/dot_Brewfile.tmpl"
+
+  # Add tap line if not already present (check regardless of which category gates it)
+  if command grep -qF "tap \"${tap}\"" "$brewfile"; then
+    echo "ℹ️  tap '${tap}' already registered — skipping."
+  else
+    if ! command grep -qF "# taps:end" "$brewfile"; then
+      echo "❌ Marker '# taps:end' not found in Brewfile." >&2; return 1
+    fi
+    local tmp="${brewfile}.tmp"
+    awk -v cat="$category" -v tap_repo="$tap" '
+      /^# taps:end$/ {
+        print "{{ "{{" }} if ." cat " -{{ "}}" }}"
+        print "tap \"" tap_repo "\""
+        print "{{ "{{" }} end -{{ "}}" }}"
+      }
+      { print }
+    ' "$brewfile" > "$tmp" && mv "$tmp" "$brewfile" || { rm -f "$tmp"; return 1; }
+    echo "✅ tap '${tap}' added (gated on .${category})."
+  fi
+
+  # Delegate to pkg-add with the fully-qualified tap path.
+  # pkg-add's git add picks up the tap change above, so everything lands in one commit.
+  local args=("$category" "${tap}/${package}" "$type")
+  [[ "${5:-}" == "--always" ]] && args+=("--always")
+  pkg-add "${args[@]}"
+}
+
 # === Theme override ===
 # Force light/dark across all tools (kitty, starship, atuin, delta, eza, lazygit,
 # k9s). Sticks until macOS appearance next changes, then auto-follow resumes.
