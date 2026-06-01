@@ -14,6 +14,9 @@ tap "hamed-elfayome/claude-usage"
 {{ if .productivity -}}
 tap "xykong/tap"
 {{ end -}}
+{{ if .macos_utils -}}
+tap "darrylmorley/whatcable"
+{{ end -}}
 # taps:end
 
 # =============================================================================
@@ -189,6 +192,9 @@ brew "rbenv"
 {{ end -}}
 {{ if not (has "hyperfine" .machine_excludes) -}}
 brew "hyperfine"
+{{ end -}}
+{{ if not (has "darrylmorley/whatcable/whatcable" .machine_excludes) -}}
+cask "darrylmorley/whatcable/whatcable"
 {{ end -}}
 # pkg:end:macos_utils
 {{ end -}}
