@@ -1,26 +1,16 @@
 #!/bin/zsh
 # mode: explicit arg ("Dark"/"Light") wins — used by Hammerspoon and by the
 # `theme` command for a manual override; otherwise follow current macOS appearance.
+# Note: ghostty handles its own light/dark switching natively; this script only
+# syncs the other tools.
 mode=${1:-$(defaults read -g AppleInterfaceStyle 2>/dev/null)}
+{{ if .kubernetes -}}
 if [[ "$mode" = "Dark" ]]; then
-    ghostty_theme="themes/macchiato"
-{{ if .kubernetes -}}
     k9s_skin="catppuccin-macchiato"
-{{ end -}}
 else
-    ghostty_theme="themes/latte"
-{{ if .kubernetes -}}
     k9s_skin="catppuccin-latte"
-{{ end -}}
 fi
-
-# ghostty: swap symlink and reload live instances
-theme="$HOME/.config/ghostty/theme"
-rm -f "$theme"
-ln -s "$ghostty_theme" "$theme"
-for pid in $(ps -x | grep '/Applications/Ghostty.app/Contents/MacOS/ghostty' | grep -v grep | awk '{ print $1 }'); do
-    kill -SIGUSR2 "$pid"
-done
+{{ end -}}
 # git delta: update syntax theme
 if [[ "$mode" = "Dark" ]]; then
     git config --global delta.features "catppuccin-macchiato"

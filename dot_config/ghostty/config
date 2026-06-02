@@ -1,5 +1,5 @@
-# Theme (symlinked by sync-theme to themes/macchiato or themes/latte)
-config-file = theme
+# Theme — ghostty auto-switches based on macOS appearance
+theme = dark:Catppuccin Macchiato,light:Catppuccin Latte
 
 # Font
 font-family = MesloLGS Nerd Font Mono
