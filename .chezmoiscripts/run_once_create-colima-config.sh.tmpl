@@ -8,7 +8,7 @@ target="$HOME/.colima/default/colima.yaml"
 [[ -f "$target" ]] && exit 0
 
 mkdir -p "$(dirname "$target")"
-cat > "$target" <<'EOF'
+cat >"$target" <<'EOF'
 cpu: 4
 memory: 8
 disk: 100
