@@ -3,23 +3,23 @@
 # `theme` command for a manual override; otherwise follow current macOS appearance.
 mode=${1:-$(defaults read -g AppleInterfaceStyle 2>/dev/null)}
 if [[ "$mode" = "Dark" ]]; then
-    kitty_theme="themes/macchiato.conf"
+    ghostty_theme="themes/macchiato"
 {{ if .kubernetes -}}
     k9s_skin="catppuccin-macchiato"
 {{ end -}}
 else
-    kitty_theme="themes/latte.conf"
+    ghostty_theme="themes/latte"
 {{ if .kubernetes -}}
     k9s_skin="catppuccin-latte"
 {{ end -}}
 fi
 
-# kitty: swap symlink and reload live instances
-theme="$HOME/.config/kitty/theme.conf"
+# ghostty: swap symlink and reload live instances
+theme="$HOME/.config/ghostty/theme"
 rm -f "$theme"
-ln -s "$kitty_theme" "$theme"
-for pid in $(ps -x | grep '/Applications/kitty.app/Contents/MacOS/kitty' | grep -v grep | awk '{ print $1 }'); do
-    kill -SIGUSR1 "$pid"
+ln -s "$ghostty_theme" "$theme"
+for pid in $(ps -x | grep '/Applications/Ghostty.app/Contents/MacOS/ghostty' | grep -v grep | awk '{ print $1 }'); do
+    kill -SIGUSR2 "$pid"
 done
 # git delta: update syntax theme
 if [[ "$mode" = "Dark" ]]; then

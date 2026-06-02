@@ -309,10 +309,10 @@ zsh-bak() {
     local bak_dir="$HOME/Backups/zsh"
     local marker="$bak_dir/.last_backup_check"
     mkdir -p "$bak_dir"
-    local changes=$(command find ~/.zshrc ~/.zsh ~/.config/kitty ~/.config/sheldon/plugins.toml ~/.config/git -newer "$marker" 2>/dev/null)
+    local changes=$(command find ~/.zshrc ~/.zsh ~/.config/ghostty ~/.config/sheldon/plugins.toml ~/.config/git -newer "$marker" 2>/dev/null)
     if [[ -n "$changes" || ! -f "$marker" ]]; then
         local bak_name="zsh_bak_$(date +%Y%m%d_%H%M%S).zip"
-        zip -rq "$bak_dir/$bak_name" ~/.zshrc ~/.zsh ~/.config/kitty ~/.config/sheldon/plugins.toml ~/.config/git -x "*.zwc"
+        zip -rq "$bak_dir/$bak_name" ~/.zshrc ~/.zsh ~/.config/ghostty ~/.config/sheldon/plugins.toml ~/.config/git -x "*.zwc"
         touch "$marker"
         echo "📦 Backup created: $bak_name"
     fi
@@ -599,13 +599,13 @@ tap-add() {
 }
 
 # === Theme override ===
-# Force light/dark across all tools (kitty, starship, atuin, delta, eza, lazygit,
+# Force light/dark across all tools (ghostty, starship, atuin, delta, eza, lazygit,
 # k9s). Sticks until macOS appearance next changes, then auto-follow resumes.
 # chezmoi preserves whatever is active and will not revert it.
 theme() {
   case "${1:-}" in
-    dark | Dark) ~/.config/kitty/sync-theme Dark ;;
-    light | Light) ~/.config/kitty/sync-theme Light ;;
+    dark | Dark) ~/.config/ghostty/sync-theme Dark ;;
+    light | Light) ~/.config/ghostty/sync-theme Light ;;
     *)
       echo "Usage: theme <light|dark>" >&2
       return 1
