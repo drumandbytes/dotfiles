@@ -10,7 +10,7 @@ cursor-style = block
 cursor-style-blink = false
 
 # Scrollback
-scrollback-limit = 10000
+scrollback-limit = 10000000
 
 # Mouse
 copy-on-select = clipboard

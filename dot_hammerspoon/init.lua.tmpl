@@ -2,7 +2,7 @@ local home = os.getenv("HOME")
 {{ if eq .editor "fresh" -}}
 local freshConfigPath = home .. "/.config/fresh/config.json"
 {{ end -}}
-local ghosttyThemeScript = home .. "/.config/ghostty/sync-theme"
+local syncThemeScript = home .. "/.local/bin/sync-theme"
 
 -- Auto-reload config when any .lua file in ~/.hammerspoon changes
 G = G or {}
@@ -23,7 +23,7 @@ function themeSync.execute()
     hs.execute("launchctl setenv COLORFGBG '" .. colorfgbg .. "'")
 
     -- Sync delta, starship, atuin, eza, lazygit, k9s via sync-theme script
-    hs.task.new(ghosttyThemeScript, nil, { mode }):start()
+    hs.task.new(syncThemeScript, nil, { mode }):start()
 {{ if eq .editor "fresh" }}
     -- Switch fresh editor theme
     local theme = (mode == "Dark") and "catppuccin-macchiato" or "catppuccin-latte"

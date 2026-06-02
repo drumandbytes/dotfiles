@@ -604,8 +604,8 @@ tap-add() {
 # chezmoi preserves whatever is active and will not revert it.
 theme() {
   case "${1:-}" in
-    dark | Dark) ~/.config/ghostty/sync-theme Dark ;;
-    light | Light) ~/.config/ghostty/sync-theme Light ;;
+    dark | Dark) ~/.local/bin/sync-theme Dark ;;
+    light | Light) ~/.local/bin/sync-theme Light ;;
     *)
       echo "Usage: theme <light|dark>" >&2
       return 1
