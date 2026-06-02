@@ -1,8 +1,6 @@
 #!/bin/zsh
 # mode: explicit arg ("Dark"/"Light") wins — used by Hammerspoon and by the
 # `theme` command for a manual override; otherwise follow current macOS appearance.
-# Note: ghostty handles its own light/dark switching natively; this script only
-# syncs the other tools.
 mode=${1:-$(defaults read -g AppleInterfaceStyle 2>/dev/null)}
 {{ if .kubernetes -}}
 if [[ "$mode" = "Dark" ]]; then
