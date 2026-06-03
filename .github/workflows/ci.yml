@@ -48,11 +48,13 @@ jobs:
             touchbar       = false
             gaming         = false
             productivity   = false
+            peripherals    = false
             bitwarden      = false
             bw_email       = "test@example.com"
             touch_id_sudo  = false
             docker         = false
             kubernetes     = false
+            machine_excludes = []
           EOF
 
           failed=0
@@ -77,11 +79,13 @@ jobs:
             touchbar       = true
             gaming         = true
             productivity   = true
+            peripherals    = true
             bitwarden      = true
             bw_email       = "test@example.com"
             touch_id_sudo  = true
             docker         = true
             kubernetes     = true
+            machine_excludes = []
           EOF
 
           failed=0
@@ -106,11 +110,13 @@ jobs:
             touchbar       = false
             gaming         = false
             productivity   = false
+            peripherals    = false
             bitwarden      = false
             bw_email       = "test@example.com"
             touch_id_sudo  = false
             docker         = true
             kubernetes     = true
+            machine_excludes = []
           EOF
 
           failed=0

@@ -84,8 +84,8 @@ echo "✅ Generated $CHEAT_DIR/personal.cheat"
 REPO_CACHE="$CHEAT_DIR/.last_updated"
 _needs_update() {
     [[ ! -f "$REPO_CACHE" ]] && return 0
-    local age=$(( $(date +%s) - $(date -r "$REPO_CACHE" +%s) ))
-    (( age > 604800 ))  # 7 days in seconds
+    local age=$(($(date +%s) - $(date -r "$REPO_CACHE" +%s)))
+    ((age > 604800)) # 7 days in seconds
 }
 
 add_repo() {
@@ -93,13 +93,13 @@ add_repo() {
     local dest="$CHEAT_DIR/${repo//\//__}"
     if [[ ! -d "$dest" ]]; then
         echo "Cloning navi repo: $repo ..."
-        git clone --depth=1 --quiet "https://github.com/${repo}.git" "$dest" \
-            || echo "⚠️  Could not clone $repo (check network)"
+        git clone --depth=1 --quiet "https://github.com/${repo}.git" "$dest" ||
+            echo "⚠️  Could not clone $repo (check network)"
     elif _needs_update; then
         echo "Updating navi repo: $repo ..."
-        git -C "$dest" fetch --depth=1 --quiet origin HEAD \
-            && git -C "$dest" reset --quiet --hard FETCH_HEAD \
-            || echo "⚠️  Could not update $repo"
+        git -C "$dest" fetch --depth=1 --quiet origin HEAD &&
+            git -C "$dest" reset --quiet --hard FETCH_HEAD ||
+            echo "⚠️  Could not update $repo"
     fi
 }
 
