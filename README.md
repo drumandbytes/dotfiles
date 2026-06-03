@@ -14,7 +14,7 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | `~/.zsh/functions.zsh` | Functions: `mnt`, `brewsync`, `comp-add`, `bw-search`, `_fzf_menu`, lazy loaders |
 | `~/.config/sheldon/plugins.toml` | Zsh plugin manager config |
 | `~/.config/starship.toml` | Prompt |
-| `~/.config/kitty/` | Terminal (kitty.conf + Catppuccin themes) |
+| `~/.config/ghostty/` | Terminal (config + Catppuccin theme via native dark/light support) |
 | `~/.config/git/config` | Git: delta pager, diff3 merge style |
 | `~/.config/bat/` | bat config + Catppuccin themes |
 | `~/.config/eza/` | eza color theme (Catppuccin symlink) |
@@ -214,11 +214,11 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 
 ## Theme
 
-[Catppuccin](https://github.com/catppuccin/catppuccin) across kitty, bat, delta, btop, and k9s — Macchiato (dark) / Latte (light).
+[Catppuccin](https://github.com/catppuccin/catppuccin) across ghostty, bat, delta, btop, and k9s — Macchiato (dark) / Latte (light).
 
 | Tool | Theme location |
 | ------ | --------------- |
-| kitty | `~/.config/kitty/theme.conf` (symlink: Macchiato or Latte) |
+| ghostty | `theme = dark:Catppuccin Macchiato,light:Catppuccin Latte` in config — switches natively on macOS appearance change |
 | bat | `~/.config/bat/themes/` (Macchiato + Latte, loaded automatically) |
 | delta | inherits bat theme via `~/.config/git/config` |
 | eza | `~/.config/eza/theme.yml` (symlink: Macchiato or Latte) *(alt_tools only)* |
@@ -229,7 +229,9 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 | btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
 | k9s | `~/.config/k9s/skins/` (all flavours; follows macOS appearance via `sync-theme`) *(kubernetes only)* |
 
-`sync-theme` (a script in `~/.config/kitty/`) switches kitty and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance.
+`sync-theme` (`~/.local/bin/sync-theme`) switches delta, starship, atuin, eza, lazygit, and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch when you toggle macOS appearance. Ghostty switches itself natively and is not part of this script.
+
+Override manually with `theme dark` or `theme light`.
 
 ## Troubleshooting
 
