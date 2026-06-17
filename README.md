@@ -251,7 +251,13 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 
 | Tool | Theme location |
 | ------ | --------------- |
+<<<<<<< HEAD
 | ghostty | `~/.config/ghostty/config` (`theme = dark:…,light:…` — switches natively with macOS appearance) |
+||||||| b7da939
+| kitty | `~/.config/kitty/theme.conf` (symlink: Macchiato or Latte) |
+=======
+| ghostty | `theme = dark:Catppuccin Macchiato,light:Catppuccin Latte` in config — switches natively on macOS appearance change |
+>>>>>>> f7bfb7bb34fca53f107f1bb1f4654833fdf35999
 | bat | `~/.config/bat/themes/` (Macchiato + Latte, loaded automatically) |
 | delta | inherits bat theme via `~/.config/git/config` |
 | eza | `~/.config/eza/theme.yml` (symlink: Macchiato or Latte) *(alt_tools only)* |
@@ -262,7 +268,15 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 | btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
 | k9s | `~/.config/k9s/skins/` (all flavours; follows macOS appearance via `sync-theme`) *(kubernetes only)* |
 
+<<<<<<< HEAD
 `sync-theme` (`~/.local/bin/sync-theme`) switches delta, starship, atuin, eza, lazygit, and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance. ghostty is not part of sync-theme; it follows the appearance natively.
+||||||| b7da939
+`sync-theme` (a script in `~/.config/kitty/`) switches kitty and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance.
+=======
+`sync-theme` (`~/.local/bin/sync-theme`) switches delta, starship, atuin, eza, lazygit, and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch when you toggle macOS appearance. Ghostty switches itself natively and is not part of this script.
+
+Override manually with `theme dark` or `theme light`.
+>>>>>>> f7bfb7bb34fca53f107f1bb1f4654833fdf35999
 
 ## Troubleshooting
 
