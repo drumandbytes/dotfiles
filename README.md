@@ -1,6 +1,6 @@
 # dotfiles
 
-Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
+Opinionated **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 
 > **macOS only.** Assumes Homebrew, Apple Silicon paths (`/opt/homebrew`), and macOS-specific tools (`pbcopy`, `mac-cleanup`, etc.). Not tested on Linux.
 
@@ -11,10 +11,10 @@ Personal **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | `~/.zshrc` | Zsh entrypoint — modular, deferred, fast |
 | `~/.zsh/env.zsh` | Exports, PATH, editor |
 | `~/.zsh/aliases.zsh` | Shell aliases (eza, k8s, git, maintenance, etc.) |
-| `~/.zsh/functions.zsh` | Functions: `mnt`, `brewsync`, `comp-add`, `bw-search`, `_fzf_menu`, lazy loaders |
+| `~/.zsh/functions.zsh` | Functions: `mnt`, `pkg-add`, `pkg-cats`, `brewsync`, `comp-add`, `bw-search`, and more |
 | `~/.config/sheldon/plugins.toml` | Zsh plugin manager config |
 | `~/.config/starship.toml` | Prompt |
-| `~/.config/kitty/` | Terminal (kitty.conf + Catppuccin themes) |
+| `~/.config/ghostty/` | Terminal (config; Catppuccin via native dark/light theme switching) |
 | `~/.config/git/config` | Git: delta pager, diff3 merge style |
 | `~/.config/bat/` | bat config + Catppuccin themes |
 | `~/.config/eza/` | eza color theme (Catppuccin symlink) |
@@ -46,14 +46,16 @@ bash <(curl -fsSL https://raw.githubusercontent.com/drumandbytes/dotfiles/main/i
 If Homebrew is installed but chezmoi isn't:
 
 ```zsh
-brew install chezmoi && chezmoi init --apply https://github.com/drumandbytes/dotfiles
+brew install chezmoi && chezmoi init --apply drumandbytes/dotfiles
 ```
 
 If Homebrew and chezmoi are already installed:
 
 ```zsh
-chezmoi init --apply https://github.com/drumandbytes/dotfiles
+chezmoi init --apply drumandbytes/dotfiles
 ```
+
+> Forking? Replace `drumandbytes` with your GitHub username. See [Forking](#forking) below.
 
 After the initial apply, run the machine profile wizard to select packages and features:
 
@@ -79,7 +81,7 @@ Package categories you can toggle:
 | `docker` | Docker via Colima |
 | `kubernetes` | kubectl, kubectx, k9s, helm, vault, stern, kustomize, gcloud CLI |
 | `macos_utils` | Raycast, Hammerspoon, AltTab, Mos, Linearmouse, NordVPN, UTM… |
-| `macos_cosmetic` | AirBattery, Cork |
+| `macos_cosmetic` | AirBattery, BoringNotch, Cork |
 | `macos_media` | Brave, Slack, Spotify, Telegram, IINA |
 | `dev_apps` | VSCodium, DBeaver, GIMP, GitHub CLI, GitLab CLI, Cloudflared, hcloud… |
 | `touchbar` | BetterTouchTool (TouchBar Macs only) |
@@ -94,6 +96,25 @@ On first apply, chezmoi automatically:
 3. Generates static init files and completions (`~/.zsh/*_init.zsh`, `~/.zsh/completions/`)
 4. Seeds a Colima config (`~/.colima/default/colima.yaml`) optimised for Apple Silicon
 5. Generates navi cheatsheets and clones community repos
+
+## Forking
+
+To use this as a base for your own dotfiles:
+
+1. **Fork this repo** on GitHub and clone your fork locally.
+2. **Customise the package registry** — `dot_local/bin/executable_dots-setup` is the central source of truth. `CAT_ORDER`, `CAT_DESC`, and `CAT_PKGS` define what the wizard shows:
+   - `pkg-cats` — list all current categories and their packages
+   - `pkg-add <category> <package>` — add a package to an existing category
+   - `pkg-group-add <category> <description>` — create a new category
+3. **Push** your changes to your fork.
+4. **Install on any machine** — pass your GitHub username to `install.sh`:
+   ```zsh
+   bash <(curl -fsSL https://raw.githubusercontent.com/drumandbytes/dotfiles/main/install.sh) \
+     yourusername
+   ```
+   When run from inside a local clone, `install.sh` detects the repo from the git remote automatically — no arguments needed.
+
+After the initial install, `dots-push` / `chezmoi update` sync against your fork.
 
 ## Shell architecture
 
@@ -116,10 +137,16 @@ Tool inits (atuin, zoxide, direnv, navi, etc.) are pre-generated once rather tha
 | ------- | ----------- |
 | `mnt` | Full maintenance: sync dotfiles, brew upgrade, sheldon update, regenerate inits & completions, recompile, backup, reload |
 | `brew-up` | Homebrew update + upgrade + cleanup + tldr update |
+| `pkg-cats` | List all package categories with their descriptions and package lists |
 | `brewsync` | Interactively promote untracked brew packages into the chezmoi-managed Brewfile |
 | `comp-add <tool>` | Auto-detect and add zsh completions for a new tool; persists to chezmoi source |
 | `uv-add <package>` | Install a global uv tool and persist it to `run_onchange_uv-tools.sh` |
 | `sh-add <user/repo>` | Add a deferred sheldon plugin; persists to sheldon config |
+| `pkg-add <category> <pkg>` | Add a package to a Brewfile category + dots-setup registry, commit included |
+| `pkg-rm <pkg>` | Remove a package from the Brewfile and dots-setup registry, commit included |
+| `tap-add <category> <tap> <pkg>` | Register a Homebrew tap and add a tap-qualified package in one step |
+| `pkg-group-add <category> <desc>` | Create a new package group across Brewfile, dots-setup, and chezmoi config |
+| `mise-add <tool> [version]` | Add a runtime to the global mise config and persist to chezmoi |
 | `bw-search` | fzf Bitwarden item search |
 | `help-cmd` | fzf search over all aliases and functions |
 | `fkill` | fzf process killer |
@@ -189,13 +216,19 @@ dots-add ~/.config/something
 
 ```zsh
 dots-setup              # re-run wizard to change profile or toggle packages
+pkg-cats                # list all categories and their packages
 brewsync                # detect untracked brew packages and add them to the Brewfile interactively
+pkg-add <cat> <pkg>     # add a package to a Brewfile category and the dots-setup registry
+pkg-rm <pkg>            # remove a package from the Brewfile and dots-setup registry
+tap-add <cat> <tap> <pkg>  # register a tap and add a tap-qualified package in one step
+pkg-group-add <cat> <desc> # create a new package group (Brewfile + dots-setup + chezmoi flag)
+mise-add <tool> [ver]   # add a runtime to the global mise config and persist it
 comp-add <toolname>     # add a zsh completion; auto-detects syntax, persists to chezmoi source
 uv-add <package>        # install a global uv tool and persist it to run_onchange_uv-tools.sh
 sh-add <user/repo>      # add a deferred sheldon plugin and persist it to plugins.toml
 ```
 
-To remove a package permanently, delete it from `dot_Brewfile.tmpl` and from the relevant category in `dot_local/bin/executable_dots-setup`.
+To remove a package permanently: `pkg-rm <package>` — removes it from the Brewfile and dots-setup registry and commits. Then `brew uninstall <package>` locally and `dots-apply` to sync.
 
 ## Navi
 
@@ -214,11 +247,11 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 
 ## Theme
 
-[Catppuccin](https://github.com/catppuccin/catppuccin) across kitty, bat, delta, btop, and k9s — Macchiato (dark) / Latte (light).
+[Catppuccin](https://github.com/catppuccin/catppuccin) across ghostty, bat, delta, btop, and k9s — Macchiato (dark) / Latte (light).
 
 | Tool | Theme location |
 | ------ | --------------- |
-| kitty | `~/.config/kitty/theme.conf` (symlink: Macchiato or Latte) |
+| ghostty | `~/.config/ghostty/config` (`theme = dark:…,light:…` — switches natively with macOS appearance) |
 | bat | `~/.config/bat/themes/` (Macchiato + Latte, loaded automatically) |
 | delta | inherits bat theme via `~/.config/git/config` |
 | eza | `~/.config/eza/theme.yml` (symlink: Macchiato or Latte) *(alt_tools only)* |
@@ -229,7 +262,7 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 | btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
 | k9s | `~/.config/k9s/skins/` (all flavours; follows macOS appearance via `sync-theme`) *(kubernetes only)* |
 
-`sync-theme` (a script in `~/.config/kitty/`) switches kitty and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance.
+`sync-theme` (`~/.local/bin/sync-theme`) switches delta, starship, atuin, eza, lazygit, and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance. ghostty is not part of sync-theme; it follows the appearance natively.
 
 ## Troubleshooting
 

@@ -18,6 +18,10 @@ mkdir -p "$themes_dir"
 
 base_url="https://github.com/catppuccin/btop/raw/main/themes"
 for flavor in latte frappe macchiato mocha; do
-    curl -fsSL "${base_url}/catppuccin_${flavor}.theme" -o "${themes_dir}/catppuccin_${flavor}.theme"
+    curl -fsSL "${base_url}/catppuccin_${flavor}.theme" -o "${themes_dir}/catppuccin_${flavor}.theme" ||
+        {
+            echo "Failed to download catppuccin_${flavor} btop theme" >&2
+            exit 1
+        }
 done
 echo "btop Catppuccin themes installed to ${themes_dir}"

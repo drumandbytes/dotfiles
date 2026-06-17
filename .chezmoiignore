@@ -9,8 +9,8 @@ install.sh
 # filenames — so no dot_ prefix and no .tmpl/executable_/run_once_ attributes.
 
 # Optional features — excluded unless opted in via chezmoi init prompts
-{{ if not .alt_tools }}.config/bat{{ end }}
-{{ if not .alt_tools }}.config/eza{{ end }}
+{{ if or (not .alt_tools) (has "bat" .machine_excludes) }}.config/bat{{ end }}
+{{ if or (not .alt_tools) (has "eza" .machine_excludes) }}.config/eza{{ end }}
 {{ if not .bitwarden }}.local/bin/bw-vault{{ end }}
 {{ if not .macos_utils }}.hammerspoon{{ end }}
 {{ if not .touch_id_sudo }}.chezmoiscripts/enable-touchid-sudo.sh{{ end }}

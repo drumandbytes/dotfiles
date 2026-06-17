@@ -2,9 +2,33 @@
 # Bootstrap script: installs Homebrew + chezmoi, applies base dotfiles, then
 # runs the interactive machine setup wizard (dots-setup).
 #
-# Usage: bash <(curl -fsSL https://raw.githubusercontent.com/drumandbytes/dotfiles/main/install.sh)
+# Usage (original repo):
+#   bash <(curl -fsSL https://raw.githubusercontent.com/drumandbytes/dotfiles/main/install.sh)
+#
+# Usage (fork):
+#   bash <(curl -fsSL https://raw.githubusercontent.com/drumandbytes/dotfiles/main/install.sh) \
+#     yourusername/dotfiles
+#
+# When run from inside a cloned fork, the repo is detected automatically
+# from the git remote — no arguments needed.
 
 set -euo pipefail
+
+# ── Repo detection ────────────────────────────────────────────────────────────
+# Accepts: username/repo slug, full HTTPS URL, or auto-detects from git remote.
+# chezmoi init accepts both slugs and full URLs natively.
+_default="drumandbytes/dotfiles"
+if [[ -n "${1:-}" ]]; then
+    # Expand bare username → username/dotfiles
+    [[ "$1" != */* ]] && DOTFILES_REPO="${1}/dotfiles" || DOTFILES_REPO="$1"
+elif [[ -n "${DOTFILES_REPO:-}" ]]; then
+    : # already set
+elif git rev-parse --is-inside-work-tree &>/dev/null 2>&1; then
+    DOTFILES_REPO=$(git remote get-url origin 2>/dev/null || echo "$_default")
+else
+    DOTFILES_REPO="$_default"
+fi
+unset _default
 
 if [[ "$(uname)" != "Darwin" ]]; then
     echo "This dotfiles repo targets macOS only." >&2
@@ -30,8 +54,8 @@ fi
 # chezmoi init clones the repo and writes ~/.config/chezmoi/chezmoi.toml with
 # safe defaults (all feature flags off). The first apply installs only base
 # packages — importantly including fzf, which dots-setup needs.
-echo "Initialising dotfiles (base pass)..."
-chezmoi init https://github.com/drumandbytes/dotfiles
+echo "Initialising dotfiles from ${DOTFILES_REPO} (base pass)..."
+chezmoi init "$DOTFILES_REPO"
 chezmoi apply
 
 # --- Phase 2: interactive machine setup ---

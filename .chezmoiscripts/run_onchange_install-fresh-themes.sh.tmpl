@@ -12,6 +12,10 @@ mkdir -p "$themes_dir"
 
 base_url="https://raw.githubusercontent.com/milon/catppuccin-fresh/master"
 for flavor in latte frappe macchiato mocha; do
-    curl -fsSL "${base_url}/catppuccin-${flavor}.json" -o "${themes_dir}/catppuccin-${flavor}.json"
+    curl -fsSL "${base_url}/catppuccin-${flavor}.json" -o "${themes_dir}/catppuccin-${flavor}.json" ||
+        {
+            echo "Failed to download catppuccin-${flavor} fresh theme" >&2
+            exit 1
+        }
 done
 echo "fresh Catppuccin themes installed to ${themes_dir}"

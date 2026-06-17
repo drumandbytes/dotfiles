@@ -14,7 +14,7 @@
     navigate = true          # n/N to jump between diff sections
     line-numbers = true
     side-by-side = true
-    features = catppuccin-macchiato   # updated by ~/.config/kitty/sync-theme on appearance change
+    features = catppuccin-macchiato   # updated by ~/.local/bin/sync-theme on appearance change
 
 [merge]
     conflictstyle = diff3

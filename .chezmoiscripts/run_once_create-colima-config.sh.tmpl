@@ -2,6 +2,10 @@
 # Write the colima default config only on first apply — colima modifies this
 # file at runtime, so we must not overwrite it on each apply.
 # To re-apply: rm ~/.colima/default/colima.yaml && chezmoi state delete --bucket=scriptState --key=run_once_create-colima-config.sh.tmpl && chezmoi apply
+{{ if not .docker -}}
+exit 0
+{{ end -}}
+
 set -euo pipefail
 
 target="$HOME/.colima/default/colima.yaml"

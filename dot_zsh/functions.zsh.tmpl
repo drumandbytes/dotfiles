@@ -3,7 +3,7 @@ _claude_switch_profile() {
   local config_dir="$2"
   shift 2
   defaults write HamedElfayome.Claude-Usage activeProfileId "$profile_id"
-  killall "Claude Usage" && open -a "Claude Usage"
+  killall "Claude Usage" 2>/dev/null; open -a "Claude Usage"
   CLAUDE_CONFIG_DIR="$config_dir" command claude "$@"
 }
 
@@ -41,7 +41,7 @@ mnt() {
     echo "🍺 Updating Homebrew..."
     brew update && brew upgrade --greedy && brew cleanup --prune=all
     mac-cleanup
-{{ if .alt_tools -}}
+{{ if and .alt_tools (not (has "tldr" .machine_excludes)) -}}
     tldr --update
 {{- end }}
 
@@ -277,7 +277,7 @@ brewsync() {
 }
 
 # === Interactive Tools (FZF) ===
-{{ if .alt_tools -}}
+{{ if and .alt_tools (not (has "ripgrep" .machine_excludes)) -}}
 help-cmd() {
     local cmd
     cmd=$( {
@@ -457,6 +457,25 @@ mise-add() {
 }
 
 # === Package Management ===
+# List all package categories with their descriptions and package lists.
+pkg-cats() {
+  local setup
+  setup="$(chezmoi source-path)/dot_local/bin/executable_dots-setup"
+  [[ -f "$setup" ]] || { echo "❌ dots-setup not found at: $setup" >&2; return 1; }
+
+  local order
+  order=$(awk '/^CAT_ORDER=\(/{gsub(/CAT_ORDER=\(|\)/, ""); gsub(/"/, ""); print}' "$setup")
+
+  local cyan='\e[36m' bold='\e[1m' dim='\e[2m' reset='\e[0m'
+  for cat in ${=order}; do
+    local desc pkgs
+    desc=$(awk -v c="$cat" '/^CAT_DESC=\(/{f=1} f && $0 ~ ("^  \\[" c "\\]=\""){gsub(/.*="/, ""); gsub(/"$/, ""); print; exit}' "$setup")
+    pkgs=$(awk -v c="$cat" '/^CAT_PKGS=\(/{f=1} f && $0 ~ ("^  \\[" c "\\]=\""){gsub(/.*="/, ""); gsub(/"$/, ""); print; exit}' "$setup")
+    printf "${bold}${cyan}%-20s${reset} ${dim}%s${reset}\n" "$cat" "$desc"
+    printf "  %s\n" "${pkgs// /, }"
+  done
+}
+
 # Add a package to a Brewfile category and dots-setup registry.
 # Usage: pkg-add <category> <package> [brew|cask] [--always]
 #   --always: no exclude guard — package always installs when category is enabled
@@ -509,6 +528,70 @@ pkg-add() {
   git -C "$src" commit -m "feat(brew): add ${package} to ${category}"
   echo "✅ '${package}' added to [${category}] (${type}) and committed."
   echo "   Run 'dots-apply' to install, or 'dots-setup' to reconfigure first."
+  echo "   Push when ready: dots-push"
+}
+
+# Remove a package from the Brewfile and dots-setup registry.
+# Usage: pkg-rm <package>
+pkg-rm() {
+  local package="${1:?Usage: pkg-rm <package>}"
+
+  local src; src=$(chezmoi source-path)
+  local brewfile="$src/dot_Brewfile.tmpl"
+  local setup="$src/dot_local/bin/executable_dots-setup"
+
+  # Find which category contains this package
+  local category
+  category=$(awk -v pkg="$package" '
+    /^CAT_PKGS=\(/ { f=1 }
+    f && /^\)/ { f=0 }
+    f {
+      lb = index($0, "["); rb = index($0, "]"); eq = index($0, "=\"")
+      if (lb && rb > lb && eq > rb) {
+        key = substr($0, lb+1, rb-lb-1)
+        value = substr($0, eq+2, length($0)-eq-2)
+        n = split(value, arr, " ")
+        for (i=1; i<=n; i++) if (arr[i] == pkg) { print key; exit }
+      }
+    }
+  ' "$setup")
+
+  if [[ -z "$category" ]]; then
+    echo "❌ '${package}' not found in any category." >&2; return 1
+  fi
+
+  # Remove from CAT_PKGS in dots-setup
+  awk -v cat="$category" -v pkg="$package" '
+    /^CAT_PKGS=\(/ { f=1 }
+    f && /^\)/ { f=0 }
+    f {
+      lb = index($0, "["); rb = index($0, "]"); eq = index($0, "=\"")
+      if (lb && rb > lb && eq > rb && substr($0, lb+1, rb-lb-1) == cat) {
+        value = substr($0, eq+2, length($0)-eq-2)
+        n = split(value, arr, " ")
+        result = ""
+        for (i=1; i<=n; i++) if (arr[i] != pkg) result = result (result=="" ? "" : " ") arr[i]
+        print "  [" cat "]=\"" result "\""
+        next
+      }
+    }
+    { print }
+  ' "$setup" > "${setup}.tmp" && mv "${setup}.tmp" "$setup"
+
+  # Remove from Brewfile: 3-line guard block or bare brew/cask line
+  awk -v pkg="$package" '
+    /{{ "{{" }} if not/ && index($0, "\"" pkg "\"") { skip=1; next }
+    skip && /^(brew|cask) / { next }
+    skip && /{{ "{{" }} end/ { skip=0; next }
+    !skip && /^(brew|cask) / && index($0, "\"" pkg "\"") { next }
+    { print }
+  ' "$brewfile" > "${brewfile}.tmp" && mv "${brewfile}.tmp" "$brewfile"
+
+  chezmoi add "$setup" "$brewfile"
+  git -C "$src" add "$setup" "$brewfile"
+  git -C "$src" commit -m "feat(brew): remove ${package} from ${category}"
+  echo "✅ '${package}' removed from [${category}] and committed."
+  echo "   Run 'brew uninstall ${package}' to remove it locally, then 'dots-apply' to sync."
   echo "   Push when ready: dots-push"
 }
 

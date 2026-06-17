@@ -12,16 +12,21 @@ zsh-defer _zsh_autosuggest_start
 
 # 3. Completion Engine
 autoload -Uz compinit
-if [[ -n ~/.zcompdump(N.mh+24) ]]; then
-    compinit
-else
-    compinit -C
-fi
+# Anonymous function: local extended_glob so (#q…) works inside [[ ]] —
+# full compinit only when the dump is older than 24h, else trust the cache.
+() {
+    setopt local_options extended_glob
+    if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+        compinit
+    else
+        compinit -C
+    fi
+}
 zsh-defer autoload -U +X bashcompinit
 zsh-defer bashcompinit
 
 # 4. fzf-tab Configuration
-{{ if .alt_tools -}}
+{{ if and .alt_tools (not (has "eza" .machine_excludes)) -}}
 zstyle ':fzf-tab:complete:cd:*'           fzf-preview 'eza -1 --color=always --icons $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*'   fzf-preview 'eza -1 --color=always --icons $realpath'
 {{ else -}}
@@ -33,7 +38,7 @@ zstyle ':fzf-tab:complete:kubectl:log:*'  fzf-preview 'kubectl logs $word'
 zstyle ':fzf-tab:complete:kubectl:describe:*' fzf-preview 'kubectl describe $word'
 zstyle ':fzf-tab:complete:kubectl:*'      fzf-flags --preview-window=right:60%
 {{ end -}}
-{{ if .alt_tools -}}
+{{ if and .alt_tools (not (has "bat" .machine_excludes)) -}}
 zstyle ':fzf-tab:complete:dbt:run:*'      fzf-preview '[[ -f models/$word.sql ]] && bat --color=always models/$word.sql || echo "Model SQL not found"'
 {{ end -}}
 

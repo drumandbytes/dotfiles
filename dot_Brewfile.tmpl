@@ -70,13 +70,27 @@ cask "mac-mouse-fix"
 # Alt-tools — modern CLI replacements
 # =============================================================================
 {{ if .alt_tools -}}
+{{ if not (has "bat" .machine_excludes) -}}
 brew "bat"
+{{ end -}}
+{{ if not (has "duf" .machine_excludes) -}}
 brew "duf"
+{{ end -}}
+{{ if not (has "dust" .machine_excludes) -}}
 brew "dust"
+{{ end -}}
+{{ if not (has "eza" .machine_excludes) -}}
 brew "eza"
+{{ end -}}
+{{ if not (has "fd" .machine_excludes) -}}
 brew "fd"
+{{ end -}}
+{{ if not (has "ripgrep" .machine_excludes) -}}
 brew "ripgrep"
+{{ end -}}
+{{ if not (has "tldr" .machine_excludes) -}}
 brew "tldr"
+{{ end -}}
 {{ if not (has "doggo" .machine_excludes) -}}
 brew "doggo"
 {{ end -}}
@@ -102,8 +116,12 @@ brew "xh"
 # Bitwarden
 # =============================================================================
 {{ if .bitwarden -}}
+{{ if not (has "bitwarden-cli" .machine_excludes) -}}
 brew "bitwarden-cli"
+{{ end -}}
+{{ if not (has "bitwarden" .machine_excludes) -}}
 cask "bitwarden"
+{{ end -}}
 # pkg:end:bitwarden
 {{ end -}}
 
@@ -111,10 +129,18 @@ cask "bitwarden"
 # Docker + Colima
 # =============================================================================
 {{ if .docker -}}
+{{ if not (has "colima" .machine_excludes) -}}
 brew "colima", restart_service: :changed
+{{ end -}}
+{{ if not (has "docker" .machine_excludes) -}}
 brew "docker"
+{{ end -}}
+{{ if not (has "docker-buildx" .machine_excludes) -}}
 brew "docker-buildx"
+{{ end -}}
+{{ if not (has "docker-compose" .machine_excludes) -}}
 brew "docker-compose"
+{{ end -}}
 {{ if not (has "lima-additional-guestagents" .machine_excludes) -}}
 brew "lima-additional-guestagents"
 {{ end -}}
@@ -125,11 +151,21 @@ brew "lima-additional-guestagents"
 # Kubernetes
 # =============================================================================
 {{ if .kubernetes -}}
+{{ if not (has "helm" .machine_excludes) -}}
 brew "helm"
+{{ end -}}
+{{ if not (has "kubecolor" .machine_excludes) -}}
 brew "kubecolor"
+{{ end -}}
+{{ if not (has "kubernetes-cli" .machine_excludes) -}}
 brew "kubernetes-cli"
+{{ end -}}
+{{ if not (has "kubectx" .machine_excludes) -}}
 brew "kubectx"
+{{ end -}}
+{{ if not (has "k9s" .machine_excludes) -}}
 brew "k9s"
+{{ end -}}
 {{ if not (has "kubeconform" .machine_excludes) -}}
 brew "kubeconform"
 {{ end -}}
@@ -155,11 +191,21 @@ brew "kustomize"
 # macOS utilities
 # =============================================================================
 {{ if .macos_utils -}}
+{{ if not (has "alt-tab" .machine_excludes) -}}
 cask "alt-tab"
+{{ end -}}
+{{ if not (has "hammerspoon" .machine_excludes) -}}
 cask "hammerspoon"
+{{ end -}}
+{{ if not (has "hot" .machine_excludes) -}}
 cask "hot"
+{{ end -}}
+{{ if not (has "mos" .machine_excludes) -}}
 cask "mos@beta"
+{{ end -}}
+{{ if not (has "raycast" .machine_excludes) -}}
 cask "raycast"
+{{ end -}}
 {{ if not (has "displaylink" .machine_excludes) -}}
 cask "displaylink"
 {{ end -}}
@@ -241,14 +287,30 @@ cask "iina"
 # Dev apps
 # =============================================================================
 {{ if .dev_apps -}}
+{{ if not (has "ffmpeg" .machine_excludes) -}}
 brew "ffmpeg"
+{{ end -}}
+{{ if not (has "git" .machine_excludes) -}}
 brew "git"
+{{ end -}}
+{{ if not (has "git-filter-repo" .machine_excludes) -}}
 brew "git-filter-repo"
+{{ end -}}
+{{ if not (has "gh" .machine_excludes) -}}
 brew "gh"
+{{ end -}}
+{{ if not (has "glab" .machine_excludes) -}}
 brew "glab"
+{{ end -}}
+{{ if not (has "libpq" .machine_excludes) -}}
 brew "libpq", link: true
+{{ end -}}
+{{ if not (has "rtk" .machine_excludes) -}}
 brew "rtk"
+{{ end -}}
+{{ if not (has "webp" .machine_excludes) -}}
 brew "webp"
+{{ end -}}
 {{ if not (has "claude" .machine_excludes) -}}
 cask "claude"
 {{ end -}}
@@ -298,7 +360,9 @@ brew "uv"
 # TouchBar
 # =============================================================================
 {{ if .touchbar -}}
+{{ if not (has "bettertouchtool" .machine_excludes) -}}
 cask "bettertouchtool"
+{{ end -}}
 # pkg:end:touchbar
 {{ end -}}
 

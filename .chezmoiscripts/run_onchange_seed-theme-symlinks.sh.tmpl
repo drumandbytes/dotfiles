@@ -26,7 +26,7 @@ seed() {
     echo "  seeded $link"
 }
 
-{{ if .alt_tools -}}
+{{ if and .alt_tools (not (has "eza" .machine_excludes)) -}}
 seed "$HOME/.config/eza/theme.yml" "catppuccin-macchiato-mauve.yml" "catppuccin-latte-mauve.yml"
 {{ end -}}
 seed "$HOME/.config/lazygit/theme.yml" "themes/catppuccin-macchiato.yml" "themes/catppuccin-latte.yml"

@@ -1,15 +1,29 @@
 {{ if .alt_tools -}}
 # --- Alt-tools (modern CLI replacements) ---
+{{ if not (has "eza" .machine_excludes) -}}
 alias ls='eza --icons --group-directories-first'
 alias l='eza -lh --git --icons --group-directories-first'
 alias la='eza -la --git --icons --group-directories-first'
 alias tree='eza --tree --icons'
+{{ end -}}
+{{ if not (has "duf" .machine_excludes) -}}
 alias df='duf'
+{{ end -}}
+{{ if not (has "dust" .machine_excludes) -}}
 alias du='dust'
+{{ end -}}
+{{ if not (has "fd" .machine_excludes) -}}
 alias find='fd'
+{{ end -}}
+{{ if not (has "ripgrep" .machine_excludes) -}}
 alias grep='rg'
+{{ end -}}
+{{ if not (has "doggo" .machine_excludes) -}}
 alias dig='doggo'
+{{ end -}}
+{{ if not (has "tldr" .machine_excludes) -}}
 alias man='tldr'
+{{ end -}}
 {{- end }}
 
 {{ if .kubernetes -}}
@@ -45,13 +59,15 @@ alias sheldonconfig="chezmoi edit ~/.config/sheldon/plugins.toml"
 alias reload="exec zsh"
 
 # --- Maintenance & Updates ---
-{{ if .alt_tools -}}
+{{ if and .alt_tools (not (has "tldr" .machine_excludes)) -}}
 alias brew-up="brew update && brew upgrade --greedy && brew cleanup --prune=all && tldr --update"
 {{- else -}}
 alias brew-up="brew update && brew upgrade --greedy && brew cleanup --prune=all"
 {{- end }}
 alias sheldon-up="sheldon lock --update && sheldon source > ~/.zsh/sheldon.zsh && echo 'Sheldon updated.'"
+{{ if and .alt_tools (not (has "navi" .machine_excludes)) -}}
 alias navi-up="for d in ~/.local/share/navi/cheats/*/; do echo \"Updating \$(basename \$d)...\"; git -C \"\$d\" fetch --depth=1 --quiet origin HEAD && git -C \"\$d\" reset --quiet --hard FETCH_HEAD || echo \"⚠️  Failed: \$d\"; done && touch ~/.local/share/navi/cheats/.last_updated && echo 'Navi repos updated.'"
+{{ end -}}
 alias atuin-clean="atuin search --cmd-only --limit 10000 | fzf --multi | while read -r cmd; do atuin search --delete \"\$cmd\"; done"
 alias dots-setup="~/.local/bin/dots-setup"
 alias dots-diff="chezmoi diff"
@@ -67,6 +83,6 @@ alias -g L='| less'
 alias -g G='| grep'
 alias -g H='| head'
 alias -g T='| tail'
-{{ if .alt_tools -}}
+{{ if and .alt_tools (not (has "jid" .machine_excludes)) -}}
 alias -g CJ='| jid'
 {{- end }}

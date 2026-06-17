@@ -40,7 +40,7 @@ apply = ["defer"]
 github = "MichaelAquilina/zsh-you-should-use"
 apply = ["defer"]
 
-<% if .alt_tools %>
+<% if and .alt_tools (not (has "bat" .machine_excludes)) %>
 # Replace cat with bat + man page highlighting
 [plugins.zsh-bat]
 github = "fdellwing/zsh-bat"
