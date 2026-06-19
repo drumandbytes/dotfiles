@@ -78,12 +78,12 @@ Package categories you can toggle:
 | -------- | ---------------- |
 | `alt_tools` | Modern CLI replacements: bat, eza, fd, ripgrep, dust, duf, navi, xh… |
 | `bitwarden` | Bitwarden CLI + app |
-| `docker` | Docker via Colima |
-| `kubernetes` | kubectl, kubectx, k9s, helm, vault, stern, kustomize, gcloud CLI |
+| `docker` | Colima + Docker + Buildx + Compose (whole stack, no sub-toggles) |
+| `kubernetes` | kubectl + kubecolor always; helm, kubectx, k9s, kubeconform, mintoolkit, stern, vault, kustomize, gcloud CLI individually toggleable |
 | `macos_utils` | Raycast, Hammerspoon, AltTab, Mos, Linearmouse, NordVPN, UTM… |
 | `macos_cosmetic` | AirBattery, BoringNotch, Cork |
 | `macos_media` | Brave, Slack, Spotify, Telegram, IINA |
-| `dev_apps` | VSCodium, DBeaver, GIMP, GitHub CLI, GitLab CLI, Cloudflared, hcloud… |
+| `dev_apps` | VSCodium, DBeaver, GIMP, GitHub CLI (`gh`), GitLab CLI, Cloudflared, hcloud… |
 | `touchbar` | BetterTouchTool (TouchBar Macs only) |
 | `gaming` | Steam, Discord |
 | `productivity` | Notion, Obsidian, Grammarly, Calibre, Flux Markdown |
@@ -107,12 +107,13 @@ To use this as a base for your own dotfiles:
    - `pkg-add <category> <package>` — add a package to an existing category
    - `pkg-group-add <category> <description>` — create a new category
 3. **Push** your changes to your fork.
-4. **Install on any machine** — pass your GitHub username to `install.sh`:
+4. **Install on any machine** — pass your GitHub username to `install.sh` (a bare
+   username expands to `username/dotfiles`; a `username/repo` slug or full URL also works):
+
    ```zsh
    bash <(curl -fsSL https://raw.githubusercontent.com/drumandbytes/dotfiles/main/install.sh) \
      yourusername
    ```
-   When run from inside a local clone, `install.sh` detects the repo from the git remote automatically — no arguments needed.
 
 After the initial install, `dots-push` / `chezmoi update` sync against your fork.
 
@@ -150,6 +151,8 @@ Tool inits (atuin, zoxide, direnv, navi, etc.) are pre-generated once rather tha
 | `bw-search` | fzf Bitwarden item search |
 | `help-cmd` | fzf search over all aliases and functions |
 | `fkill` | fzf process killer |
+| `fgb` | fzf git-branch checkout (previews each branch's log) |
+| `claude-profiles-sync [names]` | Create `~/.claude-<name>` dirs with shared symlinks; no args = read from Claude Usage app |
 | `zsh-bak` | Zip backup of zsh config to `~/Backups/zsh/` |
 
 ### dots-* aliases
@@ -176,6 +179,39 @@ bw-vault --regen               # force re-login and refresh session
 ```
 
 The `bw-search` shell function uses this for interactive fzf-based vault search with clipboard copy.
+
+## Optional: Claude Code profiles
+
+The `claude-<name>` aliases switch between separate Claude accounts (e.g. work and personal), each with an isolated `~/.claude-<name>` config directory. Agents, commands, skills, hooks, and plugins are shared via symlinks; credentials and session state stay per-profile.
+
+### Step 1 — create the profile directories
+
+Run `claude-profiles-sync` with the names you want. No extra app required:
+
+```zsh
+claude-profiles-sync work personal
+```
+
+This creates `~/.claude-work` and `~/.claude-personal`, each with symlinks pointing to shared items in `~/.claude`. Claude Code keys authentication to `CLAUDE_CONFIG_DIR` — the first time you run each alias it will prompt you to log in, and that account is remembered for the dir.
+
+If you have the [Claude Usage](https://github.com/HamedElfayome/Claude-Usage) menubar app configured with profiles, `claude-profiles-sync` (no args) reads names from it instead:
+
+```zsh
+claude-profiles-sync      # auto-creates dirs from Claude Usage app profiles
+```
+
+### Step 2 — generate the aliases
+
+Run `dots-setup`. If the Claude Usage app is installed and configured, it reads the profile UUIDs too, so the aliases also switch the active app profile on launch. Otherwise aliases just point `CLAUDE_CONFIG_DIR` at the right dir:
+
+```zsh
+claude-work       # CLAUDE_CONFIG_DIR=~/.claude-work (+ app profile switch if app present)
+claude-personal   # same for "personal"
+```
+
+Profile names and UUIDs are written to `~/.config/chezmoi/chezmoi.toml` (local, never committed). **Re-run `dots-setup` whenever you add or rename profiles** in the app.
+
+> The wizard reads only the profile **id and name** from the app — never the OAuth tokens or credentials.
 
 ## Optional: Touch ID for sudo
 
@@ -251,13 +287,7 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 
 | Tool | Theme location |
 | ------ | --------------- |
-<<<<<<< HEAD
 | ghostty | `~/.config/ghostty/config` (`theme = dark:…,light:…` — switches natively with macOS appearance) |
-||||||| b7da939
-| kitty | `~/.config/kitty/theme.conf` (symlink: Macchiato or Latte) |
-=======
-| ghostty | `theme = dark:Catppuccin Macchiato,light:Catppuccin Latte` in config — switches natively on macOS appearance change |
->>>>>>> f7bfb7bb34fca53f107f1bb1f4654833fdf35999
 | bat | `~/.config/bat/themes/` (Macchiato + Latte, loaded automatically) |
 | delta | inherits bat theme via `~/.config/git/config` |
 | eza | `~/.config/eza/theme.yml` (symlink: Macchiato or Latte) *(alt_tools only)* |
@@ -268,15 +298,9 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 | btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
 | k9s | `~/.config/k9s/skins/` (all flavours; follows macOS appearance via `sync-theme`) *(kubernetes only)* |
 
-<<<<<<< HEAD
 `sync-theme` (`~/.local/bin/sync-theme`) switches delta, starship, atuin, eza, lazygit, and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance. ghostty is not part of sync-theme; it follows the appearance natively.
-||||||| b7da939
-`sync-theme` (a script in `~/.config/kitty/`) switches kitty and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance.
-=======
-`sync-theme` (`~/.local/bin/sync-theme`) switches delta, starship, atuin, eza, lazygit, and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch when you toggle macOS appearance. Ghostty switches itself natively and is not part of this script.
 
 Override manually with `theme dark` or `theme light`.
->>>>>>> f7bfb7bb34fca53f107f1bb1f4654833fdf35999
 
 ## Troubleshooting
 

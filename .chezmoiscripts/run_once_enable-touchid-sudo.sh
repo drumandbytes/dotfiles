@@ -28,7 +28,14 @@ if grep -qF "pam_tid.so" "$SUDO_LOCAL" 2>/dev/null; then
     exit 0
 fi
 
-echo "Enabling Touch ID for sudo via $SUDO_LOCAL..."
-printf '# sudo_local: local config file which survives system update and is included for sudo\n%s\n' "$TID_LINE" |
-    sudo tee "$SUDO_LOCAL" >/dev/null
+if [[ -s "$SUDO_LOCAL" ]]; then
+    # File already has content (e.g. pam_reattach for tmux) — append rather than
+    # clobber. pam_tid after any existing pam_reattach is the correct order.
+    echo "Appending Touch ID line to existing $SUDO_LOCAL..."
+    printf '%s\n' "$TID_LINE" | sudo tee -a "$SUDO_LOCAL" >/dev/null
+else
+    echo "Creating $SUDO_LOCAL with Touch ID..."
+    printf '# sudo_local: local config file which survives system update and is included for sudo\n%s\n' "$TID_LINE" |
+        sudo tee "$SUDO_LOCAL" >/dev/null
+fi
 echo "Done."

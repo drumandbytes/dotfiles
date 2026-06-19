@@ -25,7 +25,7 @@ typeset -A CAT_DESC
 CAT_DESC=(
   [alt_tools]="Modern CLI replacements"
   [bitwarden]="Password manager (CLI + app)"
-  [docker]="Docker via Colima"
+  [docker]="Docker via Colima (colima + docker + buildx + compose)"
   [kubernetes]="k8s tools (kubectl, k9s, helm, vault…)"
   [macos_utils]="macOS utilities (Raycast, Hammerspoon, AltTab…)"
   [macos_cosmetic]="Visual extras (AirBattery, BoringNotch, Cork)"
@@ -41,12 +41,12 @@ typeset -A CAT_PKGS
 CAT_PKGS=(
   [alt_tools]="bat doggo duf dust eza fd gping gron jid navi ripgrep tldr xh"
   [bitwarden]="bitwarden-cli bitwarden"
-  [docker]="colima docker docker-buildx docker-compose lima-additional-guestagents"
-  [kubernetes]="helm kubecolor kubernetes-cli kubectx k9s kubeconform mintoolkit stern vault gcloud-cli kustomize"
+  [docker]="docker"
+  [kubernetes]="helm kubectx k9s kubeconform mintoolkit stern vault gcloud-cli kustomize"
   [macos_utils]="alt-tab displaylink hammerspoon hot mos raycast sniffnet keyboardcleantool linearmouse netspot nordvpn transmission utm duckdb rbenv hyperfine darrylmorley/whatcable/whatcable"
   [macos_cosmetic]="airbattery boring-notch cork"
   [macos_media]="brave-browser slack spotify telegram iina"
-  [dev_apps]="ffmpeg gh git git-filter-repo glab libpq claude claude-usage-tracker dbeaver-community gimp rtk vscodium webp cyberduck cloudflared hcloud macfuse uv"
+  [dev_apps]="ffmpeg gh git-filter-repo glab libpq claude claude-usage-tracker dbeaver-community gimp rtk vscodium webp cyberduck cloudflared hcloud macfuse uv"
   [touchbar]="bettertouchtool"
   [gaming]="discord steam"
   [productivity]="calibre flux-markdown grammarly-desktop notion obsidian"
@@ -294,6 +294,57 @@ if [[ -n "${enabled_cats[bitwarden]:-}" ]]; then
   read -r bw_email
 fi
 
+# ── Step 6: Claude Code profiles ─────────────────────────────────────────────
+# Opt-in only — nothing is created unless the user says yes.
+# With the Claude Usage app: reads id + name (never OAuth tokens or credentials).
+# Without the app: prompts for profile names and stores them with empty ids.
+# To create ~/.claude-<name> dirs after this step, run: claude-profiles-sync
+claude_toml="[]"
+echo ""
+_claude_plist="$HOME/Library/Preferences/HamedElfayome.Claude-Usage.plist"
+if [[ -f "$_claude_plist" ]] && command -v jq &>/dev/null; then
+  _claude_json=$(plutil -extract profiles_v3 raw -o - "$_claude_plist" 2>/dev/null | base64 -d 2>/dev/null)
+  if [[ -n "$_claude_json" ]]; then
+    _names=$(printf '%s' "$_claude_json" | jq -r '[.[].name] | join(", ")' 2>/dev/null)
+    if [[ -n "$_names" ]]; then
+      _use_claude=$(printf 'yes\nno' | fzf --no-multi --no-sort \
+        --prompt "Multiple Claude accounts › " \
+        --header "Claude Usage profiles detected: ${_names}. Set up profile isolation?")
+      if [[ "$_use_claude" == "yes" ]]; then
+        claude_toml=$(printf '%s' "$_claude_json" | jq -r '
+          [ .[]
+            | { id, name: (.name | ascii_downcase | gsub("[^a-z0-9]+"; "-") | gsub("^-+|-+$"; "")) }
+            | select(.name != "")
+            | "{name = \"\(.name)\", id = \"\(.id)\"}"
+          ] | "[" + join(", ") + "]"
+        ' 2>/dev/null) || claude_toml="[]"
+        echo "${dim}Run ${bold}claude-profiles-sync${reset}${dim} to create the ~/.claude-<name> dirs.${reset}"
+      fi
+    fi
+  fi
+else
+  _use_claude=$(printf 'yes\nno' | fzf --no-multi --no-sort \
+    --prompt "Multiple Claude accounts › " \
+    --header "Do you want to use multiple Claude Code accounts?")
+  if [[ "$_use_claude" == "yes" ]]; then
+    printf "${bold}Profile names${reset}${dim} (space-separated, e.g. work personal):${reset} "
+    read -r _manual_names
+    if [[ -n "$_manual_names" ]]; then
+      _toml_entries=()
+      for _pname in ${=_manual_names}; do
+        _pname=$(printf '%s' "$_pname" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g;s/^-*//;s/-*$//')
+        [[ -z "$_pname" ]] && continue
+        _toml_entries+=("{name = \"${_pname}\", id = \"\"}")
+      done
+      if [[ ${#_toml_entries[@]} -gt 0 ]]; then
+        _joined="${(j:, :)_toml_entries}"
+        claude_toml="[${_joined}]"
+        echo "${dim}Run ${bold}claude-profiles-sync ${_manual_names}${reset}${dim} to create the dirs. First use of each alias will prompt you to log in.${reset}"
+      fi
+    fi
+  fi
+fi
+
 # ── Write chezmoi.toml ───────────────────────────────────────────────────────
 mkdir -p "$(dirname "$CHEZMOI_CONFIG")"
 
@@ -333,6 +384,7 @@ cat > "$CHEZMOI_CONFIG" <<TOML
   peripherals    = $(_flag peripherals)
 
   machine_excludes = $excl_toml
+  claude_profiles = $claude_toml
 TOML
 
 # Re-inject sourceDir if it was present before (manual per-machine override)

@@ -41,22 +41,23 @@ jobs:
           cat > ~/.config/chezmoi/chezmoi.toml << EOF
           sourceDir = "$(pwd)"
           [data]
-            editor         = "vim"
-            alt_tools      = false
-            macos_utils    = false
-            macos_cosmetic = false
-            macos_media    = false
-            dev_apps       = false
-            touchbar       = false
-            gaming         = false
-            productivity   = false
-            peripherals    = false
-            bitwarden      = false
-            bw_email       = "test@example.com"
-            touch_id_sudo  = false
-            docker         = false
-            kubernetes     = false
+            editor           = "vim"
+            alt_tools        = false
+            macos_utils      = false
+            macos_cosmetic   = false
+            macos_media      = false
+            dev_apps         = false
+            touchbar         = false
+            gaming           = false
+            productivity     = false
+            peripherals      = false
+            bitwarden        = false
+            bw_email         = "test@example.com"
+            touch_id_sudo    = false
+            docker           = false
+            kubernetes       = false
             machine_excludes = []
+            claude_profiles  = []
           EOF
 
           failed=0
@@ -72,22 +73,23 @@ jobs:
           cat > ~/.config/chezmoi/chezmoi.toml << EOF
           sourceDir = "$(pwd)"
           [data]
-            editor         = "fresh"
-            alt_tools      = true
-            macos_utils    = true
-            macos_cosmetic = true
-            macos_media    = true
-            dev_apps       = true
-            touchbar       = true
-            gaming         = true
-            productivity   = true
-            peripherals    = true
-            bitwarden      = true
-            bw_email       = "test@example.com"
-            touch_id_sudo  = true
-            docker         = true
-            kubernetes     = true
+            editor           = "fresh"
+            alt_tools        = true
+            macos_utils      = true
+            macos_cosmetic   = true
+            macos_media      = true
+            dev_apps         = true
+            touchbar         = true
+            gaming           = true
+            productivity     = true
+            peripherals      = true
+            bitwarden        = true
+            bw_email         = "test@example.com"
+            touch_id_sudo    = true
+            docker           = true
+            kubernetes       = true
             machine_excludes = []
+            claude_profiles  = []
           EOF
 
           failed=0
@@ -95,6 +97,49 @@ jobs:
             echo "→ $f"
             chezmoi execute-template < "$f" > /dev/null || { echo "FAILED: $f"; failed=1; }
           done < <(find . -name '*.tmpl' ! -name '.chezmoi.toml.tmpl' ! -path './.git/*')
+          exit "$failed"
+
+      - name: Validate excludes take effect
+        # Renders the Brewfile with a known exclude set and asserts excluded packages
+        # are absent. Guards the contract that machine_excludes actually gates packages.
+        run: |
+          cat > ~/.config/chezmoi/chezmoi.toml << EOF
+          sourceDir = "$(pwd)"
+          [data]
+            editor           = "vim"
+            alt_tools        = true
+            docker           = true
+            kubernetes       = true
+            dev_apps         = true
+            macos_utils      = false
+            macos_cosmetic   = false
+            macos_media      = false
+            touchbar         = false
+            gaming           = false
+            productivity     = false
+            peripherals      = false
+            bitwarden        = false
+            bw_email         = ""
+            touch_id_sudo    = false
+            machine_excludes = ["eza", "bat", "docker", "helm", "gh"]
+            claude_profiles  = []
+          EOF
+
+          rendered=$(chezmoi execute-template < dot_Brewfile.tmpl)
+          failed=0
+          for pkg in eza bat docker helm gh; do
+            if echo "$rendered" | grep -qE "\"$pkg\""; then
+              echo "FAILED: '$pkg' is in machine_excludes but still appears in rendered Brewfile"
+              failed=1
+            fi
+          done
+          # Sanity: non-excluded packages should be present
+          for pkg in fd ripgrep kubernetes-cli kubecolor; do
+            if ! echo "$rendered" | grep -qE "\"$pkg\""; then
+              echo "FAILED: '$pkg' should be in rendered Brewfile but is missing"
+              failed=1
+            fi
+          done
           exit "$failed"
 
       - name: Lint rendered .sh.tmpl scripts

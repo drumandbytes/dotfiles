@@ -7,28 +7,19 @@
 #
 # Usage (fork):
 #   bash <(curl -fsSL https://raw.githubusercontent.com/drumandbytes/dotfiles/main/install.sh) \
-#     yourusername/dotfiles
+#     yourusername
 #
-# When run from inside a cloned fork, the repo is detected automatically
-# from the git remote — no arguments needed.
+# Pass your GitHub username (or username/repo, or a full URL) as the first
+# argument; it is expanded to <username>/dotfiles when no "/" is present.
 
 set -euo pipefail
 
 # ── Repo detection ────────────────────────────────────────────────────────────
-# Accepts: username/repo slug, full HTTPS URL, or auto-detects from git remote.
-# chezmoi init accepts both slugs and full URLs natively.
-_default="drumandbytes/dotfiles"
-if [[ -n "${1:-}" ]]; then
-    # Expand bare username → username/dotfiles
-    [[ "$1" != */* ]] && DOTFILES_REPO="${1}/dotfiles" || DOTFILES_REPO="$1"
-elif [[ -n "${DOTFILES_REPO:-}" ]]; then
-    : # already set
-elif git rev-parse --is-inside-work-tree &>/dev/null 2>&1; then
-    DOTFILES_REPO=$(git remote get-url origin 2>/dev/null || echo "$_default")
-else
-    DOTFILES_REPO="$_default"
-fi
-unset _default
+# Accepts a GitHub username, a username/repo slug, or a full URL ($1 or
+# $DOTFILES_REPO). chezmoi init understands bare slugs and full URLs natively.
+DOTFILES_REPO="${1:-${DOTFILES_REPO:-drumandbytes/dotfiles}}"
+# Expand a bare username → username/dotfiles (slugs and URLs already contain "/")
+[[ "$DOTFILES_REPO" != */* ]] && DOTFILES_REPO="${DOTFILES_REPO}/dotfiles"
 
 if [[ "$(uname)" != "Darwin" ]]; then
     echo "This dotfiles repo targets macOS only." >&2

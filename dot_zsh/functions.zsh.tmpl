@@ -7,6 +7,66 @@ _claude_switch_profile() {
   CLAUDE_CONFIG_DIR="$config_dir" command claude "$@"
 }
 
+# Create ~/.claude-<name> with symlinks pointing to shared ~/.claude items.
+# Per-profile items (settings.json, .claude.json, cache, backups) are NOT symlinked.
+_claude_profile_create() {
+  local name="$1" root="$HOME/.claude" dir="$HOME/.claude-$name"
+  [[ -d "$root" ]] || { echo "❌ ~/.claude not found — run Claude Code once first" >&2; return 1; }
+  mkdir -p "$dir"
+  local -a shared=(
+    agents commands hooks plugins projects session-env sessions skills
+    CLAUDE.md file-history history.jsonl paste-cache plans shell-snapshots todos
+  )
+  local created=0 skipped=0
+  for item in "${shared[@]}"; do
+    local target="$root/$item" link="$dir/$item"
+    [[ ! -e "$target" && ! -d "$target" ]] && continue
+    if [[ -e "$link" || -L "$link" ]]; then (( skipped++ ))
+    else ln -s "$target" "$link" && (( created++ ))
+    fi
+  done
+  for md in "$root"/*.md(N); do
+    local base="${md##*/}" link="$dir/${md##*/}"
+    [[ "$base" == "CLAUDE.md" ]] && continue
+    if [[ ! -e "$link" && ! -L "$link" ]]; then ln -s "$md" "$link" && (( created++ ))
+    else (( skipped++ ))
+    fi
+  done
+  if [[ ! -f "$dir/settings.json" ]]; then
+    [[ -f "$root/settings.json" ]] && cp "$root/settings.json" "$dir/settings.json" \
+      || printf '{}\n' > "$dir/settings.json"
+  fi
+  echo "✅ ~/.claude-${name}: ${created} link(s) created${skipped:+, ${skipped} already present}"
+}
+
+# Sync Claude profile dirs.
+# With no args: reads the Claude Usage app plist and creates dirs for all detected profiles.
+# With args: creates dirs for the named profiles (no app required).
+# In both cases the alias in claude-<name> just isolates CLAUDE_CONFIG_DIR;
+# if the profile also has a UUID (from the app), it switches the active app profile too.
+claude-profiles-sync() {
+  if [[ $# -gt 0 ]]; then
+    for name in "$@"; do _claude_profile_create "$name"; done
+    return
+  fi
+  local _plist="$HOME/Library/Preferences/HamedElfayome.Claude-Usage.plist"
+  if [[ ! -f "$_plist" ]]; then
+    echo "❌ Claude Usage app plist not found." >&2
+    echo "   Install: https://github.com/HamedElfayome/Claude-Usage" >&2
+    echo "   Or specify names directly: claude-profiles-sync work personal" >&2
+    return 1
+  fi
+  command -v jq &>/dev/null || { echo "❌ jq required: brew install jq" >&2; return 1; }
+  local _json _count=0
+  _json=$(plutil -extract profiles_v3 raw -o - "$_plist" 2>/dev/null | base64 -d 2>/dev/null)
+  [[ -z "$_json" ]] && { echo "❌ No profiles in Claude Usage app. Configure profiles first." >&2; return 1; }
+  while IFS= read -r _slug; do
+    [[ -z "$_slug" ]] && continue
+    _claude_profile_create "$_slug" && (( _count++ ))
+  done < <(printf '%s' "$_json" | jq -r '.[].name | ascii_downcase | gsub("[^a-z0-9]+"; "-") | gsub("^-+|-+$"; "")' 2>/dev/null)
+  printf '\n%d profile dir(s) synced. Re-run dots-setup to regenerate aliases.\n' "$_count"
+}
+
 # === FZF Helpers ===
 # Use for menu/list selections — prevents the file-preview in FZF_DEFAULT_OPTS
 # from running on plain lists where {} is not a file path.
@@ -298,11 +358,13 @@ fkill() {
 }
 
 fgb() {
-    local branches branch
-    branches=$(git branch --all | command grep -v HEAD) &&
-    branch=$(echo "$branches" | fzf-tmux -d $(( 2 + $(echo "$branches" | wc -l) )) +m \
-             --preview 'git log --oneline --graph --date=short --color=always' ) &&
-    git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
+    local branch
+    branch=$(git branch --all | command grep -v HEAD |
+        _fzf_menu --ansi --no-multi --layout=reverse --border \
+            --header 'Checkout git branch' \
+            --preview 'git log --oneline --graph --date=short --color=always $(echo {} | sed "s/.* //;s#remotes/[^/]*/##")') || return
+    branch=$(echo "$branch" | sed 's/.* //;s#remotes/[^/]*/##')
+    [[ -n "$branch" ]] && git checkout "$branch"
 }
 
 zsh-bak() {

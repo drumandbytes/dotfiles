@@ -1,6 +1,8 @@
 # Contributing
 
-These are personal dotfiles, but improvements and ideas are welcome.
+This repo is built to be **forked** — most people are better served maintaining
+their own copy than sending a PR here (see [Forking](README.md#forking)). That
+said, fixes and broadly useful improvements are welcome upstream.
 
 ## What's useful to contribute
 
@@ -16,12 +18,17 @@ These are personal dotfiles, but improvements and ideas are welcome.
 ## What won't be merged
 
 - Changes that break the macOS-only scope
+- Personal preferences better kept in your own fork (specific package picks,
+  profile presets, theme choices)
 
 ## How to contribute
 
-1. Fork the repo
+1. Fork the repo and clone your fork
 2. Create a branch: `git checkout -b fix/describe-your-change`
-3. Make your change and test it with `dots-apply --dry-run`
+3. Make your change and verify it:
+   - **Preview the effect** with `dots-diff` (alias for `chezmoi diff`)
+   - **Render templates** the way CI does — e.g. `chezmoi execute-template < path/to/file.tmpl` (see the full matrix in [`.github/workflows/ci.yml`](.github/workflows/ci.yml))
+   - Shell scripts are linted with `shellcheck` and `shfmt -i 4`
 4. Open a pull request with a clear description
 
 ## Reporting issues

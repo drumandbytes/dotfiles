@@ -34,6 +34,7 @@ brew "starship"
 brew "zoxide"
 
 # Git
+brew "git"
 brew "git-delta"
 brew "gnupg"
 brew "lazygit"
@@ -129,19 +130,11 @@ cask "bitwarden"
 # Docker + Colima
 # =============================================================================
 {{ if .docker -}}
-{{ if not (has "colima" .machine_excludes) -}}
-brew "colima", restart_service: :changed
-{{ end -}}
 {{ if not (has "docker" .machine_excludes) -}}
+brew "colima", restart_service: :changed
 brew "docker"
-{{ end -}}
-{{ if not (has "docker-buildx" .machine_excludes) -}}
 brew "docker-buildx"
-{{ end -}}
-{{ if not (has "docker-compose" .machine_excludes) -}}
 brew "docker-compose"
-{{ end -}}
-{{ if not (has "lima-additional-guestagents" .machine_excludes) -}}
 brew "lima-additional-guestagents"
 {{ end -}}
 # pkg:end:docker
@@ -151,14 +144,10 @@ brew "lima-additional-guestagents"
 # Kubernetes
 # =============================================================================
 {{ if .kubernetes -}}
+brew "kubernetes-cli"
+brew "kubecolor"
 {{ if not (has "helm" .machine_excludes) -}}
 brew "helm"
-{{ end -}}
-{{ if not (has "kubecolor" .machine_excludes) -}}
-brew "kubecolor"
-{{ end -}}
-{{ if not (has "kubernetes-cli" .machine_excludes) -}}
-brew "kubernetes-cli"
 {{ end -}}
 {{ if not (has "kubectx" .machine_excludes) -}}
 brew "kubectx"
@@ -289,9 +278,6 @@ cask "iina"
 {{ if .dev_apps -}}
 {{ if not (has "ffmpeg" .machine_excludes) -}}
 brew "ffmpeg"
-{{ end -}}
-{{ if not (has "git" .machine_excludes) -}}
-brew "git"
 {{ end -}}
 {{ if not (has "git-filter-repo" .machine_excludes) -}}
 brew "git-filter-repo"
