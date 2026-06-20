@@ -339,6 +339,9 @@ cask "macfuse"
 {{ if not (has "uv" .machine_excludes) -}}
 brew "uv"
 {{ end -}}
+{{ if not (has "opentofu" .machine_excludes) -}}
+brew "opentofu"
+{{ end -}}
 # pkg:end:dev_apps
 {{ end -}}
 
