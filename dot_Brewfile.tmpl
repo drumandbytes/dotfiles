@@ -342,6 +342,9 @@ brew "uv"
 {{ if not (has "opentofu" .machine_excludes) -}}
 brew "opentofu"
 {{ end -}}
+{{ if not (has "caddy" .machine_excludes) -}}
+brew "caddy"
+{{ end -}}
 # pkg:end:dev_apps
 {{ end -}}
 
