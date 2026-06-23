@@ -345,6 +345,9 @@ brew "opentofu"
 {{ if not (has "caddy" .machine_excludes) -}}
 brew "caddy"
 {{ end -}}
+{{ if not (has "siderolabs/tap/talosctl" .machine_excludes) -}}
+brew "siderolabs/tap/talosctl"
+{{ end -}}
 # pkg:end:dev_apps
 {{ end -}}
 
