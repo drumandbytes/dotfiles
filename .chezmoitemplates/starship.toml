@@ -3,6 +3,9 @@
 # Active palette — owned by sync-theme at runtime; chezmoi preserves your selection (see modify_starship.toml)
 palette = "catppuccin_macchiato"
 
+# Raised from the 30ms default — avoids "Scanning current directory timed out" warnings on slow/large dirs
+scan_timeout = 1000
+
 [character]
 success_symbol = "[[󰄛](green) ❯](peach)"
 error_symbol = "[[󰄛](red) ❯](peach)"
