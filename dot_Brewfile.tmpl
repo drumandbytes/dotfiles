@@ -380,6 +380,9 @@ cask "notion"
 {{ if not (has "obsidian" .machine_excludes) -}}
 cask "obsidian"
 {{ end -}}
+{{ if not (has "darktable" .machine_excludes) -}}
+cask "darktable"
+{{ end -}}
 # pkg:end:productivity
 {{ end -}}
 

@@ -49,7 +49,7 @@ CAT_PKGS=(
   [dev_apps]="ffmpeg gh git-filter-repo glab libpq claude claude-usage-tracker dbeaver-community gimp rtk vscodium webp cyberduck cloudflared hcloud macfuse uv opentofu caddy siderolabs/tap/talosctl"
   [touchbar]="bettertouchtool"
   [gaming]="discord steam"
-  [productivity]="calibre flux-markdown grammarly-desktop notion obsidian"
+  [productivity]="calibre flux-markdown grammarly-desktop notion obsidian darktable"
   [peripherals]="8bitdo-ultimate-software balenaetcher f3 qmk-toolbox"
 )
 
