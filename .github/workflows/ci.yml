@@ -4,7 +4,10 @@ permissions:
   contents: read
 
 on:
+  push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   shellcheck:
@@ -176,18 +179,6 @@ jobs:
           done < <(find .chezmoiscripts -name '*.sh.tmpl')
           exit "$failed"
 
-  gitleaks:
-    name: gitleaks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-
   markdownlint:
     name: markdownlint
     runs-on: ubuntu-latest
@@ -197,10 +188,15 @@ jobs:
         with:
           globs: "**/*.md"
 
-  # Secret scanning is deliberately excluded here: the gitleaks job above
-  # already owns that for this repo, and running both would just double-report
-  # the same findings.
+  # Replaced the previous gitleaks job. gitleaks-action@v2 stops working on
+  # 2026-09-16 when Node 20 is removed from GitHub-hosted runners, it needs an
+  # org license key, and it failed on every Dependabot PR because GitHub does
+  # not pass Actions secrets to Dependabot-triggered runs. Trivy needs no
+  # secrets and runs everywhere.
+  #
+  # Caveat: gitleaks scanned full git history (fetch-depth: 0); Trivy scans the
+  # checked-out tree. Running on every push still catches a secret at the
+  # commit that introduces it, but it will not re-flag one already buried in
+  # history — do a one-off historical audit separately if that matters.
   security:
     uses: drumandbytes/reusable-actions/.github/workflows/security-scan.yml@v1
-    with:
-      scanners: "vuln,misconfig"
