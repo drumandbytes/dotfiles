@@ -196,3 +196,11 @@ jobs:
       - uses: DavidAnson/markdownlint-cli2-action@v23
         with:
           globs: "**/*.md"
+
+  # Secret scanning is deliberately excluded here: the gitleaks job above
+  # already owns that for this repo, and running both would just double-report
+  # the same findings.
+  security:
+    uses: drumandbytes/reusable-actions/.github/workflows/security-scan.yml@v1
+    with:
+      scanners: "vuln,misconfig"
