@@ -14,7 +14,7 @@ jobs:
     name: shellcheck
     runs-on: ubuntu-latest  # shellcheck is preinstalled on ubuntu runners
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Run shellcheck
         run: shellcheck install.sh .chezmoiscripts/run_once_*.sh .chezmoiscripts/run_onchange_*.sh
 
@@ -22,7 +22,7 @@ jobs:
     name: shfmt
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install shfmt
         run: brew install shfmt
       - name: Check formatting
@@ -33,7 +33,7 @@ jobs:
     name: chezmoi templates
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install chezmoi + shell linters
         run: brew install chezmoi shellcheck shfmt
       - name: Validate templates (minimal flags)
@@ -183,7 +183,7 @@ jobs:
     name: markdownlint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: DavidAnson/markdownlint-cli2-action@v23
+      - uses: actions/checkout@v7
+      - uses: DavidAnson/markdownlint-cli2-action@v24
         with:
           globs: "**/*.md"
