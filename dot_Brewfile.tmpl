@@ -65,7 +65,6 @@ brew "imagemagick"
 brew "jpegoptim"
 brew "parallel"
 brew "pv"
-cask "mac-mouse-fix"
 
 # =============================================================================
 # Alt-tools — modern CLI replacements
@@ -189,8 +188,8 @@ cask "hammerspoon"
 {{ if not (has "hot" .machine_excludes) -}}
 cask "hot"
 {{ end -}}
-{{ if not (has "mos" .machine_excludes) -}}
-cask "mos@beta"
+{{ if not (has "logi-options-plus" .machine_excludes) -}}
+cask "logi-options+"
 {{ end -}}
 {{ if not (has "raycast" .machine_excludes) -}}
 cask "raycast"
