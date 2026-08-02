@@ -332,9 +332,6 @@ brew "cloudflared", restart_service: :changed
 {{ if not (has "hcloud" .machine_excludes) -}}
 brew "hcloud"
 {{ end -}}
-{{ if not (has "macfuse" .machine_excludes) -}}
-cask "macfuse"
-{{ end -}}
 {{ if not (has "uv" .machine_excludes) -}}
 brew "uv"
 {{ end -}}
