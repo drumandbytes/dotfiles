@@ -9,9 +9,45 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Per-job path filtering, not a workflow-level paths-ignore: the jobs
+  # below care about disjoint file sets (shell scripts vs .tmpl templates
+  # vs markdown), and a blanket ignore would wrongly skip markdownlint on
+  # a shell-only change or vice versa. Each filter also matches this
+  # workflow file itself, so editing the pipeline always re-runs everything.
+  changes:
+    name: detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      shell: ${{ steps.filter.outputs.shell }}
+      chezmoi: ${{ steps.filter.outputs.chezmoi }}
+      md: ${{ steps.filter.outputs.md }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4.0.3
+        id: filter
+        with:
+          filters: |
+            shell:
+              - 'install.sh'
+              - '.chezmoiscripts/run_once_*.sh'
+              - '.chezmoiscripts/run_onchange_*.sh'
+              - '.github/workflows/ci.yml'
+            chezmoi:
+              - '**/*.tmpl'
+              - '.github/workflows/ci.yml'
+            md:
+              - '**/*.md'
+              - '.github/workflows/ci.yml'
+
   shellcheck:
     name: shellcheck
+    needs: changes
+    if: needs.changes.outputs.shell == 'true'
     runs-on: ubuntu-latest  # shellcheck is preinstalled on ubuntu runners
     steps:
       - uses: actions/checkout@v7
@@ -20,6 +56,8 @@ jobs:
 
   shfmt:
     name: shfmt
+    needs: changes
+    if: needs.changes.outputs.shell == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
@@ -31,6 +69,8 @@ jobs:
 
   chezmoi-templates:
     name: chezmoi templates
+    needs: changes
+    if: needs.changes.outputs.chezmoi == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
@@ -54,8 +94,6 @@ jobs:
             gaming           = false
             productivity     = false
             peripherals      = false
-            bitwarden        = false
-            bw_email         = "test@example.com"
             touch_id_sudo    = false
             docker           = false
             kubernetes       = false
@@ -86,8 +124,6 @@ jobs:
             gaming           = true
             productivity     = true
             peripherals      = true
-            bitwarden        = true
-            bw_email         = "test@example.com"
             touch_id_sudo    = true
             docker           = true
             kubernetes       = true
@@ -121,8 +157,6 @@ jobs:
             gaming           = false
             productivity     = false
             peripherals      = false
-            bitwarden        = false
-            bw_email         = ""
             touch_id_sudo    = false
             machine_excludes = ["eza", "bat", "docker", "helm", "gh"]
             claude_profiles  = []
@@ -161,8 +195,6 @@ jobs:
             gaming         = false
             productivity   = false
             peripherals    = false
-            bitwarden      = false
-            bw_email       = "test@example.com"
             touch_id_sudo  = false
             docker         = true
             kubernetes     = true
@@ -181,6 +213,8 @@ jobs:
 
   markdownlint:
     name: markdownlint
+    needs: changes
+    if: needs.changes.outputs.md == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
