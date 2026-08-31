@@ -21,8 +21,7 @@ fi
 
 CAT_ORDER=(alt_tools onepassword docker kubernetes macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity peripherals)
 
-typeset -A CAT_DESC
-CAT_DESC=(
+typeset -A CAT_DESC=(
   [alt_tools]="Modern CLI replacements"
   [onepassword]="1Password (app + op CLI)"
   [docker]="Docker via Colima (colima + docker + buildx + compose)"
@@ -37,8 +36,7 @@ CAT_DESC=(
   [peripherals]="8BitDo, QMK Toolbox, BalenaEtcher, F3"
 )
 
-typeset -A CAT_PKGS
-CAT_PKGS=(
+typeset -A CAT_PKGS=(
   [alt_tools]="bat doggo duf dust eza fd gping gron jid navi ripgrep tldr xh"
   [onepassword]="1password 1password-cli"
   [docker]="docker"
@@ -54,16 +52,14 @@ CAT_PKGS=(
 )
 
 # ── Profile definitions ──────────────────────────────────────────────────────
-typeset -A PROFILE_CATS
-PROFILE_CATS=(
+typeset -A PROFILE_CATS=(
   [work]="alt_tools docker kubernetes dev_apps macos_utils macos_media"
   [personal]="alt_tools macos_utils macos_cosmetic macos_media productivity peripherals"
   [minimal]="alt_tools"
   [full]="alt_tools docker kubernetes macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity peripherals"
 )
 
-typeset -A PROFILE_EXCL
-PROFILE_EXCL=(
+typeset -A PROFILE_EXCL=(
   [work]="macos_media/spotify macos_media/iina macos_utils/nordvpn macos_utils/utm macos_utils/transmission macos_utils/netspot"
   [personal]="macos_utils/displaylink macos_utils/utm macos_utils/duckdb"
   [minimal]=""
