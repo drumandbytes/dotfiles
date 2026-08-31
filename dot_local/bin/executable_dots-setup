@@ -297,7 +297,9 @@ darkmode_lon=$(_dm_get darkmode_longitude);               : "${darkmode_lon:=24.
 darkmode_sunset=$(_dm_get darkmode_sunset_offset_min);    : "${darkmode_sunset:=-30}"
 darkmode_sunrise=$(_dm_get darkmode_sunrise_offset_min);  : "${darkmode_sunrise:=0}"
 
-_caps="$(chezmoi source-path)/dot_local/share/dots-setup/capitals.tsv"
+_caps="$HOME/.local/share/dots-setup/capitals.tsv"
+# Fall back to the source tree if chezmoi hasn't deployed the file yet (first run).
+[[ -f "$_caps" ]] || _caps="$(chezmoi source-path)/dot_local/share/dots-setup/capitals.tsv"
 if [[ -n "${enabled_cats[macos_utils]:-}" && -f "$_caps" ]]; then
   echo ""
   _pick=$( { printf 'Custom (enter coordinates manually)\t\t\n'; cat "$_caps"; } | \
