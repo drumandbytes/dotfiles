@@ -5,9 +5,6 @@ README.md
 UNLICENSE
 install.sh
 
-# Data consumed by dots-setup directly from the source tree — not deployed
-.local/share/dots-setup
-
 # NOTE: patterns match TARGET paths (the deployed ~/… path), not source
 # filenames — so no dot_ prefix and no .tmpl/executable_/run_once_ attributes.
 

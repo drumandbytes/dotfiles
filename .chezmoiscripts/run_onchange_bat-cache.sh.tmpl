@@ -1,0 +1,15 @@
+#!/bin/bash
+# Rebuilds bat's theme cache after .chezmoiexternal fetches the Catppuccin
+# .tmTheme files — bat won't see new theme files until the cache is rebuilt.
+# .chezmoiexternal hash: {{ include ".chezmoiexternal.toml.tmpl" | sha256sum }}
+
+set -euo pipefail
+
+export PATH="/opt/homebrew/bin:$PATH"
+
+command -v bat &>/dev/null || exit 0
+
+# Run from / — bat misreads 'cache' as a filename when a dir named 'cache'
+# exists in the CWD (sharkdp/bat#1726).
+(cd / && bat cache --build)
+echo "✅ bat theme cache rebuilt."
