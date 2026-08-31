@@ -6,6 +6,11 @@
 
 set -euo pipefail
 
+# Homebrew + mise (binary and shims) on PATH: `brew bundle` runs outside an
+# interactive shell, and the Brewfile's `npm` entry is handled by mise's npm
+# shim, which calls `mise reshim` after a global install.
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$HOME/.local/share/mise/shims:$PATH"
+
 if ! command -v brew &>/dev/null; then
     echo "Homebrew not found — skipping brew bundle."
     exit 0

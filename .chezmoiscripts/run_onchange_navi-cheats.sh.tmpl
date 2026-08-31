@@ -91,7 +91,9 @@ _needs_update() {
 add_repo() {
     local repo="$1"
     local dest="$CHEAT_DIR/${repo//\//__}"
-    if [[ ! -d "$dest" ]]; then
+    if [[ ! -d "$dest/.git" ]]; then
+        # Missing, or a stale non-git directory from an interrupted clone.
+        [[ "$dest" == "$CHEAT_DIR/"?* ]] && rm -rf "$dest"
         echo "Cloning navi repo: $repo ..."
         git clone --depth=1 --quiet "https://github.com/${repo}.git" "$dest" ||
             echo "⚠️  Could not clone $repo (check network)"
