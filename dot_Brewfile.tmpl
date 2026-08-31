@@ -1,9 +1,6 @@
 # =============================================================================
 # Taps
 # =============================================================================
-{{ if .kubernetes -}}
-tap "hashicorp/tap"
-{{ end -}}
 {{ if .macos_cosmetic -}}
 tap "lihaoyun6/tap"
 tap "theboredteam/boring-notch"
@@ -113,16 +110,16 @@ brew "xh"
 {{ end -}}
 
 # =============================================================================
-# Bitwarden
+# 1Password
 # =============================================================================
-{{ if .bitwarden -}}
-{{ if not (has "bitwarden-cli" .machine_excludes) -}}
-brew "bitwarden-cli"
+{{ if .onepassword -}}
+{{ if not (has "1password" .machine_excludes) -}}
+cask "1password"
 {{ end -}}
-{{ if not (has "bitwarden" .machine_excludes) -}}
-cask "bitwarden"
+{{ if not (has "1password-cli" .machine_excludes) -}}
+cask "1password-cli"
 {{ end -}}
-# pkg:end:bitwarden
+# pkg:end:onepassword
 {{ end -}}
 
 # =============================================================================
@@ -163,11 +160,11 @@ brew "mintoolkit"
 {{ if not (has "stern" .machine_excludes) -}}
 brew "stern"
 {{ end -}}
-{{ if not (has "vault" .machine_excludes) -}}
-brew "hashicorp/tap/vault"
-{{ end -}}
 {{ if not (has "gcloud-cli" .machine_excludes) -}}
 cask "gcloud-cli"
+{{ end -}}
+{{ if not (has "awscli" .machine_excludes) -}}
+brew "awscli"
 {{ end -}}
 {{ if not (has "kustomize" .machine_excludes) -}}
 brew "kustomize"
@@ -196,9 +193,6 @@ cask "raycast"
 {{ end -}}
 {{ if not (has "displaylink" .machine_excludes) -}}
 cask "displaylink"
-{{ end -}}
-{{ if not (has "linearmouse" .machine_excludes) -}}
-cask "linearmouse"
 {{ end -}}
 {{ if not (has "netspot" .machine_excludes) -}}
 cask "netspot"
@@ -290,6 +284,12 @@ brew "glab"
 {{ if not (has "libpq" .machine_excludes) -}}
 brew "libpq", link: true
 {{ end -}}
+{{ if not (has "php" .machine_excludes) -}}
+brew "php"
+{{ end -}}
+{{ if not (has "composer" .machine_excludes) -}}
+brew "composer"
+{{ end -}}
 {{ if not (has "rtk" .machine_excludes) -}}
 brew "rtk"
 {{ end -}}
@@ -299,8 +299,17 @@ brew "webp"
 {{ if not (has "claude" .machine_excludes) -}}
 cask "claude"
 {{ end -}}
+{{ if not (has "claude-notify" .machine_excludes) -}}
+npm "@daik0z/claude-notify"
+{{ end -}}
 {{ if not (has "claude-usage-tracker" .machine_excludes) -}}
 cask "hamed-elfayome/claude-usage/claude-usage-tracker"
+{{ end -}}
+{{ if not (has "opencode-desktop" .machine_excludes) -}}
+cask "opencode-desktop"
+{{ end -}}
+{{ if not (has "jetbrains-toolbox" .machine_excludes) -}}
+cask "jetbrains-toolbox"
 {{ end -}}
 {{ if not (has "dbeaver-community" .machine_excludes) -}}
 cask "dbeaver-community"
@@ -375,9 +384,6 @@ cask "notion"
 {{ end -}}
 {{ if not (has "obsidian" .machine_excludes) -}}
 cask "obsidian"
-{{ end -}}
-{{ if not (has "darktable" .machine_excludes) -}}
-cask "darktable"
 {{ end -}}
 # pkg:end:productivity
 {{ end -}}

@@ -11,7 +11,7 @@ Opinionated **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | `~/.zshrc` | Zsh entrypoint — modular, deferred, fast |
 | `~/.zsh/env.zsh` | Exports, PATH, editor |
 | `~/.zsh/aliases.zsh` | Shell aliases (eza, k8s, git, maintenance, etc.) |
-| `~/.zsh/functions.zsh` | Functions: `mnt`, `pkg-add`, `pkg-cats`, `brewsync`, `comp-add`, `bw-search`, and more |
+| `~/.zsh/functions.zsh` | Functions: `mnt`, `pkg-add`, `pkg-cats`, `brewsync`, `comp-add`, and more |
 | `~/.config/sheldon/plugins.toml` | Zsh plugin manager config |
 | `~/.config/starship.toml` | Prompt |
 | `~/.config/ghostty/` | Terminal (config; Catppuccin via native dark/light theme switching) |
@@ -20,7 +20,7 @@ Opinionated **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | `~/.config/eza/` | eza color theme (Catppuccin symlink) |
 | `~/.config/lazygit/` | lazygit config + Catppuccin theme |
 | `~/.config/atuin/` | Shell history config + Catppuccin themes |
-| `~/.hammerspoon/init.lua` | Auto-reload config; theme sync on macOS appearance change |
+| `~/.hammerspoon/` | Auto-reload config; theme sync on macOS appearance change; `darkmode.lua` auto light/dark by local sunrise/sunset |
 | `~/.local/share/navi/cheats/custom.cheat` | Custom navi cheatsheets (macOS, docker, kubernetes) |
 
 ## Runtime version management
@@ -67,8 +67,8 @@ dots-setup
 
 | Profile | Included categories |
 | ------- | ------------------- |
-| `work` | alt_tools, bitwarden, docker, kubernetes, dev_apps, macos_utils, macos_media |
-| `personal` | alt_tools, bitwarden, macos_utils, macos_cosmetic, macos_media, productivity, peripherals |
+| `work` | alt_tools, docker, kubernetes, dev_apps, macos_utils, macos_media |
+| `personal` | alt_tools, macos_utils, macos_cosmetic, macos_media, productivity, peripherals |
 | `minimal` | alt_tools only |
 | `full` | Everything |
 
@@ -77,13 +77,13 @@ Package categories you can toggle:
 | Category | What it installs |
 | -------- | ---------------- |
 | `alt_tools` | Modern CLI replacements: bat, eza, fd, ripgrep, dust, duf, navi, xh… |
-| `bitwarden` | Bitwarden CLI + app |
+| `onepassword` | 1Password app + `op` CLI (SSH agent + shell plugins wired in `env.zsh`) — opt-in, in no profile by default |
 | `docker` | Colima + Docker + Buildx + Compose (whole stack, no sub-toggles) |
-| `kubernetes` | kubectl + kubecolor always; helm, kubectx, k9s, kubeconform, mintoolkit, stern, vault, kustomize, gcloud CLI individually toggleable |
-| `macos_utils` | Raycast, Hammerspoon, AltTab, Mos, Linearmouse, NordVPN, UTM… |
+| `kubernetes` | kubectl + kubecolor always; helm, kubectx, k9s, kubeconform, mintoolkit, stern, kustomize, gcloud CLI, awscli individually toggleable |
+| `macos_utils` | Raycast, Hammerspoon, AltTab, logi-options+, NordVPN, UTM… |
 | `macos_cosmetic` | AirBattery, BoringNotch, Cork |
 | `macos_media` | Brave, Slack, Spotify, Telegram, IINA |
-| `dev_apps` | VSCodium, DBeaver, GIMP, GitHub CLI (`gh`), GitLab CLI, Cloudflared, hcloud… |
+| `dev_apps` | VSCodium, JetBrains Toolbox, opencode, DBeaver, GIMP, PHP + Composer, GitHub/GitLab CLI, Cloudflared, hcloud… |
 | `touchbar` | BetterTouchTool (TouchBar Macs only) |
 | `gaming` | Steam, Discord |
 | `productivity` | Notion, Obsidian, Grammarly, Calibre, Flux Markdown |
@@ -124,6 +124,7 @@ Startup is optimised for speed using `zsh-defer` and pre-generated static files:
 ```text
 .zshrc
 ├── env.zsh            # immediate — sets PATH, exports
+│   └── ~/.zsh/local.zsh   # optional — machine-local secrets/overrides, untracked
 ├── functions.zsh      # immediate — defines functions
 ├── aliases.zsh        # immediate — defines aliases
 ├── sheldon.zsh        # immediate — pre-rendered plugin source (sheldon source)
@@ -131,6 +132,8 @@ Startup is optimised for speed using `zsh-defer` and pre-generated static files:
 ```
 
 Tool inits (atuin, zoxide, direnv, navi, etc.) are pre-generated once rather than evaluated on every shell start. Regenerate them with `mnt` (full maintenance) or by running `chezmoi apply` after touching `run_onchange_generate-tool-inits.sh.tmpl`.
+
+`env.zsh` sources `~/.zsh/local.zsh` if it exists — an untracked, machine-local file for per-host shell overrides (extra `PATH` entries, additional `op://` references, host-specific settings) that don't belong in the repo. Keep resolved secrets out of it; see [Optional: 1Password](#optional-1password) for the reference + `op run` pattern.
 
 ## Key functions & aliases
 
@@ -148,7 +151,6 @@ Tool inits (atuin, zoxide, direnv, navi, etc.) are pre-generated once rather tha
 | `tap-add <category> <tap> <pkg>` | Register a Homebrew tap and add a tap-qualified package in one step |
 | `pkg-group-add <category> <desc>` | Create a new package group across Brewfile, dots-setup, and chezmoi config |
 | `mise-add <tool> [version]` | Add a runtime to the global mise config and persist to chezmoi |
-| `bw-search` | fzf Bitwarden item search |
 | `help-cmd` | fzf search over all aliases and functions |
 | `fkill` | fzf process killer |
 | `fgb` | fzf git-branch checkout (previews each branch's log) |
@@ -167,18 +169,6 @@ Tool inits (atuin, zoxide, direnv, navi, etc.) are pre-generated once rather tha
 | `dots-add` | `chezmoi add <file>` |
 | `dots-push` | Push chezmoi source to remote |
 | `dots-log` | Last 20 commits in chezmoi source |
-
-## Optional: Bitwarden
-
-When Bitwarden is enabled, `~/.local/bin/bw-vault` is installed — a thin wrapper around the `bw` CLI that caches the session token in `/var/root/.bitwarden.session` so non-interactive scripts can call it without prompting.
-
-```zsh
-bw-vault list items            # auto-authenticates, returns items JSON
-bw-vault get password <id>     # get a specific credential
-bw-vault --regen               # force re-login and refresh session
-```
-
-The `bw-search` shell function uses this for interactive fzf-based vault search with clipboard copy.
 
 ## Optional: Claude Code profiles
 
@@ -221,6 +211,20 @@ When Touch ID for sudo is enabled, a one-time script writes `/etc/pam.d/sudo_loc
 chezmoi state delete-bucket --bucket=scriptState
 dots-apply
 ```
+
+## Optional: 1Password
+
+Enable the `onepassword` category in `dots-setup` to install the 1Password app and `op` CLI. When enabled, `env.zsh` wires up (each guarded, so it's a no-op if the file/socket is missing):
+
+- **SSH agent** — `SSH_AUTH_SOCK` points at 1Password's agent socket
+- **Shell plugins** — sources `~/.config/op/plugins.sh` (run `op plugin init <tool>` to add one)
+- **Secret references** — env vars like `ANTHROPIC_API_KEY` are set to their `op://…` *reference*, not the secret
+
+Nothing resolved touches disk. `aliases.zsh` wraps `claude` as `op run -- claude`, which resolves the `op://` references into that process only. Run any other tool that needs them the same way: `op run -- <cmd>`.
+
+## Optional: automatic dark mode
+
+When `macos_utils` (Hammerspoon) is enabled, `~/.hammerspoon/darkmode.lua` switches macOS between light and dark at local sunrise/sunset — computed offline from coordinates. `dots-setup` prompts for a city (fzf pick from world capitals, or custom coordinates) and two switch offsets, given in minutes relative to the event (negative = before, positive = after) — e.g. `-30` sunset = go dark 30 min before sunset. Re-run `dots-setup` to change them.
 
 ## History
 

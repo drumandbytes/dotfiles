@@ -53,4 +53,7 @@ themeSync.watcher = hs.distributednotifications.new(
 -- Apply correct theme on Hammerspoon start/reload
 themeSync.execute()
 
+-- Auto light/dark by local sunrise/sunset (config: dots-setup)
+require("darkmode")
+
 hs.alert.show("Hammerspoon Active")

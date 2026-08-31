@@ -19,14 +19,14 @@ fi
 # package within each category — names match the identifiers used in the
 # Brewfile's has .machine_excludes checks.
 
-CAT_ORDER=(alt_tools bitwarden docker kubernetes macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity peripherals)
+CAT_ORDER=(alt_tools onepassword docker kubernetes macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity peripherals)
 
 typeset -A CAT_DESC
 CAT_DESC=(
   [alt_tools]="Modern CLI replacements"
-  [bitwarden]="Password manager (CLI + app)"
+  [onepassword]="1Password (app + op CLI)"
   [docker]="Docker via Colima (colima + docker + buildx + compose)"
-  [kubernetes]="k8s tools (kubectl, k9s, helm, vault…)"
+  [kubernetes]="k8s tools (kubectl, k9s, helm, kustomize, aws/gcloud…)"
   [macos_utils]="macOS utilities (Raycast, Hammerspoon, AltTab…)"
   [macos_cosmetic]="Visual extras (AirBattery, BoringNotch, Cork)"
   [macos_media]="Media & communication"
@@ -40,31 +40,31 @@ CAT_DESC=(
 typeset -A CAT_PKGS
 CAT_PKGS=(
   [alt_tools]="bat doggo duf dust eza fd gping gron jid navi ripgrep tldr xh"
-  [bitwarden]="bitwarden-cli bitwarden"
+  [onepassword]="1password 1password-cli"
   [docker]="docker"
-  [kubernetes]="helm kubectx k9s kubeconform mintoolkit stern vault gcloud-cli kustomize"
-  [macos_utils]="alt-tab displaylink hammerspoon hot logi-options-plus raycast sniffnet keyboardcleantool linearmouse netspot nordvpn transmission utm duckdb rbenv hyperfine darrylmorley/whatcable/whatcable"
+  [kubernetes]="helm kubectx k9s kubeconform mintoolkit stern gcloud-cli awscli kustomize"
+  [macos_utils]="alt-tab displaylink hammerspoon hot logi-options-plus raycast sniffnet keyboardcleantool netspot nordvpn transmission utm duckdb rbenv hyperfine darrylmorley/whatcable/whatcable"
   [macos_cosmetic]="airbattery boring-notch cork"
   [macos_media]="brave-browser slack spotify telegram iina"
-  [dev_apps]="ffmpeg gh git-filter-repo glab libpq claude claude-usage-tracker dbeaver-community gimp rtk vscodium webp cyberduck cloudflared hcloud macfuse uv opentofu caddy siderolabs/tap/talosctl"
+  [dev_apps]="ffmpeg gh git-filter-repo glab libpq php composer claude claude-notify claude-usage-tracker opencode-desktop jetbrains-toolbox dbeaver-community gimp rtk vscodium webp cyberduck cloudflared hcloud uv opentofu caddy siderolabs/tap/talosctl"
   [touchbar]="bettertouchtool"
   [gaming]="discord steam"
-  [productivity]="calibre flux-markdown grammarly-desktop notion obsidian darktable"
+  [productivity]="calibre flux-markdown grammarly-desktop notion obsidian"
   [peripherals]="8bitdo-ultimate-software balenaetcher f3 qmk-toolbox"
 )
 
 # ── Profile definitions ──────────────────────────────────────────────────────
 typeset -A PROFILE_CATS
 PROFILE_CATS=(
-  [work]="alt_tools bitwarden docker kubernetes dev_apps macos_utils macos_media"
-  [personal]="alt_tools bitwarden macos_utils macos_cosmetic macos_media productivity peripherals"
+  [work]="alt_tools docker kubernetes dev_apps macos_utils macos_media"
+  [personal]="alt_tools macos_utils macos_cosmetic macos_media productivity peripherals"
   [minimal]="alt_tools"
-  [full]="alt_tools bitwarden docker kubernetes macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity peripherals"
+  [full]="alt_tools docker kubernetes macos_utils macos_cosmetic macos_media dev_apps touchbar gaming productivity peripherals"
 )
 
 typeset -A PROFILE_EXCL
 PROFILE_EXCL=(
-  [work]="kubernetes/vault macos_media/spotify macos_media/iina"
+  [work]="macos_media/spotify macos_media/iina macos_utils/nordvpn macos_utils/utm macos_utils/transmission macos_utils/netspot"
   [personal]="macos_utils/displaylink macos_utils/utm macos_utils/duckdb"
   [minimal]=""
   [full]=""
@@ -83,8 +83,8 @@ profile=$(printf '%s\n' work personal minimal full | \
     --prompt "Profile › " \
     --header "Select a starting profile — you'll customise packages in the next step" \
     --preview 'case {} in
-      work)     echo "alt_tools · bitwarden · docker · kubernetes · dev_apps · macos_utils · macos_media\n\nDefault excludes: vault, spotify, iina" ;;
-      personal) echo "alt_tools · bitwarden · macos_utils · macos_cosmetic · macos_media · productivity · peripherals\n\nDefault excludes: displaylink, utm, duckdb" ;;
+      work)     echo "alt_tools · docker · kubernetes · dev_apps · macos_utils · macos_media\n\nDefault excludes: spotify, iina, nordvpn, utm, transmission, netspot" ;;
+      personal) echo "alt_tools · macos_utils · macos_cosmetic · macos_media · productivity · peripherals\n\nDefault excludes: displaylink, utm, duckdb" ;;
       minimal)  echo "alt_tools only" ;;
       full)     echo "Everything — all categories, no excludes" ;;
     esac' \
@@ -286,12 +286,43 @@ touch_id_sudo=$(printf '%s\n' true false | \
     --prompt "Touch ID for sudo › " \
     --header "Enable Touch ID for sudo? (macOS 14+)")
 
-# ── Step 5: Bitwarden email ──────────────────────────────────────────────────
-bw_email=""
-if [[ -n "${enabled_cats[bitwarden]:-}" ]]; then
+# ── Step 5: Dark-mode location (Hammerspoon darkmode.lua) ────────────────────
+# Sun times for the auto light/dark switch are computed locally from lat/long.
+# Only prompted when macos_utils (Hammerspoon) is enabled; otherwise defaults
+# (or the values already in chezmoi.toml) are kept.
+_dm_get() { grep -E "^  $1 " "$CHEZMOI_CONFIG" 2>/dev/null | sed -E 's/^[^=]*= *//; s/^"//; s/"$//'; }
+darkmode_city=$(_dm_get darkmode_city);                   : "${darkmode_city:=Tallinn, Estonia}"
+darkmode_lat=$(_dm_get darkmode_latitude);                : "${darkmode_lat:=59.4370}"
+darkmode_lon=$(_dm_get darkmode_longitude);               : "${darkmode_lon:=24.7536}"
+darkmode_sunset=$(_dm_get darkmode_sunset_offset_min);    : "${darkmode_sunset:=-30}"
+darkmode_sunrise=$(_dm_get darkmode_sunrise_offset_min);  : "${darkmode_sunrise:=0}"
+
+_caps="$(chezmoi source-path)/dot_local/share/dots-setup/capitals.tsv"
+if [[ -n "${enabled_cats[macos_utils]:-}" && -f "$_caps" ]]; then
   echo ""
-  printf "${bold}Bitwarden account email:${reset} "
-  read -r bw_email
+  _pick=$( { printf 'Custom (enter coordinates manually)\t\t\n'; cat "$_caps"; } | \
+    fzf --no-multi --delimiter='\t' --with-nth=1 \
+      --prompt "Dark-mode location › " \
+      --header "City used for sunrise/sunset (auto light/dark)" \
+      --query "${darkmode_city%%,*}" )
+  if [[ -n "$_pick" ]]; then
+    _city=${_pick%%$'\t'*}
+    if [[ "$_city" == Custom* ]]; then
+      printf "${bold}Latitude${reset} (e.g. 59.4370): ";  read -r darkmode_lat
+      printf "${bold}Longitude${reset} (e.g. 24.7536): "; read -r darkmode_lon
+      printf "${bold}City label${reset}: ";               read -r darkmode_city
+    else
+      darkmode_city="$_city"
+      darkmode_lat=$(printf '%s' "$_pick" | cut -f2)
+      darkmode_lon=$(printf '%s' "$_pick" | cut -f3)
+    fi
+  fi
+  echo ""
+  echo "${dim}Switch offsets: minutes relative to the event — negative = before, positive = after.${reset}"
+  printf "${bold}Sunset offset (go dark)${reset} [${darkmode_sunset}]: "
+  read -r _s; darkmode_sunset=${_s:-$darkmode_sunset}
+  printf "${bold}Sunrise offset (go light)${reset} [${darkmode_sunrise}]: "
+  read -r _r; darkmode_sunrise=${_r:-$darkmode_sunrise}
 fi
 
 # ── Step 6: Claude Code profiles ─────────────────────────────────────────────
@@ -370,8 +401,6 @@ cat > "$CHEZMOI_CONFIG" <<TOML
   touch_id_sudo  = $touch_id_sudo
 
   alt_tools      = $(_flag alt_tools)
-  bitwarden      = $(_flag bitwarden)
-  bw_email       = "$bw_email"
   docker         = $(_flag docker)
   kubernetes     = $(_flag kubernetes)
   macos_utils    = $(_flag macos_utils)
@@ -382,9 +411,16 @@ cat > "$CHEZMOI_CONFIG" <<TOML
   gaming         = $(_flag gaming)
   productivity   = $(_flag productivity)
   peripherals    = $(_flag peripherals)
+  onepassword    = $(_flag onepassword)
 
   machine_excludes = $excl_toml
   claude_profiles = $claude_toml
+
+  darkmode_city               = "$darkmode_city"
+  darkmode_latitude           = $darkmode_lat
+  darkmode_longitude          = $darkmode_lon
+  darkmode_sunset_offset_min  = $darkmode_sunset
+  darkmode_sunrise_offset_min = $darkmode_sunrise
 TOML
 
 # Re-inject sourceDir if it was present before (manual per-machine override)

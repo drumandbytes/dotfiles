@@ -8,8 +8,6 @@
   touch_id_sudo  = false
 
   alt_tools      = false
-  bitwarden      = false
-  bw_email       = ""
   docker         = false
   kubernetes     = false
   macos_utils    = false
@@ -20,8 +18,17 @@
   gaming         = false
   productivity   = false
   peripherals    = false
+  onepassword    = false
 
   machine_excludes = []
+
+  # Hammerspoon darkmode.lua — auto light/dark by local sunrise/sunset.
+  # Offsets are minutes relative to the event (negative = before, positive = after).
+  darkmode_city               = "Tallinn, Estonia"
+  darkmode_latitude           = 59.4370
+  darkmode_longitude          = 24.7536
+  darkmode_sunset_offset_min  = -30
+  darkmode_sunrise_offset_min = 0
   # Populated by dots-setup from the Claude Usage app (id + name only).
   # Each entry generates a claude-<name> alias. See dot_zsh/aliases.zsh.tmpl.
   claude_profiles = []

@@ -5,13 +5,15 @@ README.md
 UNLICENSE
 install.sh
 
+# Data consumed by dots-setup directly from the source tree — not deployed
+.local/share/dots-setup
+
 # NOTE: patterns match TARGET paths (the deployed ~/… path), not source
 # filenames — so no dot_ prefix and no .tmpl/executable_/run_once_ attributes.
 
 # Optional features — excluded unless opted in via chezmoi init prompts
 {{ if or (not .alt_tools) (has "bat" .machine_excludes) }}.config/bat{{ end }}
 {{ if or (not .alt_tools) (has "eza" .machine_excludes) }}.config/eza{{ end }}
-{{ if not .bitwarden }}.local/bin/bw-vault{{ end }}
 {{ if not .macos_utils }}.hammerspoon{{ end }}
 {{ if not .touch_id_sudo }}.chezmoiscripts/enable-touchid-sudo.sh{{ end }}
 

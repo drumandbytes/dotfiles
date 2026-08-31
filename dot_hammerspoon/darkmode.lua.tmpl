@@ -1,0 +1,90 @@
+-- darkmode.lua
+-- Switches macOS appearance to Dark around sunset and back to Light around
+-- sunrise. Sun times are computed locally by Hammerspoon from latitude/longitude
+-- (no internet call).
+--
+-- Location and offsets are managed by dots-setup (~/.local/bin/dots-setup) and
+-- rendered into the CONFIG block below. Re-run dots-setup to change them.
+
+local M = {}
+
+-- ===== CONFIG =====================================================
+local LATITUDE           = {{ dig "darkmode_latitude" 59.4370 . }}   -- {{ dig "darkmode_city" "Tallinn, Estonia" . }}
+local LONGITUDE          = {{ dig "darkmode_longitude" 24.7536 . }}
+local POLL_INTERVAL      = 300      -- seconds between checks (5 min)
+-- Switch offsets in MINUTES relative to the event: negative = before, positive = after.
+local SUNSET_OFFSET_MIN  = {{ dig "darkmode_sunset_offset_min" -30 . }}   -- go DARK  (default: 30 min before sunset)
+local SUNRISE_OFFSET_MIN = {{ dig "darkmode_sunrise_offset_min" 0 . }}    -- go LIGHT (default: at sunrise)
+local NOTIFY             = false     -- show an hs.alert when it switches
+-- ===================================================================
+
+-- Seed from the current appearance so a correct state on load is a no-op
+-- (avoids a redundant switch + the theme-sync churn it would trigger).
+local currentMode = hs.host.interfaceStyle() == "Dark" and "dark" or "light"
+
+local function utcOffsetHours()
+    local now = os.time()
+    local utcTable = os.date("!*t", now)
+    -- os.time() interprets a table as local time, so feeding it the UTC
+    -- fields and diffing against local "now" yields the current offset,
+    -- DST included.
+    local diff = os.difftime(now, os.time(utcTable))
+    return diff / 3600
+end
+
+local function sunTimesToday()
+    local tz = utcOffsetHours()
+    local sunrise = hs.location.sunrise(LATITUDE, LONGITUDE, tz)
+    local sunset = hs.location.sunset(LATITUDE, LONGITUDE, tz)
+    if type(sunrise) ~= "number" or type(sunset) ~= "number" then
+        return nil, nil -- "N/R" / "N/S" edge case (not expected at this latitude)
+    end
+    return sunrise, sunset
+end
+
+local function setAppearance(dark)
+    local val = dark and "true" or "false"
+    hs.execute(string.format(
+        [[osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to %s']],
+        val
+    ))
+    currentMode = dark and "dark" or "light"
+    if NOTIFY then
+        hs.alert.show("Appearance -> " .. currentMode)
+    end
+end
+
+local function tick()
+    local now = os.time()
+
+    local sunriseToday, sunsetToday = sunTimesToday()
+    if not sunriseToday or not sunsetToday then return end
+
+    local lightFrom = sunriseToday + (SUNRISE_OFFSET_MIN * 60)
+    local darkFrom = sunsetToday + (SUNSET_OFFSET_MIN * 60)
+
+    -- Dark before the morning boundary (still last night), light between the
+    -- boundaries (daytime), dark again after the evening boundary (tonight).
+    local wantDark = now < lightFrom or now >= darkFrom
+
+    if wantDark and currentMode ~= "dark" then
+        setAppearance(true)
+    elseif not wantDark and currentMode ~= "light" then
+        setAppearance(false)
+    end
+end
+
+-- Hand permanent control to this script; stop macOS's own sunrise/sunset auto-switch.
+hs.execute("defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool false")
+
+M.timer = hs.timer.doEvery(POLL_INTERVAL, tick)
+
+-- Re-check on wake — a boundary crossed while asleep would otherwise wait
+-- up to POLL_INTERVAL to take effect.
+M.wakeWatcher = hs.caffeinate.watcher.new(function(event)
+    if event == hs.caffeinate.watcher.systemDidWake then tick() end
+end):start()
+
+tick() -- run once immediately on load/reload
+
+return M

@@ -41,6 +41,12 @@ alias ksl='stern'                # multi-pod / pattern-based log tailing
 alias kex='k exec -it'
 {{- end }}
 
+{{ if .onepassword -}}
+# --- 1Password ---
+# Resolve op:// env references (ANTHROPIC_API_KEY, …) into the child process
+# only — nothing resolved is ever stored.
+alias claude='op run -- claude'
+{{ end }}
 # --- Git & Workflow ---
 alias lg='lazygit'
 alias copylast="fc -ln -1 | sed 's/^[ \t]*//' | pbcopy"
