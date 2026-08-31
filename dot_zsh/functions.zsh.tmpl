@@ -20,6 +20,23 @@ _chezmoi_sync() {
     chezmoi apply
 }
 
+# === Maintenance ===
+# Regenerate the static tool-init files (~/.zsh/*_init.zsh) + completions.
+# A `brew upgrade` can change a tool's `init` output, leaving the cache stale;
+# the run_onchange hash only catches Brewfile/plugin edits, not version bumps.
+_regen_inits() {
+    bash <(chezmoi execute-template < "$(chezmoi source-path)/.chezmoiscripts/run_onchange_generate-tool-inits.sh.tmpl")
+}
+
+# Homebrew update + upgrade + cleanup, then refresh the tool-init caches.
+brew-up() {
+    brew update && brew upgrade --greedy && brew cleanup --prune=all
+    {{- if and .alt_tools (not (has "tldr" .machine_excludes)) }}
+    tldr --update
+    {{- end }}
+    _regen_inits
+}
+
 # === Elite Maintenance Workflow ===
 mnt() {
     echo "🚀 Starting Elite Maintenance..."
@@ -43,7 +60,7 @@ mnt() {
 
     # 3. Static Initialization Caching
     echo "🏎️ Caching Tool Initializations..."
-    bash <(chezmoi execute-template < "$(chezmoi source-path)/.chezmoiscripts/run_onchange_generate-tool-inits.sh.tmpl")
+    _regen_inits
 
     # 4. Binary Compilation (Dynamic & Automatic)
     echo "🏗️  Rebuilding binaries from a clean slate..."

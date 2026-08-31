@@ -140,7 +140,7 @@ Tool inits (atuin, zoxide, direnv, navi, etc.) are pre-generated once rather tha
 | Command | Description |
 | ------- | ----------- |
 | `mnt` | Full maintenance: sync dotfiles, brew upgrade, sheldon update, regenerate inits & completions, recompile, backup, reload |
-| `brew-up` | Homebrew update + upgrade + cleanup + tldr update |
+| `brew-up` | Homebrew update + upgrade + cleanup + tldr update, then refresh the static tool-init caches |
 | `pkg-cats` | List all package categories with their descriptions and package lists |
 | `brewsync` | Interactively promote untracked brew packages into the chezmoi-managed Brewfile |
 | `comp-add <tool>` | Auto-detect and add zsh completions for a new tool; persists to chezmoi source |
