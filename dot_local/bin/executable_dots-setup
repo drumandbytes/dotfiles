@@ -325,57 +325,6 @@ if [[ -n "${enabled_cats[macos_utils]:-}" && -f "$_caps" ]]; then
   read -r _r; darkmode_sunrise=${_r:-$darkmode_sunrise}
 fi
 
-# ── Step 6: Claude Code profiles ─────────────────────────────────────────────
-# Opt-in only — nothing is created unless the user says yes.
-# With the Claude Usage app: reads id + name (never OAuth tokens or credentials).
-# Without the app: prompts for profile names and stores them with empty ids.
-# To create ~/.claude-<name> dirs after this step, run: claude-profiles-sync
-claude_toml="[]"
-echo ""
-_claude_plist="$HOME/Library/Preferences/HamedElfayome.Claude-Usage.plist"
-if [[ -f "$_claude_plist" ]] && command -v jq &>/dev/null; then
-  _claude_json=$(plutil -extract profiles_v3 raw -o - "$_claude_plist" 2>/dev/null | base64 -d 2>/dev/null)
-  if [[ -n "$_claude_json" ]]; then
-    _names=$(printf '%s' "$_claude_json" | jq -r '[.[].name] | join(", ")' 2>/dev/null)
-    if [[ -n "$_names" ]]; then
-      _use_claude=$(printf 'yes\nno' | fzf --no-multi --no-sort \
-        --prompt "Multiple Claude accounts › " \
-        --header "Claude Usage profiles detected: ${_names}. Set up profile isolation?")
-      if [[ "$_use_claude" == "yes" ]]; then
-        claude_toml=$(printf '%s' "$_claude_json" | jq -r '
-          [ .[]
-            | { id, name: (.name | ascii_downcase | gsub("[^a-z0-9]+"; "-") | gsub("^-+|-+$"; "")) }
-            | select(.name != "")
-            | "{name = \"\(.name)\", id = \"\(.id)\"}"
-          ] | "[" + join(", ") + "]"
-        ' 2>/dev/null) || claude_toml="[]"
-        echo "${dim}Run ${bold}claude-profiles-sync${reset}${dim} to create the ~/.claude-<name> dirs.${reset}"
-      fi
-    fi
-  fi
-else
-  _use_claude=$(printf 'yes\nno' | fzf --no-multi --no-sort \
-    --prompt "Multiple Claude accounts › " \
-    --header "Do you want to use multiple Claude Code accounts?")
-  if [[ "$_use_claude" == "yes" ]]; then
-    printf "${bold}Profile names${reset}${dim} (space-separated, e.g. work personal):${reset} "
-    read -r _manual_names
-    if [[ -n "$_manual_names" ]]; then
-      _toml_entries=()
-      for _pname in ${=_manual_names}; do
-        _pname=$(printf '%s' "$_pname" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g;s/^-*//;s/-*$//')
-        [[ -z "$_pname" ]] && continue
-        _toml_entries+=("{name = \"${_pname}\", id = \"\"}")
-      done
-      if [[ ${#_toml_entries[@]} -gt 0 ]]; then
-        _joined="${(j:, :)_toml_entries}"
-        claude_toml="[${_joined}]"
-        echo "${dim}Run ${bold}claude-profiles-sync ${_manual_names}${reset}${dim} to create the dirs. First use of each alias will prompt you to log in.${reset}"
-      fi
-    fi
-  fi
-fi
-
 # ── Write chezmoi.toml ───────────────────────────────────────────────────────
 mkdir -p "$(dirname "$CHEZMOI_CONFIG")"
 
@@ -414,7 +363,6 @@ cat > "$CHEZMOI_CONFIG" <<TOML
   onepassword    = $(_flag onepassword)
 
   machine_excludes = $excl_toml
-  claude_profiles = $claude_toml
 
   darkmode_city               = "$darkmode_city"
   darkmode_latitude           = $darkmode_lat

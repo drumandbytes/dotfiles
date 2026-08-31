@@ -94,11 +94,11 @@ jobs:
             gaming           = false
             productivity     = false
             peripherals      = false
+            onepassword      = false
             touch_id_sudo    = false
             docker           = false
             kubernetes       = false
             machine_excludes = []
-            claude_profiles  = []
           EOF
 
           failed=0
@@ -124,11 +124,11 @@ jobs:
             gaming           = true
             productivity     = true
             peripherals      = true
+            onepassword      = true
             touch_id_sudo    = true
             docker           = true
             kubernetes       = true
             machine_excludes = []
-            claude_profiles  = []
           EOF
 
           failed=0
@@ -157,9 +157,9 @@ jobs:
             gaming           = false
             productivity     = false
             peripherals      = false
+            onepassword      = true
             touch_id_sudo    = false
             machine_excludes = ["eza", "bat", "docker", "helm", "gh"]
-            claude_profiles  = []
           EOF
 
           rendered=$(chezmoi execute-template < dot_Brewfile.tmpl)
@@ -195,6 +195,7 @@ jobs:
             gaming         = false
             productivity   = false
             peripherals    = false
+            onepassword    = true
             touch_id_sudo  = false
             docker         = true
             kubernetes     = true

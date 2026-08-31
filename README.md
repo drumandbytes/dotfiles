@@ -154,7 +154,6 @@ Tool inits (atuin, zoxide, direnv, navi, etc.) are pre-generated once rather tha
 | `help-cmd` | fzf search over all aliases and functions |
 | `fkill` | fzf process killer |
 | `fgb` | fzf git-branch checkout (previews each branch's log) |
-| `claude-profiles-sync [names]` | Create `~/.claude-<name>` dirs with shared symlinks; no args = read from Claude Usage app |
 | `zsh-bak` | Zip backup of zsh config to `~/Backups/zsh/` |
 
 ### dots-* aliases
@@ -169,39 +168,6 @@ Tool inits (atuin, zoxide, direnv, navi, etc.) are pre-generated once rather tha
 | `dots-add` | `chezmoi add <file>` |
 | `dots-push` | Push chezmoi source to remote |
 | `dots-log` | Last 20 commits in chezmoi source |
-
-## Optional: Claude Code profiles
-
-The `claude-<name>` aliases switch between separate Claude accounts (e.g. work and personal), each with an isolated `~/.claude-<name>` config directory. Agents, commands, skills, hooks, and plugins are shared via symlinks; credentials and session state stay per-profile.
-
-### Step 1 — create the profile directories
-
-Run `claude-profiles-sync` with the names you want. No extra app required:
-
-```zsh
-claude-profiles-sync work personal
-```
-
-This creates `~/.claude-work` and `~/.claude-personal`, each with symlinks pointing to shared items in `~/.claude`. Claude Code keys authentication to `CLAUDE_CONFIG_DIR` — the first time you run each alias it will prompt you to log in, and that account is remembered for the dir.
-
-If you have the [Claude Usage](https://github.com/HamedElfayome/Claude-Usage) menubar app configured with profiles, `claude-profiles-sync` (no args) reads names from it instead:
-
-```zsh
-claude-profiles-sync      # auto-creates dirs from Claude Usage app profiles
-```
-
-### Step 2 — generate the aliases
-
-Run `dots-setup`. If the Claude Usage app is installed and configured, it reads the profile UUIDs too, so the aliases also switch the active app profile on launch. Otherwise aliases just point `CLAUDE_CONFIG_DIR` at the right dir:
-
-```zsh
-claude-work       # CLAUDE_CONFIG_DIR=~/.claude-work (+ app profile switch if app present)
-claude-personal   # same for "personal"
-```
-
-Profile names and UUIDs are written to `~/.config/chezmoi/chezmoi.toml` (local, never committed). **Re-run `dots-setup` whenever you add or rename profiles** in the app.
-
-> The wizard reads only the profile **id and name** from the app — never the OAuth tokens or credentials.
 
 ## Optional: Touch ID for sudo
 
