@@ -92,10 +92,10 @@ Package categories you can toggle:
 On first apply, chezmoi automatically:
 
 1. Runs `brew bundle --global` to install all selected Homebrew packages
-2. Runs `mise install` to set up language runtimes
+2. Runs `mise install` to set up language runtimes and global npm tools
 3. Generates static init files and completions (`~/.zsh/*_init.zsh`, `~/.zsh/completions/`)
 4. Seeds a Colima config (`~/.colima/default/colima.yaml`) optimised for Apple Silicon
-5. Generates navi cheatsheets and clones community repos
+5. Generates `personal.cheat` for navi; fetches external assets (community cheats, editor/tool themes) via `.chezmoiexternal`
 
 ## Forking
 
@@ -240,7 +240,7 @@ To remove a package permanently: `pkg-rm <package>` — removes it from the Brew
 
 [navi](https://github.com/denisidoro/navi) is a command-line cheatsheet tool. Press **Ctrl+G** mid-command to search cheatsheets and insert a command into the prompt. Or run `navi` to browse interactively.
 
-On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.local/share/navi/cheats/personal.cheat` from your aliases and functions, and clones community repos. The personal cheat file is regenerated automatically whenever `aliases.zsh` or `functions.zsh` changes.
+On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` generates `~/.local/share/navi/cheats/personal.cheat` from your aliases and functions (regenerated whenever `aliases.zsh` or `functions.zsh` changes). The community cheat repos are fetched and refreshed weekly by chezmoi via `.chezmoiexternal.toml.tmpl`.
 
 | Source | What it covers |
 | ------ | -------------- |
@@ -267,6 +267,8 @@ On first `chezmoi apply`, `run_onchange_navi-cheats.sh.tmpl` auto-generates `~/.
 | zsh-syntax-highlighting | `~/.zsh/catppuccin_*.zsh` (sourced from env.zsh based on appearance) |
 | btop | `~/.config/btop/themes/` (all four flavours: latte, frappé, macchiato, mocha) |
 | k9s | `~/.config/k9s/skins/` (all flavours; follows macOS appearance via `sync-theme`) *(kubernetes only)* |
+
+Theme files (bat/btop/fresh `.tmTheme`/`.theme`/`.json`, k9s skins) are fetched and refreshed by chezmoi via `.chezmoiexternal.toml.tmpl`.
 
 `sync-theme` (`~/.local/bin/sync-theme`) switches delta, starship, atuin, eza, lazygit, and k9s between Latte and Macchiato. It is called by Hammerspoon (`~/.hammerspoon/init.lua`) which watches `AppleInterfaceThemeChangedNotification` — so all tools switch instantly when you toggle macOS appearance. ghostty is not part of sync-theme; it follows the appearance natively.
 

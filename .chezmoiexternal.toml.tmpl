@@ -1,0 +1,66 @@
+# Externally-sourced assets, fetched and refreshed by chezmoi directly.
+# Replaces the run_onchange_install-*-themes scripts and the navi-cheats clone
+# logic — declarative, cached, with a built-in refresh interval.
+#
+# Post-fetch steps that can't be expressed here stay as tiny run_onchange
+# scripts keyed on this file's hash: bat cache rebuild, k9s skin bootstrap.
+
+{{- $refresh := "168h" }}
+
+# ── navi community cheatsheets ──────────────────────────────────────────────
+{{ if and .alt_tools (not (has "navi" .machine_excludes)) -}}
+{{ range $repo := list "denisidoro/cheats" "denisidoro/navi-tldr-pages" "tg-z/navi-cheats" -}}
+[".local/share/navi/cheats/{{ $repo | replace "/" "__" }}"]
+    type = "git-repo"
+    url = "https://github.com/{{ $repo }}.git"
+    refreshPeriod = "{{ $refresh }}"
+    clone = { args = ["--depth=1"] }
+    pull = { args = ["--ff-only"] }
+{{ end -}}
+{{ if .kubernetes -}}
+[".local/share/navi/cheats/tsologub__navi-cheats"]
+    type = "git-repo"
+    url = "https://github.com/tsologub/navi-cheats.git"
+    refreshPeriod = "{{ $refresh }}"
+    clone = { args = ["--depth=1"] }
+    pull = { args = ["--ff-only"] }
+{{ end -}}
+{{ end -}}
+
+# ── bat: Catppuccin themes (rebuild cache in run_onchange_bat-cache) ────────
+{{ if and .alt_tools (not (has "bat" .machine_excludes)) -}}
+{{ range $flavor := list "Macchiato" "Latte" -}}
+[".config/bat/themes/Catppuccin {{ $flavor }}.tmTheme"]
+    type = "file"
+    url = "https://raw.githubusercontent.com/catppuccin/bat/main/themes/Catppuccin%20{{ $flavor }}.tmTheme"
+    refreshPeriod = "{{ $refresh }}"
+{{ end -}}
+{{ end -}}
+
+# ── btop: Catppuccin themes (always installed) ─────────────────────────────
+{{ range $flavor := list "latte" "frappe" "macchiato" "mocha" -}}
+[".config/btop/themes/catppuccin_{{ $flavor }}.theme"]
+    type = "file"
+    url = "https://raw.githubusercontent.com/catppuccin/btop/main/themes/catppuccin_{{ $flavor }}.theme"
+    refreshPeriod = "{{ $refresh }}"
+{{ end -}}
+
+# ── fresh editor: Catppuccin themes ───────────────────────────────────────
+{{ if eq .editor "fresh" -}}
+{{ range $flavor := list "latte" "frappe" "macchiato" "mocha" -}}
+[".config/fresh/themes/catppuccin-{{ $flavor }}.json"]
+    type = "file"
+    url = "https://raw.githubusercontent.com/milon/catppuccin-fresh/master/catppuccin-{{ $flavor }}.json"
+    refreshPeriod = "{{ $refresh }}"
+{{ end -}}
+{{ end -}}
+
+# ── k9s: Catppuccin skins (skin selection in sync-theme / k9s-skin bootstrap)
+{{ if .kubernetes -}}
+[".config/k9s/skins"]
+    type = "archive"
+    url = "https://github.com/catppuccin/k9s/archive/main.tar.gz"
+    refreshPeriod = "{{ $refresh }}"
+    stripComponents = 2
+    include = ["k9s-main/dist/**"]
+{{ end -}}
