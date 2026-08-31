@@ -1,18 +1,20 @@
 # =============================================================================
 # Taps
 # =============================================================================
+# `trusted: true` — Homebrew now requires explicit trust for third-party taps.
 {{ if .macos_cosmetic -}}
-tap "lihaoyun6/tap"
-tap "theboredteam/boring-notch"
+tap "lihaoyun6/tap", trusted: true
+tap "theboredteam/boring-notch", trusted: true
 {{ end -}}
 {{ if .dev_apps -}}
-tap "hamed-elfayome/claude-usage"
+tap "hamed-elfayome/claude-usage", trusted: true
+tap "siderolabs/tap", trusted: true
 {{ end -}}
 {{ if .productivity -}}
-tap "xykong/tap"
+tap "xykong/tap", trusted: true
 {{ end -}}
 {{ if .macos_utils -}}
-tap "darrylmorley/whatcable"
+tap "darrylmorley/whatcable", trusted: true
 {{ end -}}
 # taps:end
 
