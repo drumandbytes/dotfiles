@@ -217,9 +217,6 @@ cask "utm"
 {{ if not (has "duckdb" .machine_excludes) -}}
 brew "duckdb"
 {{ end -}}
-{{ if not (has "rbenv" .machine_excludes) -}}
-brew "rbenv"
-{{ end -}}
 {{ if not (has "hyperfine" .machine_excludes) -}}
 brew "hyperfine"
 {{ end -}}
@@ -300,9 +297,6 @@ brew "webp"
 {{ end -}}
 {{ if not (has "claude" .machine_excludes) -}}
 cask "claude"
-{{ end -}}
-{{ if not (has "claude-notify" .machine_excludes) -}}
-npm "@daik0z/claude-notify"
 {{ end -}}
 {{ if not (has "claude-usage-tracker" .machine_excludes) -}}
 cask "hamed-elfayome/claude-usage/claude-usage-tracker"

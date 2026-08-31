@@ -1,0 +1,17 @@
+#!/bin/bash
+# Installs all runtimes and tools declared in the mise global config.
+# Re-runs whenever that config changes (hash below) or this script changes.
+# mise config hash: {{ include "dot_config/mise/config.toml.tmpl" | sha256sum }}
+
+set -euo pipefail
+
+export PATH="/opt/homebrew/bin:$PATH"
+
+if ! command -v mise &>/dev/null; then
+    echo "mise not found — skipping. Install via: brew install mise"
+    exit 0
+fi
+
+echo "Installing mise runtimes..."
+mise install --yes
+echo "✅ mise install complete."

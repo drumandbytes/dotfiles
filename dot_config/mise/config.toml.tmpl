@@ -6,7 +6,10 @@ gpg_verify = false
 node = "lts"     # JavaScript runtime
 uv   = "latest"  # Python package manager + Python version installer
 ruff = "latest"  # Python linter/formatter
-
+{{ if .dev_apps }}
+# === dev_apps (global npm tools — mise handles node-first ordering) ===
+"npm:@daik0z/claude-notify" = "latest"  # Claude Code desktop notifications
+{{ end }}
 # === Add runtimes with: mise-add <tool> [version] ===
 # mise:end
 
