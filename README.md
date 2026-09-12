@@ -20,6 +20,7 @@ Opinionated **macOS** dotfiles managed with [chezmoi](https://chezmoi.io).
 | `~/.config/eza/` | eza color theme (Catppuccin symlink) |
 | `~/.config/lazygit/` | lazygit config + Catppuccin theme |
 | `~/.config/atuin/` | Shell history config + Catppuccin themes |
+| `~/.config/opencode/opencode.json` | OmniRoute wired as opencode's default provider (`omniroute/auto`) |
 | `~/.hammerspoon/` | Auto-reload config; theme sync on macOS appearance change; `darkmode.lua` auto light/dark by local sunrise/sunset |
 | `~/.local/share/navi/cheats/custom.cheat` | Custom navi cheatsheets (macOS, docker, kubernetes) |
 
@@ -184,9 +185,9 @@ Enable the `onepassword` category in `dots-setup` to install the 1Password app a
 
 - **SSH agent** — `SSH_AUTH_SOCK` points at 1Password's agent socket
 - **Shell plugins** — sources `~/.config/op/plugins.sh` (run `op plugin init <tool>` to add one)
-- **Secret references** — env vars like `ANTHROPIC_API_KEY` are set to their `op://…` *reference*, not the secret
+- **Secret references** — if `dots-setup` says Claude is API-key billed *and* you choose to source it from 1Password, `ANTHROPIC_API_KEY` is set to its `op://…` *reference*, not the secret. Subscription (Pro/Max) users get nothing exported, so `claude` always uses subscription login.
 
-Nothing resolved touches disk. `aliases.zsh` wraps `claude` as `op run -- claude`, which resolves the `op://` references into that process only. Run any other tool that needs them the same way: `op run -- <cmd>`.
+Nothing resolved touches disk. Resolve a reference into a real value for one command with `op run -- <cmd>` (e.g. `op run -- opencode` to use the real Anthropic key for a session instead of OmniRoute).
 
 ## Optional: automatic dark mode
 

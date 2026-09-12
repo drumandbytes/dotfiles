@@ -44,7 +44,7 @@ typeset -A CAT_PKGS=(
   [macos_utils]="alt-tab displaylink hammerspoon hot logi-options-plus raycast sniffnet keyboardcleantool netspot nordvpn transmission utm duckdb hyperfine darrylmorley/whatcable/whatcable"
   [macos_cosmetic]="airbattery boring-notch cork"
   [macos_media]="brave-browser slack spotify telegram iina"
-  [dev_apps]="ffmpeg gh git-filter-repo glab libpq php composer claude claude-usage-tracker opencode-desktop jetbrains-toolbox dbeaver-community gimp rtk vscodium webp cyberduck cloudflared hcloud uv opentofu caddy siderolabs/tap/talosctl"
+  [dev_apps]="ffmpeg gh git-filter-repo glab libpq php composer claude claude-usage-tracker opencode opencode-desktop omniroute jetbrains-toolbox dbeaver-community gimp rtk vscodium webp cyberduck cloudflared hcloud uv opentofu caddy siderolabs/tap/talosctl"
   [touchbar]="bettertouchtool"
   [gaming]="discord steam"
   [productivity]="calibre flux-markdown grammarly-desktop notion obsidian"
@@ -66,6 +66,17 @@ typeset -A PROFILE_EXCL=(
   [full]=""
 )
 
+# ── Existing config (incremental edit support) ───────────────────────────────
+# Every prompt below defaults to whatever's already in chezmoi.toml when it
+# exists, so re-running this script behaves like an edit instead of a reset.
+_cfg_get() { grep -E "^  $1 " "$CHEZMOI_CONFIG" 2>/dev/null | sed -E 's/^[^=]*= *//; s/^"//; s/"$//'; }
+_cfg_excludes() {
+  grep '^  machine_excludes' "$CHEZMOI_CONFIG" 2>/dev/null \
+    | sed -E 's/^[^=]*= *\[//; s/\] *$//; s/"//g; s/,/ /g'
+}
+existing_config=false
+[[ -f "$CHEZMOI_CONFIG" ]] && existing_config=true
+
 # ── Banner ───────────────────────────────────────────────────────────────────
 echo ""
 echo "${bold}${cyan}┌─ dots-setup ──────────────────────────────────────────────┐${reset}"
@@ -74,42 +85,71 @@ echo "${bold}${cyan}└───────────────────
 echo ""
 
 # ── Step 1: Profile ──────────────────────────────────────────────────────────
-profile=$(printf '%s\n' work personal minimal full | \
-  fzf --no-multi --no-sort \
-    --prompt "Profile › " \
-    --header "Select a starting profile — you'll customise packages in the next step" \
-    --preview 'case {} in
-      work)     echo "alt_tools · docker · kubernetes · dev_apps · macos_utils · macos_media\n\nDefault excludes: spotify, iina, nordvpn, utm, transmission, netspot" ;;
-      personal) echo "alt_tools · macos_utils · macos_cosmetic · macos_media · productivity · peripherals\n\nDefault excludes: displaylink, utm, duckdb" ;;
-      minimal)  echo "alt_tools only" ;;
-      full)     echo "Everything — all categories, no excludes" ;;
-    esac' \
-    --preview-window 'right:40%:wrap')
-
-echo ""
-echo "${bold}Profile: ${green}${profile}${reset}"
-echo ""
+if $existing_config; then
+  profile=$(printf '%s\n' "keep current" work personal minimal full | \
+    fzf --no-multi --no-sort \
+      --prompt "Profile › " \
+      --header "Editing existing config — keep your current package selection, or reset to a stock profile" \
+      --preview 'case {} in
+        "keep current") echo "Reuse your current package selection as the starting point — edit individual entries in the next screen" ;;
+        work)     echo "alt_tools · docker · kubernetes · dev_apps · macos_utils · macos_media\n\nDefault excludes: spotify, iina, nordvpn, utm, transmission, netspot" ;;
+        personal) echo "alt_tools · macos_utils · macos_cosmetic · macos_media · productivity · peripherals\n\nDefault excludes: displaylink, utm, duckdb" ;;
+        minimal)  echo "alt_tools only" ;;
+        full)     echo "Everything — all categories, no excludes" ;;
+      esac' \
+      --preview-window 'right:40%:wrap')
+else
+  profile=$(printf '%s\n' work personal minimal full | \
+    fzf --no-multi --no-sort \
+      --prompt "Profile › " \
+      --header "Select a starting profile — you'll customise packages in the next step" \
+      --preview 'case {} in
+        work)     echo "alt_tools · docker · kubernetes · dev_apps · macos_utils · macos_media\n\nDefault excludes: spotify, iina, nordvpn, utm, transmission, netspot" ;;
+        personal) echo "alt_tools · macos_utils · macos_cosmetic · macos_media · productivity · peripherals\n\nDefault excludes: displaylink, utm, duckdb" ;;
+        minimal)  echo "alt_tools only" ;;
+        full)     echo "Everything — all categories, no excludes" ;;
+      esac' \
+      --preview-window 'right:40%:wrap')
+fi
 
 # ── Step 2: Build items + preselection ──────────────────────────────────────
 all_items=()
 preselected=()
 
-for cat in "${CAT_ORDER[@]}"; do
-  for pkg in ${=CAT_PKGS[$cat]}; do
-    item="${cat}/${pkg}"
-    all_items+=("$item")
-
-    cat_enabled=false
-    [[ " ${PROFILE_CATS[$profile]} " == *" $cat "* ]] && cat_enabled=true
-
-    if $cat_enabled; then
-      excl="${PROFILE_EXCL[$profile]:-}"
-      if [[ -z "$excl" || " $excl " != *" ${item} "* ]]; then
+if [[ "$profile" == "keep current" ]]; then
+  existing_excludes=" $(_cfg_excludes) "
+  for cat in "${CAT_ORDER[@]}"; do
+    for pkg in ${=CAT_PKGS[$cat]}; do
+      item="${cat}/${pkg}"
+      all_items+=("$item")
+      if [[ "$(_cfg_get "$cat")" == "true" && "$existing_excludes" != *" $pkg "* ]]; then
         preselected+=("$item")
       fi
-    fi
+    done
   done
-done
+  profile="$(_cfg_get profile)"; : "${profile:=custom}"
+else
+  for cat in "${CAT_ORDER[@]}"; do
+    for pkg in ${=CAT_PKGS[$cat]}; do
+      item="${cat}/${pkg}"
+      all_items+=("$item")
+
+      cat_enabled=false
+      [[ " ${PROFILE_CATS[$profile]} " == *" $cat "* ]] && cat_enabled=true
+
+      if $cat_enabled; then
+        excl="${PROFILE_EXCL[$profile]:-}"
+        if [[ -z "$excl" || " $excl " != *" ${item} "* ]]; then
+          preselected+=("$item")
+        fi
+      fi
+    done
+  done
+fi
+
+echo ""
+echo "${bold}Profile: ${green}${profile}${reset}"
+echo ""
 
 # ── Step 2: State-file + reload package picker ───────────────────────────────
 # fzf's change-query is async so change-query+select-all can't reliably filter
@@ -271,27 +311,58 @@ done
 
 # ── Step 3: Editor ───────────────────────────────────────────────────────────
 echo ""
-editor=$(printf '%s\n' fresh nvim vim code | \
+_editor_opts=(fresh nvim vim code)
+_editor_current="$(_cfg_get editor)"
+[[ -n "$_editor_current" ]] && _editor_opts=("$_editor_current" "${_editor_opts[@]:#$_editor_current}")
+editor=$(printf '%s\n' "${_editor_opts[@]}" | \
   fzf --no-multi --no-sort \
     --prompt "Editor › " \
     --header "Preferred editor")
 
 # ── Step 4: Touch ID for sudo ────────────────────────────────────────────────
-touch_id_sudo=$(printf '%s\n' true false | \
+_touch_opts=(true false)
+[[ "$(_cfg_get touch_id_sudo)" == "false" ]] && _touch_opts=(false true)
+touch_id_sudo=$(printf '%s\n' "${_touch_opts[@]}" | \
   fzf --no-multi --no-sort \
     --prompt "Touch ID for sudo › " \
     --header "Enable Touch ID for sudo? (macOS 14+)")
 
-# ── Step 5: Dark-mode location (Hammerspoon darkmode.lua) ────────────────────
+# ── Step 5: Claude billing ────────────────────────────────────────────────────
+# ANTHROPIC_API_KEY is only ever exported (see env.zsh) when you're on
+# API-key billing *and* choose to source it from 1Password. Subscription
+# (Pro/Max) users get nothing exported, so `claude` always uses subscription
+# login — no wrapper/scrubbing needed.
+claude_api_key=false
+echo ""
+_billing_opts=(subscription api_key)
+[[ "$(_cfg_get claude_api_key)" == "true" ]] && _billing_opts=(api_key subscription)
+_claude_billing=$(printf '%s\n' "${_billing_opts[@]}" | \
+  fzf --no-multi --no-sort \
+    --prompt "Claude billing › " \
+    --header "Is your Claude account subscription (Pro/Max) or API-key billed?")
+if [[ "$_claude_billing" == "api_key" ]]; then
+  if [[ -n "${enabled_cats[onepassword]:-}" ]]; then
+    _1p_opts=(yes no)
+    [[ "$(_cfg_get claude_api_key)" == "true" ]] || _1p_opts=(no yes)
+    _claude_from_1p=$(printf '%s\n' "${_1p_opts[@]}" | \
+      fzf --no-multi --no-sort \
+        --prompt "Source from 1Password › " \
+        --header "Set ANTHROPIC_API_KEY from the 1Password op:// reference?")
+    [[ "$_claude_from_1p" == "yes" ]] && claude_api_key=true
+  else
+    echo "${dim}1Password isn't enabled, so ANTHROPIC_API_KEY can't be sourced automatically — set it yourself in ~/.zsh/local.zsh.${reset}"
+  fi
+fi
+
+# ── Step 6: Dark-mode location (Hammerspoon darkmode.lua) ────────────────────
 # Sun times for the auto light/dark switch are computed locally from lat/long.
 # Only prompted when macos_utils (Hammerspoon) is enabled; otherwise defaults
 # (or the values already in chezmoi.toml) are kept.
-_dm_get() { grep -E "^  $1 " "$CHEZMOI_CONFIG" 2>/dev/null | sed -E 's/^[^=]*= *//; s/^"//; s/"$//'; }
-darkmode_city=$(_dm_get darkmode_city);                   : "${darkmode_city:=Tallinn, Estonia}"
-darkmode_lat=$(_dm_get darkmode_latitude);                : "${darkmode_lat:=59.4370}"
-darkmode_lon=$(_dm_get darkmode_longitude);               : "${darkmode_lon:=24.7536}"
-darkmode_sunset=$(_dm_get darkmode_sunset_offset_min);    : "${darkmode_sunset:=-30}"
-darkmode_sunrise=$(_dm_get darkmode_sunrise_offset_min);  : "${darkmode_sunrise:=0}"
+darkmode_city=$(_cfg_get darkmode_city);                   : "${darkmode_city:=Tallinn, Estonia}"
+darkmode_lat=$(_cfg_get darkmode_latitude);                : "${darkmode_lat:=59.4370}"
+darkmode_lon=$(_cfg_get darkmode_longitude);               : "${darkmode_lon:=24.7536}"
+darkmode_sunset=$(_cfg_get darkmode_sunset_offset_min);    : "${darkmode_sunset:=-30}"
+darkmode_sunrise=$(_cfg_get darkmode_sunrise_offset_min);  : "${darkmode_sunrise:=0}"
 
 _caps="$HOME/.local/share/dots-setup/capitals.tsv"
 # Fall back to the source tree if chezmoi hasn't deployed the file yet (first run).
@@ -359,6 +430,7 @@ cat > "$CHEZMOI_CONFIG" <<TOML
   productivity   = $(_flag productivity)
   peripherals    = $(_flag peripherals)
   onepassword    = $(_flag onepassword)
+  claude_api_key = $claude_api_key
 
   machine_excludes = $excl_toml
 

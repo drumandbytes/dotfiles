@@ -7,6 +7,7 @@ tap "lihaoyun6/tap", trusted: true
 tap "theboredteam/boring-notch", trusted: true
 {{ end -}}
 {{ if .dev_apps -}}
+tap "drumandbytes/tap", trusted: true
 tap "hamed-elfayome/claude-usage", trusted: true
 tap "siderolabs/tap", trusted: true
 {{ end -}}
@@ -295,6 +296,9 @@ brew "rtk"
 {{ if not (has "webp" .machine_excludes) -}}
 brew "webp"
 {{ end -}}
+{{ if not (has "opencode" .machine_excludes) -}}
+brew "opencode"
+{{ end -}}
 {{ if not (has "claude" .machine_excludes) -}}
 cask "claude"
 {{ end -}}
@@ -303,6 +307,9 @@ cask "hamed-elfayome/claude-usage/claude-usage-tracker"
 {{ end -}}
 {{ if not (has "opencode-desktop" .machine_excludes) -}}
 cask "opencode-desktop"
+{{ end -}}
+{{ if not (has "omniroute" .machine_excludes) -}}
+cask "drumandbytes/tap/omniroute"
 {{ end -}}
 {{ if not (has "jetbrains-toolbox" .machine_excludes) -}}
 cask "jetbrains-toolbox"
