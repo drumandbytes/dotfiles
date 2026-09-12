@@ -125,6 +125,7 @@ jobs:
             productivity     = true
             peripherals      = true
             onepassword      = true
+            claude_api_key   = true
             touch_id_sudo    = true
             docker           = true
             kubernetes       = true
@@ -158,6 +159,7 @@ jobs:
             productivity     = false
             peripherals      = false
             onepassword      = true
+            claude_api_key   = true
             touch_id_sudo    = false
             machine_excludes = ["eza", "bat", "docker", "helm", "gh"]
           EOF
@@ -196,6 +198,7 @@ jobs:
             productivity   = false
             peripherals    = false
             onepassword    = true
+            claude_api_key = true
             touch_id_sudo  = false
             docker         = true
             kubernetes     = true
