@@ -189,6 +189,14 @@ Enable the `onepassword` category in `dots-setup` to install the 1Password app a
 
 Nothing resolved touches disk. Resolve a reference into a real value for one command with `op run -- <cmd>` (e.g. `op run -- opencode` to use the real Anthropic key for a session instead of OmniRoute).
 
+## Optional: OmniRoute
+
+`opencode` is wired to [OmniRoute](https://omniroute.online) as its default provider (`omniroute/auto`, see `~/.config/opencode/opencode.json`), a local AI gateway that routes across whatever provider tokens/subscriptions you connect. Its settings live in OmniRoute's own local state (`~/.omniroute/`), not in this repo, so a fresh install or a new machine won't carry them over. Worth checking in the dashboard (`localhost:20128/dashboard`) after installing:
+
+- **Cloud tunnel** — "Cloud OmniRoute" relays the local gateway to the internet by default. Disable it (Home → Tunnels) unless you actually want remote access; opencode only needs `localhost:20128`.
+- **DeepSeek Web provider** — under Providers → Web Cookie Providers, "DeepSeek Web" is a scraped browser session against DeepSeek's consumer chat site, not a real API. It's known to leak raw `DSML` tool-call markup as garbled text instead of executing tools (also filed upstream against opencode: [anomalyco/opencode#14050](https://github.com/anomalyco/opencode/issues/14050)). If tool calls start showing up as visible junk text, disable this specific provider rather than "auto" mode as a whole — everything else keeps working. If it happens in an existing opencode session, start a fresh one (`/new`) too, since the model can imitate a leaked tool-call it already saw in that session's history.
+- **OAuth-based providers** (Amazon Q, Antigravity, Devin CLI, GitHub Copilot, etc.) route traffic through those tools' own subscription logins rather than real API keys — likely against those services' ToS, at risk to the linked account. Enable deliberately, not by default.
+
 ## Optional: automatic dark mode
 
 When `macos_utils` (Hammerspoon) is enabled, `~/.hammerspoon/darkmode.lua` switches macOS between light and dark at local sunrise/sunset — computed offline from coordinates. `dots-setup` prompts for a city (fzf pick from world capitals, or custom coordinates) and two switch offsets, given in minutes relative to the event (negative = before, positive = after) — e.g. `-30` sunset = go dark 30 min before sunset. Re-run `dots-setup` to change them.
