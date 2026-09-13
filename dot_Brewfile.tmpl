@@ -366,6 +366,15 @@ brew "siderolabs/tap/talosctl"
 {{ if not (has "bettertouchtool" .machine_excludes) -}}
 cask "bettertouchtool"
 {{ end -}}
+{{ if not (has "ical-buddy" .machine_excludes) -}}
+brew "ical-buddy"
+{{ end -}}
+{{ if not (has "macmon" .machine_excludes) -}}
+brew "macmon"
+{{ end -}}
+{{ if not (has "notunes" .machine_excludes) -}}
+cask "notunes"
+{{ end -}}
 # pkg:end:touchbar
 {{ end -}}
 
