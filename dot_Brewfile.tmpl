@@ -224,6 +224,15 @@ brew "hyperfine"
 {{ if not (has "darrylmorley/whatcable/whatcable" .machine_excludes) -}}
 cask "darrylmorley/whatcable/whatcable"
 {{ end -}}
+{{ if not (has "ical-buddy" .machine_excludes) -}}
+brew "ical-buddy"
+{{ end -}}
+{{ if not (has "macmon" .machine_excludes) -}}
+brew "macmon"
+{{ end -}}
+{{ if not (has "notunes" .machine_excludes) -}}
+cask "notunes"
+{{ end -}}
 # pkg:end:macos_utils
 {{ end -}}
 
@@ -365,15 +374,6 @@ brew "siderolabs/tap/talosctl"
 {{ if .touchbar -}}
 {{ if not (has "bettertouchtool" .machine_excludes) -}}
 cask "bettertouchtool"
-{{ end -}}
-{{ if not (has "ical-buddy" .machine_excludes) -}}
-brew "ical-buddy"
-{{ end -}}
-{{ if not (has "macmon" .machine_excludes) -}}
-brew "macmon"
-{{ end -}}
-{{ if not (has "notunes" .machine_excludes) -}}
-cask "notunes"
 {{ end -}}
 # pkg:end:touchbar
 {{ end -}}
