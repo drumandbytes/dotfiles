@@ -41,7 +41,7 @@ typeset -A CAT_PKGS=(
   [onepassword]="1password 1password-cli"
   [docker]="docker"
   [kubernetes]="helm kubectx k9s kubeconform mintoolkit stern gcloud-cli awscli kustomize"
-  [macos_utils]="alt-tab displaylink hammerspoon hot logi-options-plus raycast sniffnet keyboardcleantool netspot nordvpn transmission utm duckdb hyperfine darrylmorley/whatcable/whatcable ical-buddy macmon notunes"
+  [macos_utils]="alt-tab displaylink hammerspoon hot logi-options-plus raycast sniffnet keyboardcleantool netspot nordvpn transmission utm duckdb hyperfine darrylmorley/whatcable/whatcable ical-buddy macmon notunes keepassxc"
   [macos_cosmetic]="airbattery boring-notch cork"
   [macos_media]="brave-browser slack spotify telegram iina"
   [dev_apps]="ffmpeg gh git-filter-repo glab libpq php composer claude claude-usage-tracker opencode opencode-desktop omniroute jetbrains-toolbox dbeaver-community gimp rtk vscodium webp cyberduck cloudflared hcloud uv opentofu caddy siderolabs/tap/talosctl"
@@ -60,10 +60,10 @@ typeset -A PROFILE_CATS=(
 )
 
 typeset -A PROFILE_EXCL=(
-  [work]="macos_media/spotify macos_media/iina macos_utils/nordvpn macos_utils/utm macos_utils/transmission macos_utils/netspot"
-  [personal]="macos_utils/displaylink macos_utils/utm macos_utils/duckdb"
+  [work]="macos_media/spotify macos_media/iina macos_utils/nordvpn macos_utils/utm macos_utils/transmission macos_utils/netspot macos_utils/keepassxc"
+  [personal]="macos_utils/displaylink macos_utils/utm macos_utils/duckdb macos_utils/keepassxc"
   [minimal]=""
-  [full]=""
+  [full]="macos_utils/keepassxc"
 )
 
 # ── Existing config (incremental edit support) ───────────────────────────────

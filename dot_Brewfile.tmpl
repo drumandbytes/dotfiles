@@ -230,6 +230,9 @@ brew "ical-buddy"
 {{ if not (has "macmon" .machine_excludes) -}}
 brew "macmon"
 {{ end -}}
+{{ if not (has "keepassxc" .machine_excludes) -}}
+cask "keepassxc"
+{{ end -}}
 {{ if not (has "notunes" .machine_excludes) -}}
 cask "notunes"
 {{ end -}}
