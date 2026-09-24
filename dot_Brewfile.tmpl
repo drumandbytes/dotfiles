@@ -16,6 +16,7 @@ tap "xykong/tap", trusted: true
 {{ end -}}
 {{ if .macos_utils -}}
 tap "darrylmorley/whatcable", trusted: true
+tap "mietzen/tap", trusted: true
 {{ end -}}
 # taps:end
 
@@ -232,6 +233,7 @@ brew "macmon"
 {{ end -}}
 {{ if not (has "keepassxc" .machine_excludes) -}}
 cask "keepassxc"
+brew "mietzen/tap/keepassxc-cli"
 {{ end -}}
 {{ if not (has "notunes" .machine_excludes) -}}
 cask "notunes"

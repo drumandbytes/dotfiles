@@ -7,7 +7,7 @@
 This repo is chezmoi's **source** directory, not the live config. chezmoi renders source paths to **target** paths on `~` using its naming convention:
 
 - `dot_` prefix → literal `.` in the target. `dot_zshrc.tmpl` → `~/.zshrc`. `dot_config/` → `~/.config/`. `dot_hammerspoon/` → `~/.hammerspoon/`. `dot_zsh/` → `~/.zsh/`.
-- `.tmpl` suffix → the file is a Go template chezmoi renders (vars like `{{ if .dev_apps }}`), not literal output. `dot_zshrc.tmpl` → rendered → `~/.zshrc`; `dot_Brewfile.tmpl` → rendered → `~/Brewfile`; `dot_zsh/env.zsh.tmpl` → rendered → `~/.zsh/env.zsh`.
+- `.tmpl` suffix → the file is a Go template chezmoi renders (vars like `{{ if .dev_apps }}`), not literal output. `dot_zshrc.tmpl` → rendered → `~/.zshrc`; `dot_Brewfile.tmpl` → rendered → `~/.Brewfile` (installed by `run_onchange_brew-bundle` on apply); `dot_zsh/env.zsh.tmpl` → rendered → `~/.zsh/env.zsh`.
 
 So: never edit `~/.zshrc`, `~/.config/...`, or any other rendered file on disk directly — edits get clobbered on the next `chezmoi apply` and never make it back to this repo. Always edit the `dot_*`/`*.tmpl` source file here, then apply. To pull a manual on-disk edit back into source, use `chezmoi re-add <target>` (or `dots-add`, see below).
 
