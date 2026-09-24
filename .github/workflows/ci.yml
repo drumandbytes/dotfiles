@@ -26,7 +26,9 @@ jobs:
       md: ${{ steps.filter.outputs.md }}
     steps:
       - uses: actions/checkout@v7
-      - uses: dorny/paths-filter@v4.0.3
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: filter
         with:
           filters: |
@@ -49,6 +51,8 @@ jobs:
     runs-on: ubuntu-latest  # shellcheck is preinstalled on ubuntu runners
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Run shellcheck
         run: shellcheck install.sh .chezmoiscripts/run_once_*.sh .chezmoiscripts/run_onchange_*.sh
 
@@ -59,6 +63,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Install shfmt
         run: brew install shfmt
       - name: Check formatting
@@ -72,6 +78,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Install chezmoi + shell linters
         run: brew install chezmoi shellcheck shfmt
       - name: Validate templates (minimal flags)
@@ -220,16 +228,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff # v24.2.0
         with:
           globs: "**/*.md"
+
+  # Audit of this repo's own workflows; accepted findings are in
+  # .github/zizmor.yml.
+  zizmor:
+    uses: drumandbytes/reusable-actions/.github/workflows/zizmor.yml@v1
 
   # Single stable name for the org's required-status-check ruleset to point
   # at, regardless of how the real jobs above are split or renamed.
   required-checks-passed:
     name: Required checks passed
     runs-on: ubuntu-latest
-    needs: [changes, shellcheck, shfmt, chezmoi-templates, markdownlint]
+    needs: [changes, shellcheck, shfmt, chezmoi-templates, markdownlint, zizmor]
     if: always()
     steps:
       - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
