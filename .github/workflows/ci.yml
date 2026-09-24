@@ -12,11 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Per-job path filtering, not a workflow-level paths-ignore: the jobs
-  # below care about disjoint file sets (shell scripts vs .tmpl templates
-  # vs markdown), and a blanket ignore would wrongly skip markdownlint on
-  # a shell-only change or vice versa. Each filter also matches this
-  # workflow file itself, so editing the pipeline always re-runs everything.
+  # Per-job path filters: the jobs cover disjoint files. Each filter
+  # includes this file, so pipeline edits rerun everything.
   changes:
     name: detect changes
     runs-on: ubuntu-latest
@@ -234,13 +231,10 @@ jobs:
         with:
           globs: "**/*.md"
 
-  # Audit of this repo's own workflows; accepted findings are in
-  # .github/zizmor.yml.
   zizmor:
     uses: drumandbytes/reusable-actions/.github/workflows/zizmor.yml@v1
 
-  # Single stable name for the org's required-status-check ruleset to point
-  # at, regardless of how the real jobs above are split or renamed.
+  # The one name the ruleset requires, however the jobs above change.
   required-checks-passed:
     name: Required checks passed
     runs-on: ubuntu-latest
