@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+# Print `export VAR=value` lines for every entry in a KeePassXC env/<name> group
+# (entry title = var name, password = value). Replaces per-repo .env files:
+#   eval "$(kp-env proxmox-opentofu)"
+# Uses kpxc-cli (talks to the running KeePassXC app, so Touch ID works) when
+# installed; entries need URL https://<name>.kp-env.invalid for that lookup.
+# Falls back to keepassxc-cli on the .kdbx (master password prompt).
+# DB defaults to ~/Drumandbytes_keepassxc.kdbx; override with KP_DB.
+import csv, io, json, os, shlex, shutil, subprocess, sys
+
+
+def export(title, value):
+    return f"export {title}={shlex.quote(value)}"
+
+
+def from_csv(csv_text, name):
+    return [export(r["Title"], r["Password"]) for r in csv.DictReader(io.StringIO(csv_text))
+            if r["Group"].endswith(f"/env/{name}")]
+
+
+def from_kpxc(json_text, name):
+    # kpxc-cli -j prints one JSON object per entry, back to back
+    dec, text, i, out = json.JSONDecoder(), json_text.strip(), 0, []
+    while i < len(text):
+        e, i = dec.raw_decode(text, i)
+        while i < len(text) and text[i].isspace():
+            i += 1
+        if e.get("group") == name:
+            out.append(export(e["name"], e.get("password", "")))
+    return out
+
+
+def demo():
+    sample = ('"Group","Title","Username","Password"\n'
+              '"Root/MiniPC/env/repo","A","","x y\'z"\n'
+              '"Root/MiniPC/env/other","B","","nope"\n')
+    assert from_csv(sample, "repo") == ["export A='x y'\"'\"'z'"]
+    assert from_csv(sample, "missing") == []
+    js = ('{\n "name": "A", "group": "repo", "password": "p q"\n}\n'
+          '{\n "name": "B", "group": "other", "password": "no"\n}\n')
+    assert from_kpxc(js, "repo") == ["export A='p q'"]
+    print("ok")
+
+
+if __name__ == "__main__":
+    if sys.argv[1:] == ["--selftest"]:
+        demo(); sys.exit()
+    if len(sys.argv) != 2:
+        sys.exit("usage: eval \"$(kp-env <name>)\"")
+    name = sys.argv[1]
+    lines = []
+    if shutil.which("kpxc-cli"):
+        r = subprocess.run(["kpxc-cli", "show", f"https://{name}.kp-env.invalid", "-p", "-j"],
+                           stdout=subprocess.PIPE, text=True)
+        if r.returncode == 0:
+            lines = from_kpxc(r.stdout, name)
+    if not lines:
+        db = os.path.expanduser(os.environ.get("KP_DB", "~/Drumandbytes_keepassxc.kdbx"))
+        # password prompt goes to stderr, so stdout stays clean for eval
+        r = subprocess.run(["keepassxc-cli", "export", "-f", "csv", db],
+                           stdout=subprocess.PIPE, text=True)
+        if r.returncode:
+            sys.exit(r.returncode)
+        lines = from_csv(r.stdout, name)
+    if not lines:
+        sys.exit(f"kp-env: no entries in env/{name}")
+    print("\n".join(lines))
