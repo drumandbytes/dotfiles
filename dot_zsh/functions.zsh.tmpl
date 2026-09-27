@@ -13,8 +13,7 @@ _chezmoi_sync() {
     echo "🔄 Fetching origin/main..."
     git -C "$src" fetch origin main || { echo "❌ fetch failed"; return 1; }
 
-    # checkout -B resets the main branch to origin/main regardless of current state:
-    # works from any branch, detached HEAD, or after a failed rebase.
+    # checkout -B works from any branch, detached HEAD, or a failed rebase
     git -C "$src" checkout -B main origin/main
 
     chezmoi apply
@@ -22,8 +21,7 @@ _chezmoi_sync() {
 
 # === Maintenance ===
 # Regenerate the static tool-init files (~/.zsh/*_init.zsh) + completions.
-# A `brew upgrade` can change a tool's `init` output, leaving the cache stale;
-# the run_onchange hash only catches Brewfile/plugin edits, not version bumps.
+# brew upgrade can change a tool's init output; the run_onchange hash only sees Brewfile/plugin edits.
 _regen_inits() {
     bash <(chezmoi execute-template < "$(chezmoi source-path)/.chezmoiscripts/run_onchange_generate-tool-inits.sh.tmpl")
 }
@@ -108,9 +106,8 @@ sh-add() {
 }
 
 # === Brew Drift Detection ===
-# Two-way sync: promote untracked packages into dot_Brewfile.tmpl and remove
-# stale entries (in Brewfile but no longer installed). Skipped packages are
-# persisted to .brewsync_skip so they are never prompted again.
+# Two-way sync: add untracked packages to dot_Brewfile.tmpl, drop uninstalled
+# ones. Skips persist in .brewsync_skip.
 brewsync() {
     local src brewfile tmp skip_file
     src="$(chezmoi source-path)/dot_Brewfile.tmpl"
@@ -123,7 +120,6 @@ brewsync() {
     touch "$skip_file"
 
     # ── Stale detection ──────────────────────────────────────────────────────
-    # Find packages listed in ~/.Brewfile that are no longer installed.
     local formula_list cask_list
     formula_list=$(brew list --formula 2>/dev/null)
     cask_list=$(brew list --cask 2>/dev/null)
@@ -162,11 +158,8 @@ brewsync() {
     fi
 
     # ── Untracked detection ──────────────────────────────────────────────────
-    # Use the short name (strip tap prefix) for matching: brew leaves may return
-    # "siderolabs/tap/talosctl" or just "talosctl"; brew list --cask always returns the
-    # short form (e.g. "airbattery") even when the Brewfile has the tap-qualified
-    # form (e.g. cask "lihaoyun6/tap/airbattery").  The regex ([^"'/]+/)* matches
-    # zero or more leading tap path components so both forms are detected.
+    # Match on the short name: brew leaves may or may not include the tap, casks
+    # never do, and the Brewfile may be tap-qualified; ([^"'/]+/)* covers both.
     local -a untracked=()
     while IFS= read -r pkg; do
         local short="${pkg##*/}"
@@ -177,7 +170,6 @@ brewsync() {
         command grep -qE "^cask [\"']([^\"'/]+/)*${short}[\"']" "$brewfile" || untracked+=("cask:::$cask")
     done < <(brew list --cask 2>/dev/null)
 
-    # Filter out permanently skipped entries
     local -a pending=()
     for entry in "${untracked[@]}"; do
         command grep -qxF "$entry" "$skip_file" || pending+=("$entry")

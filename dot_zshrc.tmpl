@@ -70,9 +70,7 @@ unset HISTFILE
 setopt HIST_IGNORE_SPACE AUTO_CD CORRECT
 
 # 8. Async compile (background, does not block startup)
-# Only (re)compile when the source is newer than its .zwc — `-nt` is true when
-# the target is missing too, so fresh files compile on first run. zsh updates a
-# file's mtime whenever chezmoi rewrites it, so edits are always picked up.
+# compile when source is newer than its .zwc (-nt is also true when .zwc is missing)
 {
     [[ ~/.zshrc -nt ~/.zshrc.zwc ]] && zcompile ~/.zshrc
     for f in ~/.zsh/*.zsh(N); do

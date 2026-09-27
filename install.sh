@@ -42,16 +42,14 @@ if ! command -v chezmoi &>/dev/null; then
 fi
 
 # --- Phase 1: init + base apply ---
-# chezmoi init clones the repo and writes ~/.config/chezmoi/chezmoi.toml with
-# safe defaults (all feature flags off). The first apply installs only base
-# packages — importantly including fzf, which dots-setup needs.
+# init writes chezmoi.toml with all flags off; the first apply installs base
+# packages only, including fzf, which dots-setup needs.
 echo "Initialising dotfiles from ${DOTFILES_REPO} (base pass)..."
 chezmoi init "$DOTFILES_REPO"
 chezmoi apply
 
 # --- Phase 2: interactive machine setup ---
-# dots-setup runs the profile wizard, writes the real chezmoi.toml, then calls
-# chezmoi apply again to install the selected packages.
+# dots-setup writes the real chezmoi.toml and applies again with the selection.
 echo ""
 echo "Launching machine setup wizard..."
 ~/.local/bin/dots-setup

@@ -152,9 +152,8 @@ echo "${bold}Profile: ${green}${profile}${reset}"
 echo ""
 
 # ── Step 2: State-file + reload package picker ───────────────────────────────
-# fzf's change-query is async so change-query+select-all can't reliably filter
-# a group. Instead we manage selection state in a file and use execute-silent
-# + reload, which is synchronous and works for both individual and group toggles.
+# fzf's change-query is async, so group toggles keep state in a file and use
+# execute-silent + reload, which is synchronous.
 
 _state_file=$(mktemp /tmp/dots-setup-state.XXXXXX)
 _order_file=$(mktemp /tmp/dots-setup-order.XXXXXX)
@@ -328,10 +327,8 @@ touch_id_sudo=$(printf '%s\n' "${_touch_opts[@]}" | \
     --header "Enable Touch ID for sudo? (macOS 14+)")
 
 # ── Step 5: Claude billing ────────────────────────────────────────────────────
-# ANTHROPIC_API_KEY is only ever exported (see env.zsh) when you're on
-# API-key billing *and* choose to source it from 1Password. Subscription
-# (Pro/Max) users get nothing exported, so `claude` always uses subscription
-# login — no wrapper/scrubbing needed.
+# ANTHROPIC_API_KEY is exported (env.zsh) only for API-key billing sourced
+# from 1Password; subscription users get nothing, so `claude` uses its login.
 claude_api_key=false
 echo ""
 _billing_opts=(subscription api_key)
@@ -355,9 +352,7 @@ if [[ "$_claude_billing" == "api_key" ]]; then
 fi
 
 # ── Step 6: Dark-mode location (Hammerspoon darkmode.lua) ────────────────────
-# Sun times for the auto light/dark switch are computed locally from lat/long.
-# Only prompted when macos_utils (Hammerspoon) is enabled; otherwise defaults
-# (or the values already in chezmoi.toml) are kept.
+# Sun times come from lat/long. Only asked when macos_utils (Hammerspoon) is on.
 darkmode_city=$(_cfg_get darkmode_city);                   : "${darkmode_city:=Tallinn, Estonia}"
 darkmode_lat=$(_cfg_get darkmode_latitude);                : "${darkmode_lat:=59.4370}"
 darkmode_lon=$(_cfg_get darkmode_longitude);               : "${darkmode_lon:=24.7536}"
