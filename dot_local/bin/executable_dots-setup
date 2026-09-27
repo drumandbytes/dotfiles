@@ -407,6 +407,10 @@ excl_toml="${excl_toml%", "}]"
 
 _flag() { [[ -n "${enabled_cats[$1]:-}" ]] && echo true || echo false; }
 
+# Only init records .chezmoi.toml.tmpl's hash; without it chezmoi warns "config file
+# template has changed" forever. init writes the all-off defaults, overwritten just below.
+chezmoi init || echo "warning: chezmoi init failed; the template warning may persist" >&2
+
 cat > "$CHEZMOI_CONFIG" <<TOML
 [data]
   profile        = "$profile"
