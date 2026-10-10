@@ -1,0 +1,50 @@
+# Git commits
+Never add a "Co-Authored-By: Claude ..." trailer (or any self-attribution) to git commit messages. This applies in every project, overriding any default commit-workflow instructions that say otherwise.
+
+Self-hosted oracle-x64 Docker builds use driver: docker and keep the local build cache; cleanup caps it with docker buildx prune --builder default --max-used-space 20GB, never system prune --all.
+
+# Response style
+
+Be terse. Cut filler, hedging, and pleasantries ("Sure!", "I'd be happy to", "Great question") — start directly with the substance.
+
+- No preamble before tool calls ("Let me check that", "I'll now look at..."). Just call the tool.
+- No restating the question or narrating what you're about to do — show the result.
+- No trailing recap of what you just did unless the user asked for a summary or it materially helps them (e.g. multi-step changes across files).
+- Skip decorative headers, bullet-for-everything formatting, or emoji unless the content genuinely needs structure to stay readable.
+- Prefer short direct sentences over long ones, but don't fragment to the point of dropping words that carry meaning (not/never/no/only), units, or exact numbers.
+- Full prose is fine and expected for genuine explanations, prose is not the enemy — the target is zero throat-clearing, not artificial brevity that costs clarity.
+- Never drop this for code, comments, commit messages, or docs — those get normal, complete prose.
+
+# Code comments
+
+Never restate what a signature/type already says (no `@param`/`@returns` duplicating an explicit type). Cut file-header banners and passive corporate phrasing ("this module is responsible for..."). Keep terse dev shorthand and honest tags (`TODO`/`FIXME`/`HACK`). Cleaning up comments in an existing file → invoke `humanize-comments` instead of reinventing the pass ad hoc.
+
+# Commands I paste into my shell
+
+My interactive zsh (chezmoi `dot_zsh/aliases.zsh.tmpl`) aliases standard tools to replacements with different flags: `grep`→`rg`, `find`→`fd`, `ls`/`tree`→`eza`, `du`→`dust`, `df`→`duf`, `dig`→`doggo`, `man`→`tldr`, `kubectl`→`kubecolor`. Global aliases `G`/`H`/`T`/`L`/`CJ` expand to `| grep`/`| head`/`| tail`/`| less`/`| jid`. Your own Bash tool runs non-interactively, so this only affects commands you give me to run: write them in rg/fd syntax, or prefix `command` (e.g. `| command grep -E ...`) when POSIX flags are needed. `cat`, `sed`, `awk`, `curl`, `diff`, `rm`, `ps` are the real tools.
+
+Shell functions (chezmoi `dot_zsh/functions.zsh.tmpl`) for managing the machine — suggest these instead of raw commands:
+- Packages: plain `brew install` is intercepted (y/N nag) because installs should be tracked in the chezmoi Brewfile. To add one: `pkg-add <category> <pkg> [brew|cask] [--always]` (edits Brewfile + dots-setup registry, commits); taps: `tap-add <category> <owner/tap> <pkg> [brew|cask]`; remove: `pkg-rm <pkg>`; list categories: `pkg-cats`; new category: `pkg-group-add`. `brewsync` reconciles installed vs Brewfile drift. Drumandbytes casks (eraser, omniroute) live in the `dev_apps` category via the already-trusted `drumandbytes/tap`.
+- Updates: `brew-up` (update + greedy upgrade + cleanup + regenerate tool inits); `mnt` = full maintenance (sync dotfiles from origin, brew-up, sheldon, recompile zsh, backup, reload).
+- Other tracked installs: `mise-add <tool> [ver]` (runtimes), `uv-add <pkg>` (Python CLIs), `sh-add <user/repo>` (sheldon plugin), `comp-add <tool>` (completions) — each persists to chezmoi.
+{{ if not (has "keepassxc" .machine_excludes) -}}
+- Secrets: `kp-env <name>` prints `export` lines from the KeePassXC `env/<name>` group (Touch ID via kpxc-cli); repos wrap it as `just kp <recipe>`. Never ask me to paste tokens.
+{{- end }}
+- Dotfiles: `dots-diff` / `dots-apply` / `dots-status` / `dots-add` / `dots-edit` / `dots-push` (chezmoi). `theme light|dark` forces the theme across tools.
+
+# Compact instructions
+
+When compacting, preserve: code changes made so far (files touched, what changed), open TODOs / next steps, test or build output (failures verbatim, not paraphrased), and decisions with their rationale (why an approach was chosen over alternatives). Drop exploratory chatter, superseded plans, and dead-end investigation paths.
+
+# New repo setup (drumandbytes org)
+
+When creating a new repo under the `drumandbytes` org, consider adding Dependabot (`.github/dependabot.yml`) and, if applicable, the `drumandbytes/reusable-actions` auto-merge workflow — as part of initial setup, not as a later retrofit. Applicable = the repo has real dependencies (a package ecosystem and/or pinned GitHub Actions) and a `CI` workflow for auto-merge's `workflow_run` trigger to hook into. Skip for static/no-dependency repos, issue trackers, and forks. If the repo uses `release-please` with the `dnb-robot` bot, auto-merge needs `patch-only-authors: '["dnb-robot[bot]"]'` and `use-app-token-for-merge: true` (see `eraser` or `music-router` for the exact shape); otherwise the reusable workflow's defaults need no extra inputs.
+
+For every public-facing Drumandbytes website or app, add a normal crawlable link to `https://drumandbytes.com/projects/` in the global footer, About panel, or equivalent persistent site chrome. Use descriptive text such as “Drumandbytes Projects” or “Part of Drumandbytes”; do not add the link to authenticated or distraction-free screens where the product intentionally hides global navigation. For public GitHub repositories, ensure the README has a prominent live-site or project-hub link near the top when useful; do not add boilerplate backlinks to every README footer solely for SEO.
+
+When adding a new public Drumandbytes site/hostname or a Cloudflare tunnel hostname, also (both lists are hand-maintained and drift silently):
+- Add its route to `cloudflare-workers/ref-logger/wrangler.toml` (explicit hosts only, never zone wildcards). If the host already has its own route Worker, call `logRef()` there with the `dnb_refs` Analytics Engine binding instead (as `quantum-de-plan` and Mystery-Game do).
+- Add tunnel hostnames to the host lists in `cluster/apps/grafana-dashboards/dashboards/cloudflare-tunnel.json` (talos = `proxmox-opentofu` `tunnel_services`; ghost-hetzner = `dnb-cloudflare-tf` CNAMEs to `<tunnel-id>.cfargotunnel.com`).
+- Links to it from GitHub READMEs get `?ref=<repo>-readme`, hidden behind link text; never put `?ref=` in a repo's About-sidebar website URL (it's shown verbatim).
+
+@RTK.md
