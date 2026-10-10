@@ -371,6 +371,9 @@ brew "caddy"
 {{ if not (has "siderolabs/tap/talosctl" .machine_excludes) -}}
 brew "siderolabs/tap/talosctl"
 {{ end -}}
+{{ if not (has "google-chrome" .machine_excludes) -}}
+cask "google-chrome"
+{{ end -}}
 # pkg:end:dev_apps
 {{ end -}}
 
