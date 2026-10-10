@@ -1,0 +1,12 @@
+# Commands I paste into my shell
+
+My interactive zsh (chezmoi `dot_zsh/aliases.zsh.tmpl`) aliases standard tools to replacements with different flags: `grep`→`rg`, `find`→`fd`, `ls`/`tree`→`eza`, `du`→`dust`, `df`→`duf`, `dig`→`doggo`, `man`→`tldr`, `kubectl`→`kubecolor`. Global aliases `G`/`H`/`T`/`L`/`CJ` expand to `| grep`/`| head`/`| tail`/`| less`/`| jid`. Your own Bash tool runs non-interactively, so this only affects commands you give me to run: write them in rg/fd syntax, or prefix `command` (e.g. `| command grep -E ...`) when POSIX flags are needed. `cat`, `sed`, `awk`, `curl`, `diff`, `rm`, `ps` are the real tools.
+
+Shell functions (chezmoi `dot_zsh/functions.zsh.tmpl`) for managing the machine — suggest these instead of raw commands:
+- Packages: plain `brew install` is intercepted (y/N nag) because installs should be tracked in the chezmoi Brewfile. To add one: `pkg-add <category> <pkg> [brew|cask] [--always]` (edits Brewfile + dots-setup registry, commits); taps: `tap-add <category> <owner/tap> <pkg> [brew|cask]`; remove: `pkg-rm <pkg>`; list categories: `pkg-cats`; new category: `pkg-group-add`. `brewsync` reconciles installed vs Brewfile drift. Drumandbytes casks (eraser, omniroute) live in the `dev_apps` category via the already-trusted `drumandbytes/tap`.
+- Updates: `brew-up` (update + greedy upgrade + cleanup + regenerate tool inits); `mnt` = full maintenance (sync dotfiles from origin, brew-up, sheldon, recompile zsh, backup, reload).
+- Other tracked installs: `mise-add <tool> [ver]` (runtimes), `uv-add <pkg>` (Python CLIs), `sh-add <user/repo>` (sheldon plugin), `comp-add <tool>` (completions) — each persists to chezmoi.
+{{ if not (has "keepassxc" .machine_excludes) -}}
+- Secrets: `kp-env <name>` prints `export` lines from the KeePassXC `env/<name>` group (Touch ID via kpxc-cli); repos wrap it as `just kp <recipe>`. Never ask me to paste tokens.
+{{- end }}
+- Dotfiles: `dots-diff` / `dots-apply` / `dots-status` / `dots-add` / `dots-edit` / `dots-push` (chezmoi). `theme light|dark` forces the theme across tools.

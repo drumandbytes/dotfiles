@@ -12,6 +12,7 @@ install.sh
 {{ if or (not .alt_tools) (has "bat" .machine_excludes) }}.config/bat{{ end }}
 {{ if or (not .alt_tools) (has "eza" .machine_excludes) }}.config/eza{{ end }}
 {{ if not .macos_utils }}.hammerspoon{{ end }}
+{{ if has "keepassxc" .machine_excludes }}.local/bin/kp-env{{ end }}
 {{ if not .touch_id_sudo }}.chezmoiscripts/enable-touchid-sudo.sh{{ end }}
 
 # sheldon lock file and static cache are generated at runtime
