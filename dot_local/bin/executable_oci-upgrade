@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# apt update + upgrade on all OCI hosts (gha-* in ~/.ssh/config) in parallel.
+# Never reboots. Skips hosts with a running Actions job unless --force.
+usage() {
+  echo "Usage: oci-upgrade [--dry-run] [--force] [--timeout SECS] [host-filter-regex]" >&2
+}
+dry=0 force=0 tmo=1800 filter=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -n | --dry-run) dry=1 ;;
+    -f | --force) force=1 ;;
+    -t | --timeout) tmo="${2:?}"; shift ;;
+    -h | --help) usage; exit 0 ;;
+    -*) usage; exit 2 ;;
+    *) filter="$1" ;;
+  esac
+  shift
+done
+
+hosts=$(awk '$1=="Host" && $2 ~ /^gha-/ {print $2}' ~/.ssh/config)
+[ -n "$filter" ] && hosts=$(printf '%s\n' "$hosts" | command grep -E -- "$filter")
+[ -z "$hosts" ] && { echo "no matching hosts" >&2; exit 2; }
+
+remote='
+export DEBIAN_FRONTEND=noninteractive
+sudo -n true 2>/dev/null || { echo "ERROR: passwordless sudo missing"; exit 90; }
+if [ "$FORCE" != 1 ] && pgrep -f Runner.Worker >/dev/null; then
+  echo "SKIPPED: Actions job running (use --force)"; exit 91
+fi
+sudo -n apt-get update -y || exit 1
+sudo -n apt-get upgrade -y -o Dpkg::Options::=--force-confold || exit 1
+if [ -f /var/run/reboot-required ]; then echo "REBOOT REQUIRED"; fi
+'
+
+if [ "$dry" = 1 ]; then
+  echo "hosts:"; printf '  %s\n' $hosts
+  echo "per host (timeout ${tmo}s, force=$force): ssh -o BatchMode=yes -o ConnectTimeout=10 <host> bash -s <<<"
+  echo "$remote"
+  exit 0
+fi
+
+d=$(mktemp -d); trap 'rm -rf "$d"' EXIT
+for h in $hosts; do
+  (
+    printf '%s' "$remote" | perl -e 'alarm shift; exec @ARGV' "$tmo" \
+      ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
+      "$h" "FORCE=$force bash -s" >"$d/$h.out" 2>&1
+    echo $? >"$d/$h.rc"
+  ) &
+done
+wait
+
+fail=0
+for h in $hosts; do
+  rc=$(cat "$d/$h.rc")
+  echo "===== $h ====="
+  sed 's/^/  /' "$d/$h.out"
+done
+echo; echo "===== summary ====="
+for h in $hosts; do
+  rc=$(cat "$d/$h.rc")
+  case $rc in
+    0) s="ok" ;;
+    90) s="FAIL (no passwordless sudo)" ;;
+    91) s="SKIPPED (job running)"; fail=1 ;;
+    142) s="FAIL (timeout ${tmo}s)" ;;
+    255) s="FAIL (ssh error)" ;;
+    *) s="FAIL (rc=$rc)" ;;
+  esac
+  [ "$rc" != 0 ] && fail=1
+  command grep -q '^REBOOT REQUIRED' "$d/$h.out" && s="$s  [reboot required]"
+  printf '%-12s %s\n' "$h" "$s"
+done
+exit $fail
