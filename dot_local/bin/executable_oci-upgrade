@@ -44,18 +44,13 @@ for h in $hosts; do
   (
     printf '%s' "$remote" | perl -e 'alarm shift; exec @ARGV' "$tmo" \
       ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
-      "$h" "FORCE=$force bash -s" >"$d/$h.out" 2>&1
-    echo $? >"$d/$h.rc"
+      "$h" "FORCE=$force bash -s" 2>&1 | tee "$d/$h.out" | awk -v h="$h" '{print "[" h "] " $0; fflush()}'
+    echo "${PIPESTATUS[1]}" >"$d/$h.rc"
   ) &
 done
 wait
 
 fail=0
-for h in $hosts; do
-  rc=$(cat "$d/$h.rc")
-  echo "===== $h ====="
-  sed 's/^/  /' "$d/$h.out"
-done
 echo; echo "===== summary ====="
 for h in $hosts; do
   rc=$(cat "$d/$h.rc")
