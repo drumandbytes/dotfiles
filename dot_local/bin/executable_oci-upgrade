@@ -2,13 +2,16 @@
 # apt update + upgrade on all OCI hosts (gha-* in ~/.ssh/config) in parallel.
 # Never reboots. Skips hosts with a running Actions job unless --force.
 usage() {
-  echo "Usage: oci-upgrade [--dry-run] [--force] [--timeout SECS] [host-filter-regex]" >&2
+  echo "Usage: oci-upgrade [--dry-run] [--force] [--no-apt] [-c CMD]... [--timeout SECS] [host-filter-regex]" >&2
 }
-dry=0 force=0 tmo=1800 filter=""
+dry=0 force=0 noapt=0 tmo=1800 filter="" extra=""
 while [ $# -gt 0 ]; do
   case "$1" in
     -n | --dry-run) dry=1 ;;
     -f | --force) force=1 ;;
+    --no-apt) noapt=1 ;;
+    -c | --cmd) extra="$extra
+( ${2:?} ) </dev/null || exit 1"; shift ;;
     -t | --timeout) tmo="${2:?}"; shift ;;
     -h | --help) usage; exit 0 ;;
     -*) usage; exit 2 ;;
@@ -27,10 +30,15 @@ sudo -n true 2>/dev/null || { echo "ERROR: passwordless sudo missing"; exit 90; 
 if [ "$FORCE" != 1 ] && pgrep -f Runner.Worker >/dev/null; then
   echo "SKIPPED: Actions job running (use --force)"; exit 91
 fi
+if [ "$NOAPT" != 1 ]; then
 sudo -n apt-get -o DPkg::Lock::Timeout=600 update -y || exit 1
 sudo -n apt-get -o DPkg::Lock::Timeout=600 upgrade -y -o Dpkg::Options::=--force-confold || exit 1
+fi
+EXTRA
 if [ -f /var/run/reboot-required ]; then echo "REBOOT REQUIRED"; fi
 '
+
+remote=${remote/EXTRA/$extra}
 
 if [ "$dry" = 1 ]; then
   echo "hosts:"; printf '  %s\n' $hosts
@@ -44,7 +52,7 @@ for h in $hosts; do
   (
     printf '%s' "$remote" | perl -e 'alarm shift; exec @ARGV' "$tmo" \
       ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
-      "$h" "FORCE=$force bash -s" 2>&1 | tee "$d/$h.out" | awk -v h="$h" '{print "[" h "] " $0; fflush()}'
+      "$h" "FORCE=$force NOAPT=$noapt bash -s" 2>&1 | tee "$d/$h.out" | awk -v h="$h" '{print "[" h "] " $0; fflush()}'
     echo "${PIPESTATUS[1]}" >"$d/$h.rc"
   ) &
 done
