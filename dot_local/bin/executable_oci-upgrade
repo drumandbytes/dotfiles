@@ -27,8 +27,8 @@ sudo -n true 2>/dev/null || { echo "ERROR: passwordless sudo missing"; exit 90; 
 if [ "$FORCE" != 1 ] && pgrep -f Runner.Worker >/dev/null; then
   echo "SKIPPED: Actions job running (use --force)"; exit 91
 fi
-sudo -n apt-get update -y || exit 1
-sudo -n apt-get upgrade -y -o Dpkg::Options::=--force-confold || exit 1
+sudo -n apt-get -o DPkg::Lock::Timeout=600 update -y || exit 1
+sudo -n apt-get -o DPkg::Lock::Timeout=600 upgrade -y -o Dpkg::Options::=--force-confold || exit 1
 if [ -f /var/run/reboot-required ]; then echo "REBOOT REQUIRED"; fi
 '
 
